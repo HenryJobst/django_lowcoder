@@ -25,19 +25,19 @@ SECRET_KEY = os.getenv('SECRET_KEY', os.urandom(32))
 
 DEBUG = os.getenv('DEBUG', False) == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,'
+                                                '127.0.0.1').split(',')
 
 # Application definition
 
 INSTALLED_APPS = [
+    "project.apps.ProjectConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.",
-    "project"
 ]
 
 MIDDLEWARE = [
@@ -109,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "de-de"
 
-TIME_ZONE = "UTC+1"
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -125,3 +125,5 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+LOGIN_REDIRECT_URL = '/'

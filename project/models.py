@@ -6,15 +6,28 @@ class Project(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.RESTRICT,
-        null=False
+        on_delete=models.RESTRICT, null=True
         )
+    session_key = models.CharField(max_length=40)
     name = models.CharField(max_length=100, null=False, unique=True)
     slug = models.SlugField(unique=True)
     description = models.CharField(max_length=1000)
     creation_date = models.DateTimeField()
     modified_date = models.DateTimeField()
     # mapping = models.OneToOneRel(field='mapping_id', to=TransformationMapping)
+
+
+class ProjectSettings(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.RESTRICT,
+        null=False
+        )
+    admin_name = models.CharField(max_length=60, null=False, default='admin')
+    admin_password = models.CharField(max_length=100, null=False)
+    demo_user_name = models.CharField(max_length=60, null=False, default='demo')
+    demo_user_password = models.CharField(max_length=100, null=False)
 
 
 class TransformationMapping(models.Model):
@@ -24,7 +37,7 @@ class TransformationMapping(models.Model):
         on_delete=models.RESTRICT,
         null=False
         )
-    #files = models.ManyToOneRel('file_id', TransformationFile, )
+    # files = models.ManyToOneRel('file_id', TransformationFile, )
 
 
 class TransformationFile(models.Model):
@@ -64,7 +77,7 @@ class TransformationColumn(models.Model):
         null=False)
 
 
-class TransformationEntity(models.Model):
+class Model(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100, null=False)
     transformation_headline = models.ForeignKey(
@@ -74,16 +87,17 @@ class TransformationEntity(models.Model):
         TransformationMapping,
         on_delete=models.RESTRICT,
         null=False)
+    is_main_entity = models.BooleanField(null=False, default=False)
 
 
-class TransformationField(models.Model):
+class ModelField(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100, null=False)
     transformation_column = models.ForeignKey(
         TransformationColumn,
         on_delete=models.RESTRICT)
-    entity = models.ForeignKey(TransformationEntity,
-                               on_delete=models.RESTRICT, null=False)
+    model = models.ForeignKey(Model,
+                              on_delete=models.RESTRICT, null=False)
     is_primary_key = models.BooleanField(null=False)
     datatype = models.CharField(max_length=60, null=False, default='CharField')
     datatype_length = models.IntegerField(null=True)
@@ -92,3 +106,4 @@ class TransformationField(models.Model):
     foreign_key_id = models.CharField(max_length=100)
     is_unique = models.BooleanField(null=False, default=False)
     use_index = models.BooleanField(null=False, default=False)
+    validation_pattern = models.CharField(max_length=100)

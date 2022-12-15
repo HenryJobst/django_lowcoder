@@ -1,0 +1,14 @@
+{% extends 'project/base_generic.html' %}
+
+{% block title %}Registrieren{% endblock title %}
+
+{% block content %}
+    <h2>Nutzer registrieren</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Registrieren</button>
+        <br><br>
+        <a href="{% url 'index' %}">Hauptseite</a>
+    </form>
+{% endblock content %}
