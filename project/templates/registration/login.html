@@ -1,7 +1,6 @@
 {% extends "project/base_generic.html" %}
 
 {% block content %}
-
   {% if form.errors %}
     <p>Benutzername oder Passwort stimmen nicht. Bitte erneut versuchen.</p>
   {% endif %}
@@ -32,5 +31,5 @@
   </form>
 
   <p><a href="{% url 'password_reset' %}">Passwort vergessen?</a></p>
-
+  <p><a href="{% url 'register' %}">Registrieren</a></p>
 {% endblock %}

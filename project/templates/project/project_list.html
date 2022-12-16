@@ -1,17 +1,31 @@
 {% extends "project/base_generic.html" %}
 
 {% block content %}
-  <h1>Projekte</h1>
-  {% if project_list %}
-  <ul>
-    {% for project in project_list %}
-      <li>
-        <a href="{{ project.get_absolute_url }}">{{ project.name }}</a>
-          ({{project.description}})
-      </li>
-    {% endfor %}
-  </ul>
-  {% else %}
-    <p>Es gibt noch keine Projekte.</p>
-  {% endif %}
+<h1 class="h2">Projekte</h1>
+{% if project_list %}
+<div class="table-responsive">
+    <table class="table table-striped table-sm">
+        <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Beschreibung</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for project in project_list %}
+        <tr>
+            <td>
+                <a href="{{ project.get_absolute_url }}">{{ project.name }}</a>
+            </td>
+            <td>
+                {{project.description}}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>Es gibt noch keine Projekte.</p>
+{% endif %}
 {% endblock %}
