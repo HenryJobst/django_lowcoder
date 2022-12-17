@@ -1,14 +1,19 @@
 {% extends 'project/base_generic.html' %}
 
-{% block title %}Registrieren{% endblock title %}
+{% block title %}<title>Django-LowCoder - Registrieren</title>{% endblock %}
+
+{% load crispy_forms_tags %}
 
 {% block content %}
-    <h2>Nutzer registrieren</h2>
+<div class="form-register w-100">
+    <h1 class="h3 mb-3 fw-normal">Nutzer registrieren</h1>
     <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Registrieren</button>
-        <br><br>
-        <a href="{% url 'index' %}">Hauptseite</a>
+        {{ form|crispy }}
+        <input type="submit" class="w-100 btn btn-lg btn-primary">
     </form>
+    <div class="mt-3"><a href="{% url 'login' %}"><span
+            class="mb-1 mx-1" data-feather="log-in"
+                                  class="align-text-bottom"></span>Anmelden</a></div>
+</div>
 {% endblock content %}

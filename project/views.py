@@ -1,8 +1,9 @@
 from django.conf import settings
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views import generic
-from django.contrib.auth.models import User
 
 from project.forms import RegisterForm
 from project.models import Project
@@ -20,7 +21,7 @@ class RegisterView(generic.CreateView):
     template_name = 'registration/register.html'
 
 
-
+@method_decorator(login_required, name='dispatch')
 class IndexView(generic.ListView):
     model = Project
     paginate_by = 5
@@ -28,11 +29,10 @@ class IndexView(generic.ListView):
     # context_object_name = 'items'
 
     def get_queryset(self):
-        user = None
         if self.request.user.is_authenticated:
             user = self.request.user
             return Project.objects.filter(user=user)
         else:
             session_key = self.request.COOKIES.get(settings.SESSION_COOKIE_NAME,
-                                               None)
+                                                   None)
             return Project.objects.filter(session_key=session_key)

@@ -3,7 +3,16 @@
   padding: 15px;
 }
 
+.form-register {
+  max-width: 583px;
+  padding: 15px;
+}
+
 .form-signin .form-floating:focus-within {
+  z-index: 2;
+}
+
+.form-register .form-floating:focus-within {
   z-index: 2;
 }
 

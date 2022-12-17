@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    {% block title %}<title>Django-LowCoder - Projekte</title>{% endblock %}
+    {% block title %}<title>Django-LowCoder</title>{% endblock %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Projektseite">
@@ -80,10 +80,12 @@
                                   class="align-text-bottom"></span>
                 Abmelden</a>
             {% else %}
+            {% if request.path != '/accounts/login/' %}
             <a class="nav-link px-3" href="{% url 'login' %}">
                  <span data-feather="log-in"
                                   class="align-text-bottom"></span>
                 Anmelden</a>
+            {% endif %}
             {% endif %}
         </div>
     </div>

@@ -3,14 +3,10 @@ from django.db import models
 
 
 class Project(models.Model):
-    id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.RESTRICT, null=True
-        )
-    session_key = models.CharField(max_length=40)
+        on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=100, null=False, unique=True)
-    slug = models.SlugField(unique=True)
     description = models.CharField(max_length=1000)
     creation_date = models.DateTimeField()
     modified_date = models.DateTimeField()
@@ -18,33 +14,31 @@ class Project(models.Model):
 
 
 class ProjectSettings(models.Model):
-    id = models.BigAutoField(primary_key=True)
     project = models.ForeignKey(
         Project,
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
         null=False
         )
     admin_name = models.CharField(max_length=60, null=False, default='admin')
     admin_password = models.CharField(max_length=100, null=False)
+    create_demo_user = models.BooleanField(null=False, default=False)
     demo_user_name = models.CharField(max_length=60, null=False, default='demo')
     demo_user_password = models.CharField(max_length=100, null=False)
 
 
 class TransformationMapping(models.Model):
-    id = models.BigAutoField(primary_key=True)
     project = models.ForeignKey(
         Project,
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
         null=False
         )
     # files = models.ManyToOneRel('file_id', TransformationFile, )
 
 
 class TransformationFile(models.Model):
-    id = models.BigAutoField(primary_key=True)
     transformation_mapping = models.ForeignKey(
         TransformationMapping,
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
         null=False)
     file_path = models.FilePathField('', unique=True,
                                      allow_folders=False, null=False)
@@ -52,55 +46,51 @@ class TransformationFile(models.Model):
 
 
 class TransformationSheet(models.Model):
-    id = models.BigAutoField(primary_key=True)
     transformation_file = models.ForeignKey(
         TransformationFile,
-        on_delete=models.RESTRICT, null=False)
+        on_delete=models.CASCADE, null=False)
     index = models.IntegerField(null=False)
 
 
 class TransformationHeadline(models.Model):
-    id = models.BigAutoField(primary_key=True)
     transformation_sheet = models.ForeignKey(
         TransformationSheet,
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
         null=False)
     row_index = models.IntegerField(null=False)
 
 
 class TransformationColumn(models.Model):
-    id = models.BigAutoField(primary_key=True)
     column_index = models.IntegerField(null=False)
     transformation_headline = models.ForeignKey(
         TransformationHeadline,
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
         null=False)
 
 
 class Model(models.Model):
-    id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100, null=False)
     transformation_headline = models.ForeignKey(
         TransformationHeadline,
-        on_delete=models.RESTRICT)
+        on_delete=models.SET_NULL, null=True)
     transformation_mapping = models.ForeignKey(
         TransformationMapping,
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
         null=False)
     is_main_entity = models.BooleanField(null=False, default=False)
 
 
 class ModelField(models.Model):
-    id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100, null=False)
     transformation_column = models.ForeignKey(
         TransformationColumn,
-        on_delete=models.RESTRICT)
+        on_delete=models.SET_NULL, null=True)
     model = models.ForeignKey(Model,
-                              on_delete=models.RESTRICT, null=False)
+                              on_delete=models.CASCADE, null=False)
     is_primary_key = models.BooleanField(null=False)
     datatype = models.CharField(max_length=60, null=False, default='CharField')
     datatype_length = models.IntegerField(null=True)
+    default_value = models.CharField(max_length=100, null=True)
     is_foreign_key = models.BooleanField(null=False, default=False)
     foreign_key_entity = models.CharField(max_length=100)
     foreign_key_id = models.CharField(max_length=100)

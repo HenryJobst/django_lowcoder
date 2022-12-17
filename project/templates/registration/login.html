@@ -1,27 +1,32 @@
 {% extends "project/base_generic.html" %}
 
-{% block content %}
-<div class="form-signin w-100 m-auto text-center">
-    <div class="form-floating">
-        {% if form.errors %}
-        <p>Benutzername oder Passwort stimmen nicht. Bitte erneut versuchen.</p>
-        {% endif %}
+{% block title %}<title>Django-LowCoder - Anmelden</title>{% endblock %}
 
-        {% if next %}
-        {% if user.is_authenticated %}
-        <p>Der Benutzer hat keinen Zugriff auf diese Seite. Bitte anderen
-            Zugang verwenden oder einen Administrator kontaktieren.</p>
-        {% else %}
-        <p>Bitte einloggen, um diese Seite zu sehen.</p>
-        {% endif %}
-        {% endif %}
-    </div>
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="form-floating w-100 m-auto text-center">
+    {% if form.errors %}
+    <p>Benutzername oder Passwort stimmen nicht. Bitte erneut versuchen.</p>
+    {% endif %}
+
+    {% if next %}
+    {% if user.is_authenticated %}
+    <p>Der Benutzer hat keinen Zugriff auf diese Seite. Bitte anderen
+        Zugang verwenden oder einen Administrator kontaktieren.</p>
+    {% else %}
+    <p>Bitte anmelden, um diese Seite zu sehen.</p>
+    {% endif %}
+    {% endif %}
+</div>
+<div class="form-signin w-100 m-auto text-center">
     <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
-        <i class="feather-48"
-           data-feather="log-in" class="mb-4"></i>
+        <i class="feather-48 mb-4" data-feather="log-in"></i>
         <h1 class="h3 mb-3 fw-normal">Bitte anmelden</h1>
-        <div class="form-floating">
+
+        {{ form|crispy }}
+        <!--div class="form-floating">
             <input type="text" class="form-control"
                    id="{{ form.username.id_for_label }}"
                    placeholder="{{ form.username.label }}">
@@ -32,13 +37,14 @@
                    id="{{ form.password.id_for_label }}"
                    placeholder="{{ form.password.label }}">
             <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
-        </div>
+        </div-->
 
         <input type="submit" value="Anmelden"
                class="w-100 btn btn-lg btn-primary"/>
         <input type="hidden" name="next" value="{{ next }}"/>
     </form>
-    <div><a href="{% url 'password_reset' %}">Passwort vergessen?</a></div>
+    <div class="mt-3"><a href="{% url 'password_reset' %}">Passwort
+        vergessen?</a></div>
     <div><a href="{% url 'register' %}">Registrieren</a></div>
 </div>
 {% endblock %}
