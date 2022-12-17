@@ -1,11 +1,12 @@
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import LoginView as AuthLoginView
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
 
-from project.forms import RegisterForm
+from project.forms import RegisterForm, LoginForm
 from project.models import Project
 
 
@@ -19,6 +20,12 @@ class RegisterView(generic.CreateView):
     form_class = RegisterForm
     success_url = reverse_lazy('login')
     template_name = 'registration/register.html'
+
+
+class LoginView(AuthLoginView):
+    form_class = LoginForm
+    success_url = reverse_lazy('index')
+    template_name = 'registration/login.html'
 
 
 @method_decorator(login_required, name='dispatch')
