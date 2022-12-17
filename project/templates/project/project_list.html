@@ -9,16 +9,21 @@
         <tr>
             <th scope="col">Name</th>
             <th scope="col">Beschreibung</th>
+            <th scope="col">Erzeugt</th>
         </tr>
         </thead>
         <tbody>
         {% for project in project_list %}
         <tr>
             <td>
-                <a href="{{ project.get_absolute_url }}">{{ project.name }}</a>
+                <a href="{% url 'project_detail' project.id %}">
+                    {{ project.name }} </a>
             </td>
             <td>
                 {{project.description}}
+            </td>
+            <td>
+                {{project.creation_date|date:'SHORT_DATETIME_FORMAT'}}
             </td>
         </tr>
         {% endfor %}

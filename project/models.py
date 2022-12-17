@@ -21,9 +21,8 @@ class ProjectSettings(models.Model):
         )
     admin_name = models.CharField(max_length=60, null=False, default='admin')
     admin_password = models.CharField(max_length=100, null=False)
-    create_demo_user = models.BooleanField(null=False, default=False)
-    demo_user_name = models.CharField(max_length=60, null=False, default='demo')
-    demo_user_password = models.CharField(max_length=100, null=False)
+    demo_user_name = models.CharField(max_length=60, null=True, default='demo')
+    demo_user_password = models.CharField(max_length=100, null=True)
 
 
 class TransformationMapping(models.Model):

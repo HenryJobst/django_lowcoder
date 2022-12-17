@@ -1,0 +1,9 @@
+{% extends "project/base_generic.html" %}
+
+{% block content %}
+<h1>{{ object.name }}</h1>
+<p>Beschreibung: {{ object.description }}</p>
+<p>Erzeugt: {{ object.creation_date|date:'SHORT_DATETIME_FORMAT' }}</p>
+<p>Modifiziert: {{ object.modified_date|date:'SHORT_DATETIME_FORMAT' }}</p>
+<a class="btn btn-primary" href="#">Bearbeiten</a>
+{% endblock %}

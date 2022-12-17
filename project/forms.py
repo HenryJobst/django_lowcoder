@@ -4,6 +4,9 @@ from django.utils.translation import gettext_lazy as _
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset, HTML
 from crispy_bootstrap5.bootstrap5 import FloatingField
+from django.forms import ModelForm
+
+from project.models import ProjectSettings
 
 
 class RegisterForm(UserCreationForm):
@@ -73,3 +76,27 @@ class Meta:
         'username',
         'password',
         ]
+
+
+class ProjectSettingsForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_method = 'post'
+        self.helper.form_action = 'project_settings'
+        self.helper.form_class = 'm-auto'
+        self.helper.layout = Layout(
+            Fieldset(
+                _('Anmeldedaten'),
+                FloatingField('admin_name'),
+                FloatingField('admin_password'),
+                FloatingField('demo_user_name'),
+                FloatingField('demo_user_password'),
+                ),
+            Submit('submit', _('Speichern')),
+            )
+
+    class Meta:
+        model = ProjectSettings
+        fields = ['admin_name', 'admin_password', 'demo_user_name',
+                  'demo_user_password']
