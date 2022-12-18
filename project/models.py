@@ -1,23 +1,35 @@
 from django.conf import settings
 from django.db import models
+from django.urls import reverse
 
 
-class Project(models.Model):
+class TimeStampMixin(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class Project(TimeStampMixin, models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE, null=False)
     name = models.CharField(max_length=100, null=False, unique=True)
     description = models.CharField(max_length=1000)
-    creation_date = models.DateTimeField()
-    modified_date = models.DateTimeField()
-    # mapping = models.OneToOneRel(field='mapping_id', to=TransformationMapping)
+
+    class Meta:
+        ordering = ['name']
+
+    def get_absolute_url(self):
+        return reverse('project_detail', kwargs={'pk': self.pk})
 
 
 class ProjectSettings(models.Model):
-    project = models.ForeignKey(
+    project = models.OneToOneField(
         Project,
         on_delete=models.CASCADE,
-        null=False
+        primary_key=True,
         )
     admin_name = models.CharField(max_length=60, null=False, default='admin')
     admin_password = models.CharField(max_length=100, null=False)
@@ -26,10 +38,10 @@ class ProjectSettings(models.Model):
 
 
 class TransformationMapping(models.Model):
-    project = models.ForeignKey(
+    project = models.OneToOneField(
         Project,
         on_delete=models.CASCADE,
-        null=False
+        primary_key=True,
         )
     # files = models.ManyToOneRel('file_id', TransformationFile, )
 
@@ -78,6 +90,9 @@ class Model(models.Model):
         null=False)
     is_main_entity = models.BooleanField(null=False, default=False)
 
+    class Meta:
+        ordering = ['name']
+
 
 class ModelField(models.Model):
     name = models.CharField(max_length=100, null=False)
@@ -96,3 +111,6 @@ class ModelField(models.Model):
     is_unique = models.BooleanField(null=False, default=False)
     use_index = models.BooleanField(null=False, default=False)
     validation_pattern = models.CharField(max_length=100)
+
+    class Meta:
+        ordering = ['name']

@@ -1,13 +1,19 @@
 from django.urls import path
 
-from . import views
+from project.views.views_project import ProjectDetailView, ProjectCreateView, \
+    ProjectUpdateView, ProjectDeleteView
+from project.views.views_registration import LoginView, RegisterView
+from project.views.views import IndexView
 
 urlpatterns = [
-    path('', views.IndexView.as_view(), name='index'),
-    path('<int:pk>', views.ProjectDetailView.as_view(), name='project_detail'),
-    path('<int:pk>/settings', views.ProjectSettingsView.as_view(),
-         name='project_settings'),
-    path('accounts/register', views.RegisterView.as_view(), name='register'),
-    path('accounts/login', views.LoginView.as_view(), name='login'),
-]
-
+    path('', IndexView.as_view(), name='index'),
+    path('<int:pk>', ProjectDetailView.as_view(), name='project_detail'),
+    path('create', ProjectCreateView.as_view(),
+         name='project_create'),
+    path('<int:pk>/edit', ProjectUpdateView.as_view(),
+         name='project_update'),
+    path('<int:pk>/delete', ProjectDeleteView.as_view(),
+         name='project_delete'),
+    path('accounts/register', RegisterView.as_view(), name='register'),
+    path('accounts/login', LoginView.as_view(), name='login'),
+    ]
