@@ -1,8 +1,6 @@
-from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import LoginView as AuthLoginView
 from django.db.models import QuerySet
-from django.http import HttpResponse
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import generic
