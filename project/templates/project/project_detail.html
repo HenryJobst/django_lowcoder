@@ -6,7 +6,7 @@
 <p>Erzeugt: {{ object.created_at|date:'SHORT_DATETIME_FORMAT' }}</p>
 <p>Modifiziert: {{ object.updated_at|date:'SHORT_DATETIME_FORMAT' }}</p>
 <a class="btn btn-primary"
-   href="{% url 'project_update' object.id %}">Bearbeiten</a>
+   href="{% url 'project_update' object.id %}?next={{request.path}}">Bearbeiten</a>
 <a class="btn btn-secondary"
    href="{% url 'index' %}">Liste</a>
 {% endblock %}

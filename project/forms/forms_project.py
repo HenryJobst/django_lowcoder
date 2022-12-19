@@ -46,3 +46,7 @@ class ProjectDeleteForm(ModelForm):
     class Meta:
         model = Project
         fields = []
+
+
+class ProjectDeployForm:
+    pass
