@@ -1,9 +1,8 @@
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
-from django.http import HttpResponse, QueryDict
+from django.http import QueryDict
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
-from django.utils.decorators import method_decorator
 from django.views.generic import DetailView
 from django.views.generic.edit import CreateView, \
     DeleteView, \
@@ -17,13 +16,11 @@ from project.services.cookiecutter_templete_expander import \
     CookieCutterTemplateExpander
 
 
-@method_decorator(login_required, name='dispatch')
-class ProjectDetailView(DetailView):
+class ProjectDetailView(LoginRequiredMixin, DetailView):
     model = Project
 
 
-@method_decorator(login_required, name='dispatch')
-class ProjectCreateView(CreateView):
+class ProjectCreateView(LoginRequiredMixin, CreateView):
     model = Project
     form_class = ProjectEditForm
 
@@ -32,8 +29,7 @@ class ProjectCreateView(CreateView):
         return super().form_valid(form)
 
 
-@method_decorator(login_required, name='dispatch')
-class ProjectUpdateView(UpdateView):
+class ProjectUpdateView(LoginRequiredMixin, UpdateView):
     model = Project
     form_class = ProjectEditForm
 
@@ -51,15 +47,13 @@ class ProjectUpdateView(UpdateView):
         return reverse_lazy('index')
 
 
-@method_decorator(login_required, name='dispatch')
-class ProjectDeleteView(DeleteView):
+class ProjectDeleteView(LoginRequiredMixin, DeleteView):
     model = Project
     form_class = ProjectDeleteForm
     success_url = reverse_lazy('index')
 
 
-@method_decorator(login_required, name='dispatch')
-class ProjectDeployView(FormView):
+class ProjectDeployView(LoginRequiredMixin, FormView):
     template_name = 'project/project_deploy.html'
     form_class = ProjectDeployForm
     success_url = reverse_lazy('index')
