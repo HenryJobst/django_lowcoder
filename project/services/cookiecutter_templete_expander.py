@@ -42,7 +42,8 @@ class CookiecutterConfig:
             'timezone': 'UTC',
             "windows": "n",
             "use_pycharm": "n",
-            "use_docker": "y",
+            "use_docker": "y" if self.post_dict['type'] == 1 else "n",
+            "django_port": "8001",
             "postgresql_version": "14",
             "cloud_provider": "None",
             "mail_service": "Other SMTP",
@@ -73,7 +74,7 @@ class CookiecutterConfig:
 class ExpanderParameters:
     # for the meaning of the parameters see:
     # https://cookiecutter.readthedocs.io/en/stable/cookiecutter.html#module-cookiecutter.main
-    template: str = 'https://github.com/cookiecutter/cookiecutter-django'
+    template: str = 'https://github.com/HenryJobst/cookiecutter-django.git'
     checkout: str = None
     no_input: bool = True
     extra_context: dict = None
@@ -116,6 +117,7 @@ class CookieCutterTemplateExpander:
                      no_input=params.no_input,
                      extra_context=params.extra_context,
                      replay=params.replay,
+                     overwrite_if_exists=params.overwrite_if_exists,
                      output_dir=params.output_dir,
                      config_file=params.config_file,
                      default_config=params.default_config,

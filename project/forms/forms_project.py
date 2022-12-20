@@ -55,8 +55,8 @@ class ProjectDeleteForm(ModelForm):
 class ProjectDeployForm(Form):
 
     type = TypedChoiceField(
-        label=_('generiere Anwendung als'),
-        choices=((0, "ZIP-Datei"), (1, "Docker-Image")),
+        label=_('Starte Anwendung '),
+        choices=((0, "lokal"), (1, "via Docker")),
         coerce=lambda x: bool(int(x)),
         widget=RadioSelect,
         initial='0',
