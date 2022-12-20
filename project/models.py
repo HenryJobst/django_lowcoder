@@ -31,6 +31,7 @@ class ProjectSettings(models.Model):
         on_delete=models.CASCADE,
         primary_key=True,
         )
+    domain_name = models.CharField(max_length=100, null=False)
     admin_name = models.CharField(max_length=60, null=False, default='admin')
     admin_password = models.CharField(max_length=100, null=False)
     demo_user_name = models.CharField(max_length=60, null=True, default='demo')

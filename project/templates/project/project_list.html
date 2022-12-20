@@ -37,15 +37,18 @@
                 {{project.updated_at|date:'SHORT_DATETIME_FORMAT'}}
             </td>
             <td>
-                <a role="button"
+                <a title="Bearbeiten" role="button"
                    href="{% url 'project_update' project.id %}"><i
                         class="feather-24 align-top me-1"
-                        data-feather="edit"></i>
-                </a>
-                <a role="button"
+                        data-feather="edit"></i></a>
+                <a title="Löschen" role="button"
                    href="{% url 'project_delete' project.id %}"><i
-                        class="feather-24 align-top" data-feather="trash-2"></i>
-                </a>
+                        class="feather-24 align-top me-1"
+                        data-feather="trash-2"></i></a>
+                <a title="Generieren und starten" role="button"
+                   href="{% url 'project_deploy' project.id %}"><i
+                        class="feather-24 align-top me-1"
+                        data-feather="upload-cloud"></i></a>
             </td>
         </tr>
         {% endfor %}

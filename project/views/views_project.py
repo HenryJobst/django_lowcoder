@@ -1,4 +1,7 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.http import HttpResponse, QueryDict
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.generic import DetailView
@@ -10,6 +13,8 @@ from django.views.generic.edit import CreateView, \
 from project.forms.forms_project import ProjectEditForm, ProjectDeleteForm, \
     ProjectDeployForm
 from project.models import Project
+from project.services.cookiecutter_templete_expander import \
+    CookieCutterTemplateExpander
 
 
 @method_decorator(login_required, name='dispatch')
@@ -55,13 +60,21 @@ class ProjectDeleteView(DeleteView):
 
 @method_decorator(login_required, name='dispatch')
 class ProjectDeployView(FormView):
-    template_name = 'project_deploy.html'
+    template_name = 'project/project_deploy.html'
     form_class = ProjectDeployForm
-    success_url = '/thanks/'
+    success_url = reverse_lazy('index')
 
     def form_valid(self, form):
-        # This method is called when valid form data has been POSTed.
-        # It should return an HttpResponse.
-        form.send_email()
+        pk = self.kwargs['pk']
+        project: Project = get_object_or_404(Project, pk=pk)
+        # if not hasattr(project, 'project_settings'):
+        #     return HttpResponse(status=422)
+
+        self.deploy_project(self.request.user, project, self.request.POST)
         return super().form_valid(form)
-    pass
+
+    @staticmethod
+    def deploy_project(user: User, project: Project, post_dict: QueryDict) ->\
+            None:
+        expander = CookieCutterTemplateExpander(user, project, post_dict)
+        expander.expand()
