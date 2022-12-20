@@ -50,7 +50,7 @@ class CookiecutterConfig:
             "use_drf": "n",
             "frontend_pipeline": "None",
             "use_celery": "n",
-            "use_mailhog": "n",
+            "use_mailhog": "y",
             "use_sentry": "n",
             "use_whitenoise": "y",
             "use_heroku": "n",

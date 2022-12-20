@@ -5,6 +5,7 @@ from django.forms import ModelForm, \
     TypedChoiceField, \
     RadioSelect, \
     Form
+from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from project.models import Project
