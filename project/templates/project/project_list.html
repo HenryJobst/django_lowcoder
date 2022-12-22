@@ -37,6 +37,16 @@
                 {{project.updated_at|date:'SHORT_DATETIME_FORMAT'}}
             </td>
             <td>
+                <a title="Auswählen" role="button"
+                   href="{% url 'project_select' project.id %}"><i
+                        class="feather-24 align-top me-1"
+                        {% if request.session.selected != project.id %}
+                        data-feather="book"
+                        {% else %}
+                        data-feather="book-open"
+                        {% endif %}
+                >
+                </i></a>
                 <a title="Bearbeiten" role="button"
                    href="{% url 'project_update' project.id %}"><i
                         class="feather-24 align-top me-1"

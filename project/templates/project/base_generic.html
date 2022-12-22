@@ -117,6 +117,15 @@
                             Projekte
                         </a>
                     </li>
+                    {% if 'selected' in request.session and request.session.selected != 0 %}
+                    <hr/>
+                    <li><a class="nav-link active" aria-current="page" href="#">
+                            <span data-feather="book-open"
+                                  class="align-text-bottom"></span>
+                            {{ request.session.selected_name }}
+                        </a>
+                    </li>
+                    {% endif %}
                     {% if user.is_staff %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'admin:index' %}">

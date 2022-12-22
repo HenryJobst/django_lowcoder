@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "project.apps.ProjectConfig",
     "crispy_forms",
     "crispy_bootstrap5",
+    "django_extensions",
     "debug_toolbar",
     "django.contrib.admin",
     "django.contrib.auth",
