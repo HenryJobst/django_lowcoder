@@ -24,5 +24,6 @@ urlpatterns = [
     path("accounts/login/", LoginView.as_view(), name='login'),
     path('accounts/', include('django.contrib.auth.urls')),
     path("admin/", admin.site.urls),
-    path("", lambda request: redirect('project/'))
+    path("", lambda request: redirect('project/')),
+    path('__debug__/', include('debug_toolbar.urls')),
     ]
