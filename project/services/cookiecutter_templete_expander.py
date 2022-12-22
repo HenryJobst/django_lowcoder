@@ -42,7 +42,7 @@ class CookiecutterConfig:
             'timezone': 'UTC',
             "windows": "n",
             "use_pycharm": "n",
-            "use_docker": "y" if self.post_dict['type'] == 1 else "n",
+            "use_docker": "y" if self.post_dict['type'] == '1' else "n",
             "django_port": "8001",
             "postgresql_version": "14",
             "cloud_provider": "None",
