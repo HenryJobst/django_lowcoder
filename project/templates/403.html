@@ -1,0 +1,8 @@
+{% extends "project/base_generic.html" %}
+
+{% block content %}
+<h1>Zugriff verboten (403)</h1>
+
+<p>{% if exception %}{{ exception }}{% else %}Sie sind nicht berechtigt,
+    auf diese Seite zuzugreifen.{% endif %}</p>
+{% endblock content %}
