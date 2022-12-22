@@ -14,9 +14,11 @@ from project.forms.forms_project import ProjectEditForm, ProjectDeleteForm, \
 from project.models import Project
 from project.services.cookiecutter_templete_expander import \
     CookieCutterTemplateExpander
+from project.views.mixins import ModelUserFieldPermissionMixin
 
 
-class ProjectDetailView(LoginRequiredMixin, DetailView):
+class ProjectDetailView(LoginRequiredMixin, ModelUserFieldPermissionMixin,
+                        DetailView):
     model = Project
 
 
@@ -29,7 +31,8 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class ProjectUpdateView(LoginRequiredMixin, UpdateView):
+class ProjectUpdateView(LoginRequiredMixin, ModelUserFieldPermissionMixin,
+                        UpdateView):
     model = Project
     form_class = ProjectEditForm
 
@@ -47,13 +50,15 @@ class ProjectUpdateView(LoginRequiredMixin, UpdateView):
         return reverse_lazy('index')
 
 
-class ProjectDeleteView(LoginRequiredMixin, DeleteView):
+class ProjectDeleteView(LoginRequiredMixin, ModelUserFieldPermissionMixin,
+                        DeleteView):
     model = Project
     form_class = ProjectDeleteForm
     success_url = reverse_lazy('index')
 
 
-class ProjectDeployView(LoginRequiredMixin, FormView):
+class ProjectDeployView(LoginRequiredMixin, ModelUserFieldPermissionMixin,
+                        FormView):
     template_name = 'project/project_deploy.html'
     form_class = ProjectDeployForm
     success_url = reverse_lazy('index')
