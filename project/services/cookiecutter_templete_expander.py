@@ -1,16 +1,17 @@
+import json
 import logging
 import os
-import json
-
 from dataclasses import dataclass
+from typing import Any
 
 import slugify
 from cookiecutter.main import cookiecutter
 from django.contrib.auth.models import User
 from django.http import QueryDict
-from fs.memoryfs import MemoryFS
 
 from project.models import Project
+
+# from fs.memoryfs import MemoryFS
 
 logger = logging.getLogger(__name__)
 
@@ -73,18 +74,19 @@ class CookiecutterConfig:
 @dataclass
 class ExpanderParameters:
     # for the meaning of the parameters see:
-    # https://cookiecutter.readthedocs.io/en/stable/cookiecutter.html#module-cookiecutter.main
+    # https://cookiecutter.readthedocs.io/en/stable/cookiecutter.html#module
+    # -cookiecutter.main
     template: str = "https://github.com/HenryJobst/cookiecutter-django.git"
-    checkout: str = None
+    checkout: str | None = None
     no_input: bool = True
-    extra_context: dict = None
+    extra_context: dict[Any, Any] | None = None
     replay: bool = False
     overwrite_if_exists: bool = True
     output_dir: str = "output/"
-    config_file: str = None
+    config_file: str | None = None
     default_config: bool = False
-    password: str = None
-    directory: str = None
+    password: str | None = None
+    directory: str | None = None
     skip_if_file_exists: bool = False
     accept_hooks: bool = True
 
@@ -94,11 +96,12 @@ class CookieCutterTemplateExpander:
         self.user = user
         self.project = project
         self.post_dict = post_dict
-        self.mem_fs = MemoryFS()
-        self.home_fs = self.mem_fs.makedir("~", recreate=True)
+        # self.mem_fs = MemoryFS()
+        # self.home_fs = self.mem_fs.makedir("~", recreate=True)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.mem_fs.close()
+        pass
+        # self.mem_fs.close()
 
     def expand(self):
         config = self.create_config()
