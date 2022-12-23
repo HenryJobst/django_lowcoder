@@ -1,7 +1,7 @@
 from project.models import Project
 
-SELECTED = 'selected'
-SELECTED_NAME = 'selected_name'
+SELECTED = "selected"
+SELECTED_NAME = "selected_name"
 
 
 def reset_selection(request, pk: int) -> bool:

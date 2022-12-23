@@ -22,20 +22,19 @@ class TimeStampMixin(models.Model):
 
 
 class Project(TimeStampMixin, models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE)
-    name = models.CharField(max_length=MAX_PROJECT_NAME_LENGTH,
-                            unique=True,
-                            validators=[
-                                MinLengthValidator(MIN_PROJECT_NAME_LENGTH)])
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    name = models.CharField(
+        max_length=MAX_PROJECT_NAME_LENGTH,
+        unique=True,
+        validators=[MinLengthValidator(MIN_PROJECT_NAME_LENGTH)],
+    )
     description = models.CharField(max_length=1000)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
     def get_absolute_url(self):
-        return reverse('project_detail', kwargs={'pk': self.pk})
+        return reverse("project_detail", kwargs={"pk": self.pk})
 
 
 class ProjectSettings(models.Model):
@@ -43,23 +42,27 @@ class ProjectSettings(models.Model):
         Project,
         on_delete=models.CASCADE,
         primary_key=True,
-        )
-    domain_name = models.CharField(max_length=100, null=True,
-                                   validators=[
-                                       MinLengthValidator(4)])
-    admin_name = models.CharField(max_length=60, default='admin',
-                                  validators=[
-                                      MinLengthValidator(MIN_USER_NAME_LENGTH)])
-    admin_password = models.CharField(max_length=100,
-                                      validators=[
-                                          MinLengthValidator(
-                                              MIN_PASSWORD_LENGTH)])
-    demo_user_name = models.CharField(max_length=60, null=True, default='demo',
-                                      validators=[MinLengthValidator(
-                                          MIN_USER_NAME_LENGTH)])
-    demo_user_password = models.CharField(max_length=100, null=True,
-                                          validators=[MinLengthValidator(
-                                              MIN_PASSWORD_LENGTH)])
+    )
+    domain_name = models.CharField(
+        max_length=100, null=True, validators=[MinLengthValidator(4)]
+    )
+    admin_name = models.CharField(
+        max_length=60,
+        default="admin",
+        validators=[MinLengthValidator(MIN_USER_NAME_LENGTH)],
+    )
+    admin_password = models.CharField(
+        max_length=100, validators=[MinLengthValidator(MIN_PASSWORD_LENGTH)]
+    )
+    demo_user_name = models.CharField(
+        max_length=60,
+        null=True,
+        default="demo",
+        validators=[MinLengthValidator(MIN_USER_NAME_LENGTH)],
+    )
+    demo_user_password = models.CharField(
+        max_length=100, null=True, validators=[MinLengthValidator(MIN_PASSWORD_LENGTH)]
+    )
 
 
 class TransformationMapping(models.Model):
@@ -67,64 +70,64 @@ class TransformationMapping(models.Model):
         Project,
         on_delete=models.CASCADE,
         primary_key=True,
-        )
+    )
     # files = models.ManyToOneRel('file_id', TransformationFile, )
 
 
 class TransformationFile(models.Model):
     transformation_mapping = models.ForeignKey(
-        TransformationMapping,
-        on_delete=models.CASCADE,
-        null=False)
-    file_path = models.FilePathField('', unique=True,
-                                     allow_folders=False)
+        TransformationMapping, on_delete=models.CASCADE, null=False
+    )
+    file_path = models.FilePathField("", unique=True, allow_folders=False)
     file = models.BinaryField()
 
 
 class TransformationSheet(models.Model):
     transformation_file = models.ForeignKey(
-        TransformationFile,
-        on_delete=models.CASCADE)
+        TransformationFile, on_delete=models.CASCADE
+    )
     index = models.IntegerField()
 
 
 class TransformationHeadline(models.Model):
     transformation_sheet = models.ForeignKey(
-        TransformationSheet,
-        on_delete=models.CASCADE)
+        TransformationSheet, on_delete=models.CASCADE
+    )
     row_index = models.IntegerField()
 
 
 class TransformationColumn(models.Model):
     column_index = models.IntegerField()
     transformation_headline = models.ForeignKey(
-        TransformationHeadline,
-        on_delete=models.CASCADE)
+        TransformationHeadline, on_delete=models.CASCADE
+    )
 
 
 class Model(models.Model):
-    name = models.CharField(max_length=100, validators=[
-        MinLengthValidator(MIN_MODEL_NAME_LENGTH)])
+    name = models.CharField(
+        max_length=100, validators=[MinLengthValidator(MIN_MODEL_NAME_LENGTH)]
+    )
     transformation_headline = models.ForeignKey(
-        TransformationHeadline,
-        on_delete=models.SET_NULL, null=True)
+        TransformationHeadline, on_delete=models.SET_NULL, null=True
+    )
     transformation_mapping = models.ForeignKey(
-        TransformationMapping,
-        on_delete=models.CASCADE)
+        TransformationMapping, on_delete=models.CASCADE
+    )
     is_main_entity = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]
 
 
 class ModelField(models.Model):
-    name = models.CharField(max_length=100, validators=[
-        MinLengthValidator(MIN_FIELD_NAME_LENGTH)])
+    name = models.CharField(
+        max_length=100, validators=[MinLengthValidator(MIN_FIELD_NAME_LENGTH)]
+    )
     transformation_column = models.ForeignKey(
-        TransformationColumn,
-        on_delete=models.SET_NULL, null=True)
+        TransformationColumn, on_delete=models.SET_NULL, null=True
+    )
     model = models.ForeignKey(Model, on_delete=models.CASCADE)
-    datatype = models.CharField(max_length=60, default='CharField')
+    datatype = models.CharField(max_length=60, default="CharField")
     datatype_length = models.IntegerField(null=True)
     default_value = models.CharField(max_length=100, null=True)
     is_foreign_key = models.BooleanField(default=False)
@@ -136,4 +139,4 @@ class ModelField(models.Model):
     show_in_list = models.BooleanField(default=True)
 
     class Meta:
-        ordering = ['name']
+        ordering = ["name"]

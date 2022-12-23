@@ -7,55 +7,57 @@ from crispy_bootstrap5.bootstrap5 import FloatingField
 
 
 class RegisterForm(UserCreationForm):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.form_method = 'post'
-        self.helper.form_action = 'login'
-        self.helper.form_class = 'form-register'
+        self.helper.form_method = "post"
+        self.helper.form_action = "login"
+        self.helper.form_class = "form-register"
         self.helper.layout = Layout(
             Fieldset(
-                _('Nutzerdaten'),
-                FloatingField('username'),
-                FloatingField('first_name'),
-                FloatingField('last_name'),
-                FloatingField('email'),
-                FloatingField('password1'),
-                FloatingField('password2')
-                ),
-            Submit('submit', _('Registrieren')),
-            )
+                _("Nutzerdaten"),
+                FloatingField("username"),
+                FloatingField("first_name"),
+                FloatingField("last_name"),
+                FloatingField("email"),
+                FloatingField("password1"),
+                FloatingField("password2"),
+            ),
+            Submit("submit", _("Registrieren")),
+        )
 
     class Meta:
         model = User
         fields = [
-            'username',
-            'first_name',
-            'last_name',
-            'email',
-            'password1',
-            'password2',
-            ]
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "password1",
+            "password2",
+        ]
 
 
 class LoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
-        self.helper.form_method = 'post'
-        self.helper.form_action = 'login'
-        self.helper.form_class = 'form-signin w-100 m-auto text-center'
+        self.helper.form_method = "post"
+        self.helper.form_action = "login"
+        self.helper.form_class = "form-signin w-100 m-auto text-center"
         self.helper.layout = Layout(
-            HTML("""<i class="feather-48 mb-4" 
-            data-feather="log-in"></i>"""),
+            HTML(
+                """<i class="feather-48 mb-4" 
+            data-feather="log-in"></i>"""
+            ),
             Fieldset(
-                _('Anmelden'),
-                FloatingField('username'),
-                FloatingField('password'),
-                ),
-            Submit('submit', _('Anmelden')),
-            HTML("""    
+                _("Anmelden"),
+                FloatingField("username"),
+                FloatingField("password"),
+            ),
+            Submit("submit", _("Anmelden")),
+            HTML(
+                """    
             <div class="mt-3">
             <a href="{% url 'password_reset' %}">
             {{_('Passwort vergessen?')}}</a>
@@ -64,11 +66,12 @@ class LoginForm(AuthenticationForm):
             <a href="{% url 'register' %}">
             {{_('Registrieren')}}</a>
             </div>
-            """)
-            )
+            """
+            ),
+        )
 
     class Meta:
         fields = [
-            'username',
-            'password',
-            ]
+            "username",
+            "password",
+        ]

@@ -16,8 +16,9 @@ logger = logging.getLogger(__name__)
 
 
 class CookiecutterConfig:
-    filename = os.path.join(os.getcwd(),
-                            'output/config/cookiecutter-django/config.json')
+    filename = os.path.join(
+        os.getcwd(), "output/config/cookiecutter-django/config.json"
+    )
     config = None
     extra_context = None
 
@@ -30,19 +31,20 @@ class CookiecutterConfig:
     def create_config(self) -> None:
         project: Project = self.project
         self.config = {
-            'project_name': project.name,
-            'project_slug': slugify.slugify(project.name),
-            'description': project.description,
-            'author_name': self.user.first_name + ' ' + self.user.last_name,
-            'domain_name': project.project_settings.domain_name if hasattr(
-                project, 'project_settings') else 'domain.de',
-            'email': self.user.email,
-            'version': "0.0.1",
-            'open_source_license': 'Not open source',
-            'timezone': 'UTC',
+            "project_name": project.name,
+            "project_slug": slugify.slugify(project.name),
+            "description": project.description,
+            "author_name": self.user.first_name + " " + self.user.last_name,
+            "domain_name": project.project_settings.domain_name
+            if hasattr(project, "project_settings")
+            else "domain.de",
+            "email": self.user.email,
+            "version": "0.0.1",
+            "open_source_license": "Not open source",
+            "timezone": "UTC",
             "windows": "n",
             "use_pycharm": "n",
-            "use_docker": "y" if self.post_dict['type'] == '1' else "n",
+            "use_docker": "y" if self.post_dict["type"] == "1" else "n",
             "django_port": "8001",
             "postgresql_version": "14",
             "cloud_provider": "None",
@@ -59,14 +61,12 @@ class CookiecutterConfig:
             "keep_local_envs_in_vcs": "y",
             "debug": "n",
             "_template": "gh:cookiecutter/cookiecutter-django",
-            "_output_dir": os.path.join(os.getcwd(), 'output/'),
-            'cookiecutters_dir': os.path.join(os.getcwd(),
-                                              'output/cookiecutters/'),
-            'replay_dir': os.path.join(os.getcwd(),
-                                       'output/cookiecutter_replay/'),
-            }
+            "_output_dir": os.path.join(os.getcwd(), "output/"),
+            "cookiecutters_dir": os.path.join(os.getcwd(), "output/cookiecutters/"),
+            "replay_dir": os.path.join(os.getcwd(), "output/cookiecutter_replay/"),
+        }
 
-        with open(self.filename, 'w') as f:
+        with open(self.filename, "w") as f:
             f.write(json.dumps(self.config, sort_keys=False))
 
 
@@ -74,13 +74,13 @@ class CookiecutterConfig:
 class ExpanderParameters:
     # for the meaning of the parameters see:
     # https://cookiecutter.readthedocs.io/en/stable/cookiecutter.html#module-cookiecutter.main
-    template: str = 'https://github.com/HenryJobst/cookiecutter-django.git'
+    template: str = "https://github.com/HenryJobst/cookiecutter-django.git"
     checkout: str = None
     no_input: bool = True
     extra_context: dict = None
     replay: bool = False
     overwrite_if_exists: bool = True
-    output_dir: str = 'output/'
+    output_dir: str = "output/"
     config_file: str = None
     default_config: bool = False
     password: str = None
@@ -112,19 +112,21 @@ class CookieCutterTemplateExpander:
     def _expand(params: ExpanderParameters):
         # os.environ.setdefault('', '')
         # Create expanded template
-        cookiecutter(params.template,
-                     checkout=params.checkout,
-                     no_input=params.no_input,
-                     extra_context=params.extra_context,
-                     replay=params.replay,
-                     overwrite_if_exists=params.overwrite_if_exists,
-                     output_dir=params.output_dir,
-                     config_file=params.config_file,
-                     default_config=params.default_config,
-                     password=params.password,
-                     directory=params.directory,
-                     skip_if_file_exists=params.skip_if_file_exists,
-                     accept_hooks=params.accept_hooks)
+        cookiecutter(
+            params.template,
+            checkout=params.checkout,
+            no_input=params.no_input,
+            extra_context=params.extra_context,
+            replay=params.replay,
+            overwrite_if_exists=params.overwrite_if_exists,
+            output_dir=params.output_dir,
+            config_file=params.config_file,
+            default_config=params.default_config,
+            password=params.password,
+            directory=params.directory,
+            skip_if_file_exists=params.skip_if_file_exists,
+            accept_hooks=params.accept_hooks,
+        )
 
     def create_config(self) -> CookiecutterConfig:
         config = CookiecutterConfig(self.user, self.project, self.post_dict)
