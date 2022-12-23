@@ -14,21 +14,29 @@ fs = "^2.4.16"
 django-braces = "^1.15.0"
 django-debug-toolbar = "^3.8.1"
 django-extensions = "^3.2.1"
-pipx = {version = "^1.1.0", optional = true}
-black = {version = "^22.12.0", optional = true}
-types-python-slugify = {version = "^7.0.0", optional = true}
+pipx = {version = "^1.1.0"}
+black = {version = "^22.12.0"}
+types-python-slugify = {version = "^7.0.0"}
+pytest = "^7.2.0"
+exceptiongroup = "^1.1.0"
+django-environ = "^0.9.0"
 
 [tool.poetry.dev-dependencies]
-tox = {version = "^4.0.16", optional = true}
-pytest = {version = "^7.2.0", optional = true}
-mypy = {version = "^0.991", optional = true}
+tox = {version = "^4.0.16"}
+pytest = {version = "^7.2.0"}
+mypy = {version = "^0.991"}
+exceptiongroup = {version = "^1.1.0"}
+pytest-django = "^4.5.2"
+django-stubs="^1.13.1"
+pytest-sugar="^0.9.6"
+factory-boy = "^3.2.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-addopts = "--ignore output --ds=django_lowcoder.settings --reuse-db"
+addopts = "--ignore output --ds=django_lowcoder.config.settings.test --reuse-db"
 python_files = "tests.py, test_*.py"
 filterwarnings = [
     "error",
