@@ -30,7 +30,7 @@ class Project(TimeStampMixin, models.Model):
         max_length=MAX_PROJECT_NAME_LENGTH,
         unique=True,
         validators=[MinLengthValidator(MIN_PROJECT_NAME_LENGTH)],
-        )
+    )
     description = models.CharField(max_length=1000)
 
     class Meta:
@@ -66,33 +66,33 @@ class ProjectSettings(models.Model):
         Project,
         on_delete=models.CASCADE,
         primary_key=True,
-        )
+    )
     domain_name = models.CharField(
         max_length=100, null=True, validators=[MinLengthValidator(4)]
-        )
+    )
     admin_name = models.CharField(
         max_length=60,
         default="admin",
         validators=[MinLengthValidator(MIN_USER_NAME_LENGTH)],
-        )
+    )
     admin_password = models.CharField(
         max_length=100,
         default=generate_random_admin_password(),
-        validators=[MinLengthValidator(MIN_PASSWORD_LENGTH)]
-        )
+        validators=[MinLengthValidator(MIN_PASSWORD_LENGTH)],
+    )
     demo_user_name = models.CharField(
         max_length=60,
         null=True,
         default="demo",
         validators=[MinLengthValidator(MIN_USER_NAME_LENGTH)],
-        )
+    )
     demo_user_password = models.CharField(
         max_length=100,
         null=True,
         default=generate_random_admin_password(),
         validators=[NullOrMinLengthValidator(MIN_PASSWORD_LENGTH)],
-        help_text="Kein Passwort setzen, um keinen Demo-User anzulegen!"
-        )
+        help_text="Kein Passwort setzen, um keinen Demo-User anzulegen!",
+    )
 
     def get_absolute_url(self):
         return reverse("project_detail", kwargs={"pk": self.project.id})
@@ -103,14 +103,14 @@ class TransformationMapping(models.Model):
         Project,
         on_delete=models.CASCADE,
         primary_key=True,
-        )
+    )
     # files = models.ManyToOneRel('file_id', TransformationFile, )
 
 
 class TransformationFile(models.Model):
     transformation_mapping = models.ForeignKey(
         TransformationMapping, on_delete=models.CASCADE, null=False
-        )
+    )
     file_path = models.FilePathField("", unique=True, allow_folders=False)
     file = models.BinaryField()
 
@@ -118,14 +118,14 @@ class TransformationFile(models.Model):
 class TransformationSheet(models.Model):
     transformation_file = models.ForeignKey(
         TransformationFile, on_delete=models.CASCADE
-        )
+    )
     index = models.IntegerField()
 
 
 class TransformationHeadline(models.Model):
     transformation_sheet = models.ForeignKey(
         TransformationSheet, on_delete=models.CASCADE
-        )
+    )
     row_index = models.IntegerField()
 
 
@@ -133,43 +133,45 @@ class TransformationColumn(models.Model):
     column_index = models.IntegerField()
     transformation_headline = models.ForeignKey(
         TransformationHeadline, on_delete=models.CASCADE
-        )
+    )
 
 
 class Model(models.Model):
     name = models.CharField(
         max_length=100, validators=[MinLengthValidator(MIN_MODEL_NAME_LENGTH)]
-        )
+    )
     transformation_headline = models.ForeignKey(
         TransformationHeadline, on_delete=models.SET_NULL, null=True
-        )
+    )
     transformation_mapping = models.ForeignKey(
         TransformationMapping, on_delete=models.CASCADE, null=False
-        )
+    )
     is_main_entity = models.BooleanField(default=False)
-    index = models.PositiveSmallIntegerField(null=True,
-                                             validators=[MinValueValidator(1)])
+    index = models.PositiveSmallIntegerField(
+        null=True, validators=[MinValueValidator(1)]
+    )
 
     class Meta:
         ordering = ["index"]
         unique_together = ["index", "transformation_mapping"]
 
     def unique_error_message(self, model_class, unique_check):
-        if model_class == type(self) and unique_check == ('index',
-                                                          'transformation_mapping'):
+        if model_class == type(self) and unique_check == (
+            "index",
+            "transformation_mapping",
+        ):
             return "%(model_name)s's %(field_labels)s are not unique."
         else:
-            return super(Model, self).unique_error_message(model_class,
-                                                           unique_check)
+            return super(Model, self).unique_error_message(model_class, unique_check)
 
 
 class ModelField(models.Model):
     name = models.CharField(
         max_length=100, validators=[MinLengthValidator(MIN_FIELD_NAME_LENGTH)]
-        )
+    )
     transformation_column = models.ForeignKey(
         TransformationColumn, on_delete=models.SET_NULL, null=True
-        )
+    )
     model = models.ForeignKey(Model, on_delete=models.CASCADE)
     datatype = models.CharField(max_length=60, default="CharField")
     datatype_length = models.IntegerField(null=True)
@@ -181,17 +183,18 @@ class ModelField(models.Model):
     use_index = models.BooleanField(default=False)
     validation_pattern = models.CharField(max_length=100)
     show_in_list = models.BooleanField(default=True)
-    index = models.PositiveSmallIntegerField(null=True,
-                                             validators=[MinValueValidator(1)])
+    index = models.PositiveSmallIntegerField(
+        null=True, validators=[MinValueValidator(1)]
+    )
 
     class Meta:
         ordering = ["index"]
         unique_together = ["index", "model"]
 
     def unique_error_message(self, model_class, unique_check):
-        if model_class == type(self) and unique_check == ('index',
-                                                          'model'):
+        if model_class == type(self) and unique_check == ("index", "model"):
             return "%(model_name)s's %(field_labels)s are not unique."
         else:
-            return super(ModelField, self).unique_error_message(model_class,
-                                                                unique_check)
+            return super(ModelField, self).unique_error_message(
+                model_class, unique_check
+            )

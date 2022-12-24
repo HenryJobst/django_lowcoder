@@ -12,7 +12,6 @@ pytestmark = pytest.mark.django_db
 
 
 class TestProjectDetailView:
-
     @pytest.mark.skip(reason="not working because of missing custom user etc.")
     def test_authenticated(self, rf: RequestFactory):
         request = rf.get("/fake-url/")

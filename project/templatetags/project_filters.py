@@ -19,10 +19,14 @@ def iconbool(value):
 
     """
     if bool(value):
-        result = '<i class="feather-24" data-feather="check" title="Ja" aria-hidden="true"></i>' \
-                 '<span class="visually-hidden">Ja</span>'
+        result = (
+            '<i class="feather-24" data-feather="check" title="Ja" aria-hidden="true"></i>'
+            '<span class="visually-hidden">Ja</span>'
+        )
     else:
-        result = '<i class="feather-24" data-feather="" title="Nein" aria-hidden="true"></i>' \
-                 '<span class="visually-hidden">Nein</span>'
+        result = (
+            '<i class="feather-24" data-feather="" title="Nein" aria-hidden="true"></i>'
+            '<span class="visually-hidden">Nein</span>'
+        )
 
     return mark_safe(result)

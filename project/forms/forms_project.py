@@ -102,19 +102,24 @@ class ProjectEditSettingsForm(ModelForm):
                 FloatingField("demo_user_name"),
                 FloatingField("demo_user_password"),
                 FloatingField("domain_name"),
-                ),
+            ),
             Submit("submit", _("Speichern")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'index\' %}">'
                 + _("Abbrechen")
                 + "</a>"
-                ),
-            )
+            ),
+        )
 
     class Meta:
         model = ProjectSettings
-        fields = ["admin_name", "admin_password", "demo_user_name",
-                  "demo_user_password", "domain_name"]
+        fields = [
+            "admin_name",
+            "admin_password",
+            "demo_user_name",
+            "demo_user_password",
+            "domain_name",
+        ]
 
 
 class ProjectEditModelForm(ModelForm):
@@ -127,17 +132,16 @@ class ProjectEditModelForm(ModelForm):
             Fieldset(
                 _("Fachobjekt"),
                 FloatingField("name"),
-                FloatingField(Field("is_main_entity", label=_(
-                    "Haupt-Fachobjekt"))),
+                FloatingField(Field("is_main_entity", label=_("Haupt-Fachobjekt"))),
                 FloatingField("index"),
-                ),
+            ),
             Submit("submit", _("Speichern")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'index\' %}">'
                 + _("Abbrechen")
                 + "</a>"
-                ),
-            )
+            ),
+        )
 
     class Meta:
         model = Model
@@ -155,15 +159,13 @@ class ProjectDeleteModelForm(ModelForm):
                 """<p>Wollen Sie das Fachobjekt <b>{{ object.name }}</b> 
                 wirklich 
             löschen?</p>"""
-                ),
+            ),
             Submit("submit", _("Bestätigen")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'project_detail\' object.id '
-                '%}">'
-                + _("Abbrechen")
-                + "</a>"
-                ),
-            )
+                '%}">' + _("Abbrechen") + "</a>"
+            ),
+        )
 
     class Meta:
         model = Model
