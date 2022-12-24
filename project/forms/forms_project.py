@@ -42,7 +42,7 @@ class ProjectDeleteForm(ModelForm):
         self.helper.form_class = "w-100 m-auto text-center"
         self.helper.layout = Layout(
             HTML(
-                """<p>Wollen Sie das Projekt <b>{{ object.name }}</b> wirklich 
+                """<p>Wollen Sie das Projekt <b>{{ object.name }}</b> wirklich
             löschen?</p>"""
             ),
             Submit("submit", _("Bestätigen")),
@@ -130,9 +130,9 @@ class ProjectEditModelForm(ModelForm):
         self.helper.form_class = "m-auto"
         self.helper.layout = Layout(
             Fieldset(
-                _("Fachobjekt"),
+                _("Tabelle"),
                 FloatingField("name"),
-                FloatingField(Field("is_main_entity", label=_("Haupt-Fachobjekt"))),
+                FloatingField(Field("is_main_entity", label=_("Haupt-Tabelle"))),
                 FloatingField("index"),
             ),
             Submit("submit", _("Speichern")),
@@ -156,8 +156,8 @@ class ProjectDeleteModelForm(ModelForm):
         self.helper.form_class = "w-100 m-auto text-center"
         self.helper.layout = Layout(
             HTML(
-                """<p>Wollen Sie das Fachobjekt <b>{{ object.name }}</b> 
-                wirklich 
+                """<p>Wollen Sie die Tabelle <b>{{ object.name }}</b>
+                wirklich
             löschen?</p>"""
             ),
             Submit("submit", _("Bestätigen")),
