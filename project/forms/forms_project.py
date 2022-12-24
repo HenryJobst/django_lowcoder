@@ -2,11 +2,11 @@ from typing import List
 
 from crispy_bootstrap5.bootstrap5 import FloatingField
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Fieldset, HTML
+from crispy_forms.layout import Submit, Layout, Fieldset, HTML, Field
 from django.forms import ModelForm, TypedChoiceField, RadioSelect, Form
 from django.utils.translation import gettext_lazy as _
 
-from project.models import Project
+from project.models import Project, ProjectSettings, Model
 
 
 class ProjectEditForm(ModelForm):
@@ -86,3 +86,85 @@ class ProjectDeployForm(Form):
 
     class Meta:
         fields = ["type"]
+
+
+class ProjectEditSettingsForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_method = "post"
+        self.helper.form_class = "m-auto"
+        self.helper.layout = Layout(
+            Fieldset(
+                _("weitere Projekteinstellungen"),
+                FloatingField("admin_name"),
+                FloatingField("admin_password"),
+                FloatingField("demo_user_name"),
+                FloatingField("demo_user_password"),
+                FloatingField("domain_name"),
+                ),
+            Submit("submit", _("Speichern")),
+            HTML(
+                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
+                + _("Abbrechen")
+                + "</a>"
+                ),
+            )
+
+    class Meta:
+        model = ProjectSettings
+        fields = ["admin_name", "admin_password", "demo_user_name",
+                  "demo_user_password", "domain_name"]
+
+
+class ProjectEditModelForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_method = "post"
+        self.helper.form_class = "m-auto"
+        self.helper.layout = Layout(
+            Fieldset(
+                _("Fachobjekt"),
+                FloatingField("name"),
+                FloatingField(Field("is_main_entity", label=_(
+                    "Haupt-Fachobjekt"))),
+                FloatingField("index"),
+                ),
+            Submit("submit", _("Speichern")),
+            HTML(
+                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
+                + _("Abbrechen")
+                + "</a>"
+                ),
+            )
+
+    class Meta:
+        model = Model
+        fields = ["name", "is_main_entity", "index"]
+
+
+class ProjectDeleteModelForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_method = "post"
+        self.helper.form_class = "w-100 m-auto text-center"
+        self.helper.layout = Layout(
+            HTML(
+                """<p>Wollen Sie das Fachobjekt <b>{{ object.name }}</b> 
+                wirklich 
+            löschen?</p>"""
+                ),
+            Submit("submit", _("Bestätigen")),
+            HTML(
+                '<a class="btn btn-secondary" href="{% url \'project_detail\' object.id '
+                '%}">'
+                + _("Abbrechen")
+                + "</a>"
+                ),
+            )
+
+    class Meta:
+        model = Model
+        fields: List = []

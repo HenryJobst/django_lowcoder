@@ -17,4 +17,4 @@ class IndexView(LoginRequiredMixin, ListView):
             else:
                 return Project.objects.filter(user=user)
         else:
-            return QuerySet()
+            return QuerySet(Project)

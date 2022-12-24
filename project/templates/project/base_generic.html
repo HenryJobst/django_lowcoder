@@ -116,20 +116,37 @@
                                   class="align-text-bottom"></span>
                             Projekte
                         </a>
+                        <hr/>
                     </li>
                     {% if 'selected' in request.session and request.session.selected != 0 %}
-                    <hr/>
-                    <li><a class="nav-link active" aria-current="page" href="#">
+                    <li><a class="nav-link active" aria-current="page"
+                           href="{% url 'project_detail' request.session.selected %}">
                             <span data-feather="book-open"
                                   class="align-text-bottom"></span>
                             {{ request.session.selected_name }}
                         </a>
                     </li>
+                    <ul class="nav flex-column">
+                    <li><a class="nav-link active" aria-current="page"
+                           href="{% url 'project_update_settings' request.session.selected %}">
+                            <span data-feather="settings"
+                                  class="align-text-bottom"></span>
+                        Erw. Einstellungen
+                    </a>
+                    </li>
+                    <li><a class="nav-link active" aria-current="page"
+                           href="{% url 'project_list_model' request.session.selected %}">
+                            <span data-feather="list"
+                                  class="align-text-bottom"></span>
+                        Fachobjekte
+                    </a>
+                    </li>
+                    </ul>
                     {% endif %}
                     {% if user.is_staff %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'admin:index' %}">
-                            <span data-feather="settings"
+                            <span data-feather="tool"
                                   class="align-text-bottom"></span>
                             Admin-Bereich
                         </a>
