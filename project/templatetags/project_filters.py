@@ -25,7 +25,6 @@ def iconbool(value):
         )
     else:
         result = (
-            '<i class="feather-24" data-feather="" title="Nein" aria-hidden="true"></i>'
             '<span class="visually-hidden">Nein</span>'
         )
 
