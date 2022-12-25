@@ -15,6 +15,7 @@
         <tr>
             <th scope="col">Name</th>
             <th scope="col">Beschreibung</th>
+            <th scope="col">Tabellen</th>
             <th scope="col">Erzeugt</th>
             <th scope="col">Bearbeitet</th>
             <th scope="col">Aktionen</th>
@@ -29,6 +30,9 @@
             </td>
             <td>
                 {{project.description}}
+            </td>
+            <td>
+              {{ project.transformationmapping.models.all|length }}
             </td>
             <td>
                 {{project.created_at|date:'SHORT_DATETIME_FORMAT'}}

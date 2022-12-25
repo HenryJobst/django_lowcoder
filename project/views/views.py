@@ -20,7 +20,7 @@ def favicon(request: HtmxHttpRequest) -> HttpResponse:
     return HttpResponse(
         (
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">'
-            + '<text y=".9em" font-size="90">&#8987;</text>'
+            + '<text y=".9em" font-size="90">&#9889;</text>'
             + "</svg>"
         ),
         content_type="image/svg+xml",

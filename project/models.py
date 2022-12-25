@@ -25,13 +25,17 @@ class TimeStampMixin(models.Model):
 
 
 class Project(TimeStampMixin, models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+"
+    )
     name = models.CharField(
         max_length=MAX_PROJECT_NAME_LENGTH,
         unique=True,
+        null=False,
+        blank=False,
         validators=[MinLengthValidator(MIN_PROJECT_NAME_LENGTH)],
     )
-    description = models.CharField(max_length=1000)
+    description = models.CharField(max_length=1000, null=True, blank=True)
 
     class Meta:
         ordering = ["name"]
@@ -83,13 +87,14 @@ class ProjectSettings(models.Model):
     demo_user_name = models.CharField(
         max_length=60,
         null=True,
+        blank=True,
         default="demo",
-        validators=[MinLengthValidator(MIN_USER_NAME_LENGTH)],
+        validators=[NullOrMinLengthValidator(MIN_USER_NAME_LENGTH)],
     )
     demo_user_password = models.CharField(
         max_length=100,
         null=True,
-        default=generate_random_admin_password(),
+        blank=True,
         validators=[NullOrMinLengthValidator(MIN_PASSWORD_LENGTH)],
         help_text="Kein Passwort setzen, um keinen Demo-User anzulegen!",
     )
@@ -144,9 +149,12 @@ class Model(models.Model):
         TransformationHeadline, on_delete=models.SET_NULL, null=True
     )
     transformation_mapping = models.ForeignKey(
-        TransformationMapping, on_delete=models.CASCADE, null=False
+        TransformationMapping,
+        on_delete=models.CASCADE,
+        null=False,
+        related_name="models",
     )
-    is_main_entity = models.BooleanField(default=False)
+    is_main_entity = models.BooleanField("Haupt-Tabelle?", default=False)
     index = models.PositiveSmallIntegerField(
         null=True, validators=[MinValueValidator(1)]
     )
@@ -172,7 +180,7 @@ class ModelField(models.Model):
     transformation_column = models.ForeignKey(
         TransformationColumn, on_delete=models.SET_NULL, null=True
     )
-    model = models.ForeignKey(Model, on_delete=models.CASCADE)
+    model = models.ForeignKey(Model, on_delete=models.CASCADE, related_name="fields")
     datatype = models.CharField(max_length=60, default="CharField")
     datatype_length = models.IntegerField(null=True)
     default_value = models.CharField(max_length=100, null=True)

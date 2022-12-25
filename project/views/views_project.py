@@ -1,14 +1,18 @@
 from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import QuerySet, Max
-from django.http import QueryDict, HttpResponse
+from django.db.models import QuerySet
+from django.http import QueryDict, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.decorators.http import require_http_methods
 from django.views.generic import DetailView, ListView
 from django.views.generic.detail import BaseDetailView
-from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormView
+from django.views.generic.edit import (
+    CreateView,
+    DeleteView,
+    UpdateView,
+    FormView,
+)
 
 from project.forms.forms_project import (
     ProjectEditForm,
@@ -24,7 +28,7 @@ from project.models import (
     generate_random_admin_password,
 )
 from project.services.cookiecutter_templete_expander import CookieCutterTemplateExpander
-from project.services.edit_model import model_up, model_down
+from project.services.edit_model import model_up, model_down, get_max_index
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
 from project.views.views import HtmxHttpRequest
@@ -154,28 +158,37 @@ class ProjectUpdateSettingsView(
         return model_object.project
 
 
-class ProjectCreateModelView(LoginRequiredMixin, CreateView):
-    model = Model
-    form_class = ProjectEditModelForm
-
+class ProjectModelViewMixin:
     # noinspection PyMethodMayBeStatic
     def get_user_holder(self, model_object: Model):
         return model_object.transformation_mapping.project
+
+    # noinspection PyUnresolvedReferences
+    def get_success_url(self) -> str:
+        return get_model_success_url(self.object)
+
+
+class ProjectCreateModelView(LoginRequiredMixin, ProjectModelViewMixin, CreateView):
+    model = Model
+    form_class = ProjectEditModelForm
 
     def form_valid(self, form):
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
         tm, created = TransformationMapping.objects.get_or_create(project=project)
         form.instance.transformation_mapping = tm
+        unset_main_entity(form.instance)
         return super().form_valid(form)
 
     def get_initial(self) -> dict[str, Any]:
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
         tm = TransformationMapping.objects.filter(project=project).get()
         if tm:
-            if not self.object or not self.object.index or self.object.index == 0:
-                max_ = Model.objects.filter(transformation_mapping=tm).aggregate(
-                    max=Max("index")
-                )["max"]
+            if (
+                "index" not in self.initial
+                or not self.initial["index"]
+                or self.initial["index"] == 0
+            ):
+                max_ = get_max_index(tm)
                 if max_:
                     self.initial["index"] = max_ + 1
                     main_entity = Model.objects.filter(
@@ -192,44 +205,50 @@ class ProjectCreateModelView(LoginRequiredMixin, CreateView):
 
         return super().get_initial()
 
-    def get_success_url(self) -> str:
-        return reverse_lazy(
-            "project_list_model",
-            kwargs={"pk": self.object.transformation_mapping.project.id},
-        )
+
+def unset_main_entity(model: Model) -> None:
+    if model.is_main_entity:
+        # unset all other models to not main entity
+        Model.objects.filter(
+            transformation_mapping=model.transformation_mapping, is_main_entity=1
+        ).update(is_main_entity=0)
+
+
+def set_new_main_entity(model: Model) -> None:
+    main_entity = Model.objects.filter(
+        transformation_mapping=model.transformation_mapping, is_main_entity=1
+    ).first()
+    if not main_entity or main_entity == model:
+        # set main entity to the one with the lowest index
+        lowest_entity: Model = Model.objects.filter(
+            transformation_mapping=model.transformation_mapping
+        ).first()
+        lowest_entity.is_main_entity = 1
+        lowest_entity.save()
 
 
 class ProjectUpdateModelView(
-    LoginRequiredMixin, ModelUserFieldPermissionMixin, UpdateView
+    LoginRequiredMixin, ProjectModelViewMixin, ModelUserFieldPermissionMixin, UpdateView
 ):
     model = Model
     form_class = ProjectEditModelForm
     success_url = reverse_lazy("project_detail")
 
-    # noinspection PyMethodMayBeStatic
-    def get_user_holder(self, model_object: Model):
-        return model_object.transformation_mapping.project
+    def form_valid(self, form) -> HttpResponse:
+        unset_main_entity(self.object)
+        return super().form_valid(form)
 
 
-class ProjectModelUpView(LoginRequiredMixin, ModelUserFieldPermissionMixin, UpdateView):
+class ProjectModelUpView(
+    LoginRequiredMixin, ProjectModelViewMixin, ModelUserFieldPermissionMixin, UpdateView
+):
     model = Model
     fields = []
 
-    # noinspection PyMethodMayBeStatic
-    def get_user_holder(self, model_object: Model):
-        return model_object.transformation_mapping.project
-
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def post(self, request: HtmxHttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        pk: int = model_up(*args, **kwargs)
-        # return redirect(reverse_lazy("project_list_model"), kwargs={"pk": pk})
-        return super().post(request, *args, **kwargs)
-
-    def get_success_url(self) -> str:
-        return reverse_lazy(
-            "project_list_model",
-            kwargs={"pk": self.object.transformation_mapping.project.id},
-        )
+        model: Model = model_up(*args, **kwargs)
+        return HttpResponseRedirect(get_model_success_url(model))
 
 
 class ProjectModelDownView(
@@ -238,22 +257,29 @@ class ProjectModelDownView(
     model = Model
     fields = []
 
-    # noinspection PyMethodMayBeStatic
-    def get_user_holder(self, model_object: Model):
-        return model_object.transformation_mapping.project
-
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        model_down(kwargs.get("pk", 0))
-        return redirect(reverse_lazy("project_list_model"), kwargs=kwargs)
+        model: Model = model_down(*args, **kwargs)
+        return HttpResponseRedirect(get_model_success_url(model))
+
+
+def get_model_success_url(model: Model) -> str:
+    return reverse_lazy(
+        "project_list_model",
+        kwargs={"pk": model.transformation_mapping.project.id},
+    )
 
 
 class ProjectDeleteSettingsView(
-    LoginRequiredMixin, ModelUserFieldPermissionMixin, DeleteView
+    LoginRequiredMixin, ProjectModelViewMixin, ModelUserFieldPermissionMixin, DeleteView
 ):
     model = Model
     form_class = ProjectDeleteModelForm
     success_url = reverse_lazy("project_detail")
+
+    def delete(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        set_new_main_entity(self.object)
+        return super().delete(request, *args, **kwargs)
 
 
 class ProjectListModelView(LoginRequiredMixin, ListView):

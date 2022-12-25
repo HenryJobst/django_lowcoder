@@ -64,8 +64,11 @@
         <span class="me-1 visually-hidden" style="width: 24px"/>
         {% endif %}
         {% if model_list|length > model.index %}
-        <a title="Runter" role="button" type="submit"
-           href="{% url 'project_model_down' model.id %}"><i
+        <a hx-ext="debug" hx-post="{% url 'project_model_down' model.id %}"
+           hx-trigger="click" hx-target="#model-table" hx-select="#model-table" hx-swap="innerHTML"
+           title="Runter"
+           role="button"
+           href="#"><i
           class="feather-24 align-top me-1"
           data-feather="arrow-down"></i></a>
         {% else %}

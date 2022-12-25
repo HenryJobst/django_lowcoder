@@ -118,9 +118,9 @@
                                   class="align-text-bottom"></span>
                             Projekte
                         </a>
-                        <hr/>
                     </li>
                     {% if 'selected' in request.session and request.session.selected != 0 %}
+                    <ul class="nav nav-item flex-column ps-2">
                     <li><a class="nav-link active" aria-current="page"
                            href="{% url 'project_detail' request.session.selected %}">
                             <span data-feather="book-open"
@@ -128,12 +128,12 @@
                             {{ request.session.selected_name }}
                         </a>
                     </li>
-                    <ul class="nav flex-column">
+                    <ul class="nav nav-item flex-column ps-2">
                     <li><a class="nav-link active" aria-current="page"
                            href="{% url 'project_update_settings' request.session.selected %}">
-                            <span data-feather="settings"
+                            <span data-feather="more-horizontal"
                                   class="align-text-bottom"></span>
-                        + Einstellungen
+                        Einstellungen
                     </a>
                     </li>
                     <li><a class="nav-link active" aria-current="page"
@@ -143,6 +143,7 @@
                         Tabellen
                     </a>
                     </li>
+                    </ul>
                     </ul>
                     {% endif %}
                     {% if user.is_staff %}
