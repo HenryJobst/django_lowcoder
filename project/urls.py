@@ -13,12 +13,15 @@ from project.views.views_project import (
     ProjectDeleteSettingsView,
     ProjectListModelView,
     ProjectSelectModelView,
+    ProjectModelUpView,
+    ProjectModelDownView,
 )
 from project.views.views_registration import LoginView, RegisterView
-from project.views.views import IndexView
+from project.views.views import IndexView, favicon
 
 urlpatterns = [
     path("", IndexView.as_view(), name="index"),
+    path("favicon.ico", favicon),
     path("<int:pk>", ProjectDetailView.as_view(), name="project_detail"),
     path("create", ProjectCreateView.as_view(), name="project_create"),
     path("<int:pk>/select", ProjectSelectView.as_view(), name="project_select"),
@@ -52,5 +55,15 @@ urlpatterns = [
         "model/<int:pk>/select",
         ProjectSelectModelView.as_view(),
         name="project_select_model",
+    ),
+    path(
+        "model/<int:pk>/up",
+        ProjectModelUpView.as_view(),
+        name="project_model_up",
+    ),
+    path(
+        "model/<int:pk>/down",
+        ProjectModelDownView.as_view(),
+        name="project_model_down",
     ),
 ]

@@ -1,7 +1,7 @@
 {% extends "project/base_generic.html" %}
 
 {% block content %}
-<h1 class="h2">Projekte</h1>
+<h1 class="h2">Projekte ({{ project_list|length }})</h1>
 <div>
     <a role="button"
        href="{% url 'project_create' %}"><i

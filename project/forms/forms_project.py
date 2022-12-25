@@ -133,7 +133,6 @@ class ProjectEditModelForm(ModelForm):
                 _("Tabelle"),
                 FloatingField("name"),
                 FloatingField(Field("is_main_entity", label=_("Haupt-Tabelle"))),
-                FloatingField("index"),
             ),
             Submit("submit", _("Speichern")),
             HTML(
@@ -145,7 +144,7 @@ class ProjectEditModelForm(ModelForm):
 
     class Meta:
         model = Model
-        fields = ["name", "is_main_entity", "index"]
+        fields = ["name", "is_main_entity"]
 
 
 class ProjectDeleteModelForm(ModelForm):

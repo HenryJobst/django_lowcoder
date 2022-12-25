@@ -5,3 +5,5 @@ poetry.lock
 output
 /myapp_models.png
 /.tox/
+/.mypy_cache/
+/.pytest_cache/

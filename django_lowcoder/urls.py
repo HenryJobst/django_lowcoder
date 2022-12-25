@@ -25,5 +25,6 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     path("admin/", admin.site.urls),
     path("", lambda request: redirect("project/")),
+    path("favicon.ico", lambda request: redirect("project/favicon.ico")),
     path("__debug__/", include("debug_toolbar.urls")),
 ]

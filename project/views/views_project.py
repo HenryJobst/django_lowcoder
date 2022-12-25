@@ -2,9 +2,10 @@ from typing import Any
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet, Max
-from django.http import QueryDict
+from django.http import QueryDict, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.views.decorators.http import require_http_methods
 from django.views.generic import DetailView, ListView
 from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView, FormView
@@ -23,8 +24,10 @@ from project.models import (
     generate_random_admin_password,
 )
 from project.services.cookiecutter_templete_expander import CookieCutterTemplateExpander
+from project.services.edit_model import model_up, model_down
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
+from project.views.views import HtmxHttpRequest
 
 
 class ProjectDetailView(LoginRequiredMixin, ModelUserFieldPermissionMixin, DetailView):
@@ -202,6 +205,47 @@ class ProjectUpdateModelView(
     model = Model
     form_class = ProjectEditModelForm
     success_url = reverse_lazy("project_detail")
+
+    # noinspection PyMethodMayBeStatic
+    def get_user_holder(self, model_object: Model):
+        return model_object.transformation_mapping.project
+
+
+class ProjectModelUpView(LoginRequiredMixin, ModelUserFieldPermissionMixin, UpdateView):
+    model = Model
+    fields = []
+
+    # noinspection PyMethodMayBeStatic
+    def get_user_holder(self, model_object: Model):
+        return model_object.transformation_mapping.project
+
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def post(self, request: HtmxHttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        pk: int = model_up(*args, **kwargs)
+        # return redirect(reverse_lazy("project_list_model"), kwargs={"pk": pk})
+        return super().post(request, *args, **kwargs)
+
+    def get_success_url(self) -> str:
+        return reverse_lazy(
+            "project_list_model",
+            kwargs={"pk": self.object.transformation_mapping.project.id},
+        )
+
+
+class ProjectModelDownView(
+    LoginRequiredMixin, ModelUserFieldPermissionMixin, UpdateView
+):
+    model = Model
+    fields = []
+
+    # noinspection PyMethodMayBeStatic
+    def get_user_holder(self, model_object: Model):
+        return model_object.transformation_mapping.project
+
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        model_down(kwargs.get("pk", 0))
+        return redirect(reverse_lazy("project_list_model"), kwargs=kwargs)
 
 
 class ProjectDeleteSettingsView(

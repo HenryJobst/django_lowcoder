@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="de">
 {% load static %}
+{% load django_htmx %}
+<html lang="de">
 <head>
     {% block title %}<title>Django-LowCoder</title>{% endblock %}
     <meta charset="utf-8">
@@ -64,8 +65,9 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
     <link rel="stylesheet" href="{% static 'css/register.css' %}">
+    {% django_htmx_script %}
 </head>
-<body>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
     <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6" href="#">Django
         - LowCoder</a>
@@ -157,7 +159,7 @@
             </div>
         </nav>
         {% endif %}
-        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <main id="main" class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
                 <div class="col-sm-10 ">{% block content %}{% endblock %}</div>
             </div>
@@ -166,8 +168,10 @@
 </div>
  <script src="{% static 'js/bootstrap.min.js' %}"></script>
  <script src="{% static 'js/feather.min.js' %}"></script>
+ <script src="{% static 'js/htmx.min.js' %}" defer></script>
+ <script src="{% static 'js/htmx/debug.js' %}" defer></script>
 <script>
-    feather.replace()
+    feather.replace();
 </script>
 </body>
 </html>

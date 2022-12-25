@@ -24,8 +24,6 @@ def iconbool(value):
             '<span class="visually-hidden">Ja</span>'
         )
     else:
-        result = (
-            '<span class="visually-hidden">Nein</span>'
-        )
+        result = '<span class="visually-hidden">Nein</span>'
 
     return mark_safe(result)
