@@ -6,29 +6,26 @@ from django.test import RequestFactory
 from django.urls import reverse
 
 from project.tests.factories import UserFactory
-from project.views.views_project import ProjectDetailView
+from project.views.views import IndexView
 
 pytestmark = pytest.mark.django_db
 
 
-class TestProjectDetailView:
-    @pytest.mark.skip(reason="not working because of missing custom user etc.")
+class TestIndexView:
     def test_authenticated(self, rf: RequestFactory):
-        request = rf.get("/fake-url/")
+        request = rf.get("/")
         request.user = UserFactory()
 
-        response = ProjectDetailView().as_view()
-
+        response = IndexView.as_view()(request)
         assert response.status_code == 200
 
-    @pytest.mark.skip(reason="not working because of missing custom user etc.")
     def test_not_authenticated(self, rf: RequestFactory):
-        request = rf.get("/fake-url/")
+        request = rf.get("/")
         request.user = AnonymousUser()
 
-        response = ProjectDetailView().as_view()
-        login_url = reverse(settings.LOGIN_URL)
+        response = IndexView.as_view()(request)
+        login_url = settings.LOGIN_URL
 
         assert isinstance(response, HttpResponseRedirect)
         assert response.status_code == 302
-        assert response.url == f"{login_url}?next=/fake-url/"
+        assert response.url == f"{login_url}?next=/"
