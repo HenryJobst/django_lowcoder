@@ -28,7 +28,15 @@ from project.models import (
     generate_random_admin_password,
 )
 from project.services.cookiecutter_templete_expander import CookieCutterTemplateExpander
-from project.services.edit_model import model_up, model_down, get_max_index
+from project.services.edit_model import (
+    model_up,
+    model_down,
+    init_main_entity,
+    init_index,
+    unset_main_entity,
+    set_new_main_entity,
+    get_model_success_url,
+)
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
 from project.views.views import HtmxHttpRequest
@@ -176,54 +184,14 @@ class ProjectCreateModelView(LoginRequiredMixin, ProjectModelViewMixin, CreateVi
         tm, created = TransformationMapping.objects.get_or_create(project=project)
         form.instance.transformation_mapping = tm
         unset_main_entity(form.instance)
+        init_index(form.instance)
         return super().form_valid(form)
 
     def get_initial(self) -> dict[str, Any]:
         initial: dict = super().get_initial()
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
-        tm = TransformationMapping.objects.filter(project=project).first()
-        if tm:
-            if "index" not in initial or not initial["index"] or initial["index"] == 0:
-                max_ = get_max_index(tm)
-                if max_:
-                    initial["index"] = max_ + 1
-                    main_entity = Model.objects.filter(
-                        transformation_mapping=tm, is_main_entity=1
-                    ).first()
-                    initial["is_main_entity"] = not main_entity
-                else:
-                    initial["index"] = 1
-                    initial["is_main_entity"] = 1
-
-        else:
-            initial["index"] = 1
-            initial["is_main_entity"] = 1
-
+        initial["is_main_entity"] = init_main_entity(project)
         return initial
-
-
-def unset_main_entity(model: Model) -> None:
-    if model.is_main_entity:
-        # unset all other models to not main entity
-        Model.objects.filter(
-            transformation_mapping=model.transformation_mapping, is_main_entity=1
-        ).update(is_main_entity=0)
-
-
-def set_new_main_entity(model: Model) -> None:
-    main_entity = Model.objects.filter(
-        transformation_mapping=model.transformation_mapping, is_main_entity=1
-    ).first()
-    if not main_entity or main_entity == model:
-        # set main entity to the one with the lowest index
-        lowest_entity: Model = (
-            Model.objects.filter(transformation_mapping=model.transformation_mapping)
-            .exclude(pk=model.pk)
-            .first()
-        )
-        if lowest_entity:
-            lowest_entity.is_main_entity = 1
-            lowest_entity.save()
 
 
 class ProjectUpdateModelView(
@@ -260,13 +228,6 @@ class ProjectModelDownView(
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         model: Model = model_down(*args, **kwargs)
         return HttpResponseRedirect(get_model_success_url(model))
-
-
-def get_model_success_url(model: Model) -> str:
-    return reverse_lazy(
-        "project_list_model",
-        kwargs={"pk": model.transformation_mapping.project.id},
-    )
 
 
 class ProjectDeleteModelView(

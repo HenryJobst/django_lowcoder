@@ -1,7 +1,8 @@
 from django.db.models import Max
 from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
 
-from project.models import Model, TransformationMapping
+from project.models import Model, TransformationMapping, Project
 
 
 def set_index(model: Model, index: int) -> None:
@@ -121,3 +122,101 @@ def model_down(*args, **kwargs) -> Model:
         set_index(actual_model, actual_model.index + 1)
 
     return actual_model
+
+
+def init_main_entity(project: Project) -> int:
+    """
+    The init_main_entity function is used to determine if the project has a main entity.
+    If it does, then we return 1. If not, we return 0.
+
+    :param project:Project: Get the project of the transformation mapping
+    :return: The id of the main entity if it exists, otherwise 1
+    :doc-author: Trelent
+    """
+    main_entity = None
+    tm = TransformationMapping.objects.filter(project=project).first()
+    if tm:
+        main_entity = Model.objects.filter(
+            transformation_mapping=tm, is_main_entity=1
+        ).first()
+
+    return not main_entity if main_entity else 1
+
+
+def init_index(model: Model):
+    """
+    The init_index function is a helper function that ensures the index of the transformation
+    is unique. If no index is provided, it will be set to one greater than the current maximum
+    index in the database.
+
+    :param model:Model: Access the model object
+    :return: The maximum index in the transformation_mapping dictionary plus one
+    :doc-author: Trelent
+    """
+    if not model.index or model.index == 0:
+        max_index = get_max_index(model.transformation_mapping)
+        if not max_index:
+            max_index = 0
+        model.index = max_index + 1
+
+
+def unset_main_entity(model: Model) -> None:
+    """
+    The unset_main_entity function is used to unset the main entity of a transformation mapping.
+    It does this by first checking if the model passed in as an argument has been set as the main entity,
+    and then proceeds to unset all other models that have been set as the main entities for that same
+    transformation mapping. This function is called when a user deletes or updates a model.
+
+    :param model:Model: Access the model class
+    :return: None
+    :doc-author: Trelent
+    """
+    if model.is_main_entity:
+        # unset all other models to not main entity
+        Model.objects.filter(
+            transformation_mapping=model.transformation_mapping, is_main_entity=1
+        ).update(is_main_entity=0)
+
+
+def set_new_main_entity(model: Model) -> None:
+    """
+    The set_new_main_entity function is used to set the main entity of a transformation mapping.
+    The function will first check if there is already a main entity, and if not it will set the
+    first model in the list as the new main entity. If there are multiple models with no assigned
+    main_entity, then it will find which model has been created first and assign that one as new
+    main_entity.
+
+    :param model:Model: Get the model of the entity
+    :return: None
+    :doc-author: Trelent
+    """
+    main_entity = Model.objects.filter(
+        transformation_mapping=model.transformation_mapping, is_main_entity=1
+    ).first()
+    if not main_entity or main_entity == model:
+        # set main entity to the one with the lowest index
+        lowest_entity: Model = (
+            Model.objects.filter(transformation_mapping=model.transformation_mapping)
+            .exclude(pk=model.pk)
+            .first()
+        )
+        if lowest_entity:
+            lowest_entity.is_main_entity = 1
+            lowest_entity.save()
+
+
+def get_model_success_url(model: Model) -> str:
+    """
+    The get_model_success_url function returns the URL of the project_list_model view,
+    which is a class-based generic list view that displays all models in a given project.
+    The function takes one argument: model, which is an instance of TransformationMapping.
+    This function uses reverse to return the URL for this page.
+
+    :param model:Model: Get the primary key of the model
+    :return: A string
+    :doc-author: Trelent
+    """
+    return reverse_lazy(
+        "project_list_model",
+        kwargs={"pk": model.transformation_mapping.project.id},
+    )
