@@ -52,7 +52,9 @@
            href="{% url 'project_delete_model' model.id %}"><i
           class="feather-24 align-top me-1"
           data-feather="trash-2"></i></a>
+
         {% if model.index > 1 %}
+
         <a hx-ext="debug" hx-post="{% url 'project_model_up' model.id %}"
            hx-trigger="click" hx-target="#model-table" hx-select="#model-table" hx-swap="innerHTML"
            title="Hoch"
@@ -60,19 +62,25 @@
            href="#"><i
           class="feather-24 align-top me-1"
           data-feather="arrow-up"></i></a>
+
         {% else %}
-        <span class="me-1 visually-hidden" style="width: 24px"/>
+
+        <span class="me-1" style="display: inline-block; width: 24px !important"></span>
+
         {% endif %}
-        {% if model_list|length > model.index %}
+
+        {% if model.index < model_list|length %}
+
         <a hx-ext="debug" hx-post="{% url 'project_model_down' model.id %}"
            hx-trigger="click" hx-target="#model-table" hx-select="#model-table" hx-swap="innerHTML"
            title="Runter"
            role="button"
-           href="#"><i
-          class="feather-24 align-top me-1"
-          data-feather="arrow-down"></i></a>
+           href="#"><i class="feather-24 align-top me-1" data-feather="arrow-down"></i></a>
+
         {% else %}
-        <span class="me-1 visually-hidden" style="width: 24px"/>
+
+        <span class="me-1" style="display: inline-block; width: 24px !important"></span>
+
         {% endif %}
       </td>
     </tr>

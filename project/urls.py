@@ -10,11 +10,11 @@ from project.views.views_project import (
     ProjectUpdateSettingsView,
     ProjectCreateModelView,
     ProjectUpdateModelView,
-    ProjectDeleteSettingsView,
     ProjectListModelView,
     ProjectSelectModelView,
     ProjectModelUpView,
     ProjectModelDownView,
+    ProjectDeleteModelView,
 )
 from project.views.views_registration import LoginView, RegisterView
 from project.views.views import IndexView, favicon
@@ -48,7 +48,7 @@ urlpatterns = [
     ),
     path(
         "model/<int:pk>/delete",
-        ProjectDeleteSettingsView.as_view(),
+        ProjectDeleteModelView.as_view(),
         name="project_delete_model",
     ),
     path(

@@ -139,7 +139,6 @@ class ProjectUpdateSettingsView(
             or self.object.admin_password == ""
         ):
             self.initial["admin_password"] = generate_random_admin_password()
-            self.initial["demo_user_password"] = generate_random_admin_password()
         return super().get_initial()
 
     def get_success_url(self):
@@ -180,30 +179,27 @@ class ProjectCreateModelView(LoginRequiredMixin, ProjectModelViewMixin, CreateVi
         return super().form_valid(form)
 
     def get_initial(self) -> dict[str, Any]:
+        initial: dict = super().get_initial()
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
-        tm = TransformationMapping.objects.filter(project=project).get()
+        tm = TransformationMapping.objects.filter(project=project).first()
         if tm:
-            if (
-                "index" not in self.initial
-                or not self.initial["index"]
-                or self.initial["index"] == 0
-            ):
+            if "index" not in initial or not initial["index"] or initial["index"] == 0:
                 max_ = get_max_index(tm)
                 if max_:
-                    self.initial["index"] = max_ + 1
+                    initial["index"] = max_ + 1
                     main_entity = Model.objects.filter(
                         transformation_mapping=tm, is_main_entity=1
                     ).first()
-                    self.initial["is_main_entity"] = not main_entity
+                    initial["is_main_entity"] = not main_entity
                 else:
-                    self.initial["index"] = 1
-                    self.initial["is_main_entity"] = 1
+                    initial["index"] = 1
+                    initial["is_main_entity"] = 1
 
         else:
-            self.initial["index"] = 1
-            self.initial["is_main_entity"] = 1
+            initial["index"] = 1
+            initial["is_main_entity"] = 1
 
-        return super().get_initial()
+        return initial
 
 
 def unset_main_entity(model: Model) -> None:
@@ -220,11 +216,14 @@ def set_new_main_entity(model: Model) -> None:
     ).first()
     if not main_entity or main_entity == model:
         # set main entity to the one with the lowest index
-        lowest_entity: Model = Model.objects.filter(
-            transformation_mapping=model.transformation_mapping
-        ).first()
-        lowest_entity.is_main_entity = 1
-        lowest_entity.save()
+        lowest_entity: Model = (
+            Model.objects.filter(transformation_mapping=model.transformation_mapping)
+            .exclude(pk=model.pk)
+            .first()
+        )
+        if lowest_entity:
+            lowest_entity.is_main_entity = 1
+            lowest_entity.save()
 
 
 class ProjectUpdateModelView(
@@ -252,7 +251,7 @@ class ProjectModelUpView(
 
 
 class ProjectModelDownView(
-    LoginRequiredMixin, ModelUserFieldPermissionMixin, UpdateView
+    LoginRequiredMixin, ProjectModelViewMixin, ModelUserFieldPermissionMixin, UpdateView
 ):
     model = Model
     fields = []
@@ -270,16 +269,15 @@ def get_model_success_url(model: Model) -> str:
     )
 
 
-class ProjectDeleteSettingsView(
+class ProjectDeleteModelView(
     LoginRequiredMixin, ProjectModelViewMixin, ModelUserFieldPermissionMixin, DeleteView
 ):
     model = Model
     form_class = ProjectDeleteModelForm
-    success_url = reverse_lazy("project_detail")
 
-    def delete(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+    def form_valid(self, form: ProjectDeleteModelForm) -> HttpResponse:
         set_new_main_entity(self.object)
-        return super().delete(request, *args, **kwargs)
+        return super().form_valid(form)
 
 
 class ProjectListModelView(LoginRequiredMixin, ListView):
