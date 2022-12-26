@@ -10,11 +10,17 @@ from project.views.views_project import (
     ProjectUpdateSettingsView,
     ProjectCreateModelView,
     ProjectUpdateModelView,
-    ProjectListModelView,
+    ProjectListModelsView,
     ProjectSelectModelView,
     ProjectModelUpView,
     ProjectModelDownView,
     ProjectDeleteModelView,
+    ProjectListFieldsView,
+    ProjectCreateFieldView,
+    ProjectUpdateFieldView,
+    ProjectDeleteFieldView,
+    ProjectFieldUpView,
+    ProjectFieldDownView,
 )
 from project.views.views_registration import LoginView, RegisterView
 from project.views.views import IndexView, favicon
@@ -35,7 +41,9 @@ urlpatterns = [
         ProjectUpdateSettingsView.as_view(),
         name="project_update_settings",
     ),
-    path("<int:pk>/model", ProjectListModelView.as_view(), name="project_list_model"),
+    path(
+        "<int:pk>/models", ProjectListModelsView.as_view(), name="project_list_models"
+    ),
     path(
         "<int:pk>/model/create",
         ProjectCreateModelView.as_view(),
@@ -65,5 +73,33 @@ urlpatterns = [
         "model/<int:pk>/down",
         ProjectModelDownView.as_view(),
         name="project_model_down",
+    ),
+    path(
+        "<int:pk>/fields", ProjectListFieldsView.as_view(), name="project_list_fields"
+    ),
+    path(
+        "<int:pk>/field/create",
+        ProjectCreateFieldView.as_view(),
+        name="project_create_field",
+    ),
+    path(
+        "field/<int:pk>/edit",
+        ProjectUpdateFieldView.as_view(),
+        name="project_update_field",
+    ),
+    path(
+        "field/<int:pk>/delete",
+        ProjectDeleteFieldView.as_view(),
+        name="project_delete_field",
+    ),
+    path(
+        "field/<int:pk>/up",
+        ProjectFieldUpView.as_view(),
+        name="project_field_up",
+    ),
+    path(
+        "field/<int:pk>/down",
+        ProjectFieldDownView.as_view(),
+        name="project_field_down",
     ),
 ]

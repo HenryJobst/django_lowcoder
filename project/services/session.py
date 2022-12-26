@@ -31,20 +31,24 @@ def reset_selection(request: HttpRequest, pk: int) -> bool:
 def reset_model_selection(request: HttpRequest, pk: int) -> bool:
     """
     The reset_model_selection function is used to reset the selected model in the session.
-    It takes a request and an integer pk as parameters. It checks if the pk matches with
-    the selected model in the session, and if it does, it resets both SELECTED_MODEL and
-    SELECTED_MODEL_NAME to 0 (zero) in the session.
+    It takes a request and a pk as parameters. It returns True if the selected model was reset,
+    and False otherwise.
 
-    :param request:HttpRequest: Get the session
-    :param pk:int: Check if the model is currently selected
-    :return: True if the model with id pk is currently selected and sets the
+    :param request:HttpRequest: Get the selected model id from the session
+    :param pk:int: Get the model with that pk
+    :return: A boolean value and a model object
     :doc-author: Trelent
     """
-    if pk == request.session.get(SELECTED_MODEL, 0):
+    selected_model_id = request.session.get(SELECTED_MODEL, 0)
+    selected_model = (
+        Model.objects.get(pk=selected_model_id) if selected_model_id != 0 else None
+    )
+    if pk == selected_model_id:
         request.session[SELECTED_MODEL] = 0
         request.session[SELECTED_MODEL_NAME] = None
-        return True
-    return False
+        return True, selected_model
+
+    return False, selected_model
 
 
 def set_selection_name(request: HttpRequest, pk: int) -> None:
@@ -95,18 +99,21 @@ def set_selection(request: HttpRequest, pk: int) -> None:
     request.session[SELECTED_NAME] = Project.objects.get(pk=pk).name
 
 
-def set_model_selection(request: HttpRequest, pk: int) -> None:
+def set_model_selection(request: HttpRequest, pk: int) -> Model:
     """
-    The set_model_selection function sets the session variable SELECTED_MODEL to the model id passed in as pk.
-    It also sets the session variable SELECTED_MODEL_NAME to that model's name.
+    The set_model_selection function is used to set the selected model in the session.
+    It takes a request and an id as parameters, gets the model with that id from the database,
+    and sets it as selected in session. It returns a Model object.
 
-    :param request:HttpRequest: Get the user's session
-    :param pk:int: Get the id of the model that is selected
-    :return: None
+    :param request:HttpRequest: Get the current session
+    :param pk:int: Identify the model
+    :return: The model that has been selected by the user
     :doc-author: Trelent
     """
+    model = Model.objects.get(pk=pk)
     request.session[SELECTED_MODEL] = pk
-    request.session[SELECTED_MODEL_NAME] = Model.objects.get(pk=pk).name
+    request.session[SELECTED_MODEL_NAME] = model.name
+    return model
 
 
 def toggle_selection(request: HttpRequest, pk: int) -> None:
@@ -128,18 +135,19 @@ def toggle_selection(request: HttpRequest, pk: int) -> None:
         set_selection(request, pk)
 
 
-def toggle_model_selection(request: HttpRequest, pk: int) -> None:
+def toggle_model_selection(request: HttpRequest, pk: int) -> Model | None:
     """
-    The toggle_model_selection function is used to toggle the model selection of a given
-    model. If the model is not selected, it will be selected and vice versa. The function
-    takes in an HttpRequest object and an integer representing the primary key of a given
-    model as parameters. It then checks if there are any models currently selected by the user,
-    and if so, it removes all models from that list before adding this one to that list.
+    The toggle_model_selection function takes a request and a primary key as its arguments.
+    It first calls the reset_model_selection function to reset the model selection, if it is not already empty.
+    If it is empty, then toggle_model_selection will call set_model_selection to set the model selection with
+    the given primary key.
 
     :param request:HttpRequest: Get the user's session
     :param pk:int: Identify the model
-    :return: None
+    :return: The selected model if it exists, otherwise it returns none
     :doc-author: Trelent
     """
-    if not reset_model_selection(request, pk):
-        set_model_selection(request, pk)
+    resetted, selected_model = reset_model_selection(request, pk)
+    if not resetted:
+        return set_model_selection(request, pk)
+    return selected_model

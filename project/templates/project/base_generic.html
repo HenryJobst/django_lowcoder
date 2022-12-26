@@ -137,12 +137,23 @@
                     </a>
                     </li>
                     <li><a class="nav-link active" aria-current="page"
-                           href="{% url 'project_list_model' request.session.selected %}">
+                           href="{% url 'project_list_models' request.session.selected %}">
                             <span data-feather="list"
                                   class="align-text-bottom"></span>
                         Tabellen
                     </a>
                     </li>
+                      {% if 'selected_model' in request.session and request.session.selected_model != 0 %}
+                      <ul class="nav nav-item flex-column ps-2">
+                        <li><a class="nav-link active" aria-current="page"
+                               href="{% url 'project_list_fields' request.session.selected_model %}">
+                            <span data-feather="book-open"
+                                  class="align-text-bottom"></span>
+                          {{ request.session.selected_model_name }}
+                        </a>
+                        </li>
+                      </ul>
+                      {% endif %}
                     </ul>
                     </ul>
                     {% endif %}

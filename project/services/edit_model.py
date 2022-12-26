@@ -2,10 +2,10 @@ from django.db.models import Max
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 
-from project.models import Model, TransformationMapping, Project
+from project.models import Model, TransformationMapping, Project, Field
 
 
-def set_index(model: Model, index: int) -> None:
+def set_index(model: Model | Field, index: int) -> None:
     """
     The set_index function is a helper function that allows us to change the index of a model.
     It does this by first checking if there are any other models with the same transformation_mapping and index,
@@ -16,22 +16,26 @@ def set_index(model: Model, index: int) -> None:
     :return: None
     :doc-author: Trelent
     """
-    other_model = Model.objects.filter(
-        transformation_mapping=model.transformation_mapping,
-        index=index,
-    ).first()
+    other_model = (
+        Model.objects.filter(
+            transformation_mapping=model.transformation_mapping,
+            index=index,
+        ).first()
+        if isinstance(model, Model)
+        else Field.objects.filter(model=model.model, index=index).first()
+    )
     if other_model:
         switch_index(model, other_model)
     else:
         save_with_index(model, index)
 
 
-def save_with_index(model: Model, index: int) -> int:
+def save_with_index(model: Model | Field, index: int) -> int:
     """
     The save_with_index function is a helper function that allows us to save the model with an index.
-    It also returns the old index of the model, which can be used to update other models.
+    It also returns the old index of the model, so we can reset it later.
 
-    :param model:Model: Save the model
+    :param model:Model|Field: Specify the model that is being saved
     :param index:int: Specify the index of the model in a list
     :return: The old index of the model
     :doc-author: Trelent
@@ -42,23 +46,27 @@ def save_with_index(model: Model, index: int) -> int:
     return old_index
 
 
-def switch_index(actual_model: Model, other_model: Model) -> None:
+def switch_index(actual_entity: Model | Field, other_entity: Model | Field) -> None:
     """
-    The switch_index function is used to switch the order of two models in a transformation mapping.
-    It does this by temporarily setting other_model.index to max used index + 1 to not violate unique constraint on
-    index,
-    then saving actual_model with other_model's old index, and finally saving other_model with actual model's old index.
+    The switch_index function is used to switch the index of two models.
+    It does this by temporarily setting other_entity.index to max used index + 1
+    to not violate unique constraint on index, then sets actual_model.index = other_entity.index, and finally sets
+    other_entity.index = actual_model's previous value.
 
-    :param actual_model:Model: Get the actual model that is being switched
-    :param other_model:Model: Get the model instance from the database
+    :param actual_entity:Model|Field: Determine whether the switch_index function is called on a model or field
+    :param other_entity:Model|Field: Determine the type of the model that is passed to this function
     :return: None
     :doc-author: Trelent
     """
-    # temporarily set other_model.index to max used index + 1 to not violate unique constraint on index
-    max_index = get_max_index(actual_model.transformation_mapping)
-    other_model_index = save_with_index(other_model, max_index + 1)
-    actual_model_index = save_with_index(actual_model, other_model_index)
-    save_with_index(other_model, actual_model_index)
+    # temporarily set other_entity.index to max used index + 1 to not violate unique constraint on index
+    max_index = (
+        get_max_index(actual_entity.transformation_mapping)
+        if isinstance(actual_entity, Model)
+        else get_max_field_index(actual_entity.model)
+    )
+    other_model_index = save_with_index(other_entity, max_index + 1)
+    actual_model_index = save_with_index(actual_entity, other_model_index)
+    save_with_index(other_entity, actual_model_index)
 
 
 def get_max_index(tm: TransformationMapping) -> int:
@@ -80,14 +88,26 @@ def get_max_index(tm: TransformationMapping) -> int:
     )
 
 
+def get_max_field_index(model: Model) -> int:
+    """
+    The get_max_field_index function returns the maximum index of all fields in a model.
+
+    :param model:Model: Get the fields for that model
+    :return: The maximum index of all fields in the model
+    :doc-author: Trelent
+    """
+    return Field.objects.filter(model=model).aggregate(max=Max("index")).get("max", 0)
+
+
 def model_up(*args, **kwargs) -> Model:
     """
-    The model_up function takes a Model object as an argument and returns the model with index one less than the
-    argument's index. If the argument is already at its lowest possible index, it will return that model unchanged.
+    The model_up function takes a model as an argument and sets its index to the next highest integer.
+    If the model has no index, it assigns it one. If the model's index is greater than 1,
+    it decrements that value by 1.
 
-    :param *args: Pass a variable number of arguments to a function
-    :param **kwargs: Pass a keyworded, variable-length argument dictionary to the function
-    :return: The model object that is found by the get_object_or_404 function
+    :param *args: Pass a non-keyworded, variable-length argument list to the function
+    :param **kwargs: Pass a keyworded, variable-length argument list
+    :return: The model that is up in the transformation mapping
     :doc-author: Trelent
     """
     actual_model: Model = get_object_or_404(Model, *args, **kwargs)
@@ -104,7 +124,7 @@ def model_down(*args, **kwargs) -> Model:
     The model_down function is used to move a model down in the list of models
     for a given transformation mapping.  It takes as arguments the primary key
     of the model to be moved and returns that same model after it has been moved.
-    The function also takes into account whether or not there are other models with
+    The function also takes into account whether there are other models with
     the same transformation_mapping, and if so, sets their index values appropriately.
 
     :param *args: Pass a non-keyworded, variable-length argument list to the function
@@ -122,6 +142,46 @@ def model_down(*args, **kwargs) -> Model:
         set_index(actual_model, actual_model.index + 1)
 
     return actual_model
+
+
+def field_up(*args, **kwargs) -> Field:
+    """
+    The field_up function takes a field and moves it up one position in the list of fields.
+    If the field is already at the top of the list, nothing happens.
+
+    :param *args: Pass a variable number of arguments to a function
+    :param **kwargs: Pass keyworded variable length of arguments to a function
+    :return: The field that is one index higher than the given field
+    :doc-author: Trelent
+    """
+    actual_field: Field = get_object_or_404(Field, *args, **kwargs)
+    if not actual_field.index:
+        actual_field.index = get_max_field_index(actual_field.model) + 1
+    if actual_field.index > 1:
+        set_index(actual_field, actual_field.index - 1)
+
+    return actual_field
+
+
+def field_down(*args, **kwargs) -> Field:
+    """
+    The field_down function moves the field with the given pk down one position in
+    the list of fields for its model. If it is already at the bottom of that list, it
+    does nothing.
+
+    :param *args: Pass a variable number of arguments to a function
+    :param **kwargs: Pass keyworded variable length of arguments to a function
+    :return: The field that is located below the given field
+    :doc-author: Trelent
+    """
+    actual_field: Field = get_object_or_404(Field, *args, **kwargs)
+    fields_size = len(Field.objects.filter(model=actual_field.model))
+    if not actual_field.index:
+        actual_field.index = get_max_field_index(actual_field.model) + 1
+    if actual_field.index < fields_size:
+        set_index(actual_field, actual_field.index + 1)
+
+    return actual_field
 
 
 def init_main_entity(project: Project) -> int:
@@ -143,21 +203,26 @@ def init_main_entity(project: Project) -> int:
     return not main_entity if main_entity else 1
 
 
-def init_index(model: Model):
+def init_index(entity: Model | Field):
     """
-    The init_index function is a helper function that ensures the index of the transformation
-    is unique. If no index is provided, it will be set to one greater than the current maximum
-    index in the database.
+    The init_index function is used to assign an index value to a model or field.
+    If the entity does not have an index assigned, it will be set equal to the maximum
+    index of either its transformation mapping's models or its parent model's fields plus 1.
 
-    :param model:Model: Access the model object
-    :return: The maximum index in the transformation_mapping dictionary plus one
+
+    :param entity:Model|Field: Determine whether the function is called for a model or field
+    :return: The index of the entity
     :doc-author: Trelent
     """
-    if not model.index or model.index == 0:
-        max_index = get_max_index(model.transformation_mapping)
+    if not entity.index or entity.index == 0:
+        max_index = (
+            get_max_index(entity.transformation_mapping)
+            if isinstance(entity, Model)
+            else get_max_field_index(entity.model)
+        )
         if not max_index:
             max_index = 0
-        model.index = max_index + 1
+        entity.index = max_index + 1
 
 
 def unset_main_entity(model: Model) -> None:
@@ -207,7 +272,7 @@ def set_new_main_entity(model: Model) -> None:
 
 def get_model_success_url(model: Model) -> str:
     """
-    The get_model_success_url function returns the URL of the project_list_model view,
+    The get_model_success_url function returns the URL of the project_list_models view,
     which is a class-based generic list view that displays all models in a given project.
     The function takes one argument: model, which is an instance of TransformationMapping.
     This function uses reverse to return the URL for this page.
@@ -217,6 +282,21 @@ def get_model_success_url(model: Model) -> str:
     :doc-author: Trelent
     """
     return reverse_lazy(
-        "project_list_model",
+        "project_list_models",
         kwargs={"pk": model.transformation_mapping.project.id},
     )
+
+
+def get_field_success_url(field: Field) -> str:
+    """
+    The get_field_success_url function is a helper function that returns the URL of the page to which
+    the user should be redirected after successfully creating a new field. It accepts one parameter,
+    field, which is an instance of the Field model. The get_field_success_url function calls reverse() on
+    the project_list_fields URL name and passes it field.model.id as its argument; this causes Django to
+    look up the URL for that particular view with those particular arguments.
+
+    :param field:Field: Get the model id of the field
+    :return: The url of the page to which we are redirected after successfully adding a field
+    :doc-author: Trelent
+    """
+    return reverse_lazy("project_list_fields", kwargs={"pk": field.model.id})

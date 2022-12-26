@@ -21,11 +21,14 @@ from project.forms.forms_project import (
     ProjectEditSettingsForm,
     ProjectEditModelForm,
     ProjectDeleteModelForm,
+    ProjectEditFieldForm,
+    ProjectDeleteFieldForm,
 )
 from project.models import (
     TransformationMapping,
     ProjectSettings,
     generate_random_admin_password,
+    Field,
 )
 from project.services.cookiecutter_templete_expander import CookieCutterTemplateExpander
 from project.services.edit_model import (
@@ -36,6 +39,9 @@ from project.services.edit_model import (
     unset_main_entity,
     set_new_main_entity,
     get_model_success_url,
+    get_field_success_url,
+    field_up,
+    field_down,
 )
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
@@ -115,16 +121,6 @@ class ProjectSelectView(
         return redirect(reverse_lazy("index"))
 
 
-class ProjectSelectModelView(
-    LoginRequiredMixin, ModelUserFieldPermissionMixin, BaseDetailView
-):
-    model = Model
-
-    def get(self, request, *args, **kwargs):
-        toggle_model_selection(request, self.kwargs.get("pk", 0))
-        return redirect(reverse_lazy("index"))
-
-
 class ProjectUpdateSettingsView(
     LoginRequiredMixin, ModelUserFieldPermissionMixin, UpdateView
 ):
@@ -173,6 +169,16 @@ class ProjectModelViewMixin:
     # noinspection PyUnresolvedReferences
     def get_success_url(self) -> str:
         return get_model_success_url(self.object)
+
+
+class ProjectFieldViewMixin:
+    # noinspection PyMethodMayBeStatic
+    def get_user_holder(self, field_object: Field):
+        return field_object.model.transformation_mapping.project
+
+    # noinspection PyUnresolvedReferences
+    def get_success_url(self) -> str:
+        return get_field_success_url(self.object)
 
 
 class ProjectCreateModelView(LoginRequiredMixin, ProjectModelViewMixin, CreateView):
@@ -241,7 +247,7 @@ class ProjectDeleteModelView(
         return super().form_valid(form)
 
 
-class ProjectListModelView(LoginRequiredMixin, ListView):
+class ProjectListModelsView(LoginRequiredMixin, ListView):
     model = Model
 
     def get_queryset(self):
@@ -259,3 +265,95 @@ class ProjectListModelView(LoginRequiredMixin, ListView):
                 return QuerySet(Model)
         else:
             return QuerySet(Model)
+
+
+class ProjectSelectModelView(
+    LoginRequiredMixin,
+    ProjectModelViewMixin,
+    ModelUserFieldPermissionMixin,
+    BaseDetailView,
+):
+    model = Model
+
+    def get(self, request, *args, **kwargs):
+        model = toggle_model_selection(request, self.kwargs.get("pk", 0))
+        return HttpResponseRedirect(get_model_success_url(model))
+
+
+class ProjectListFieldsView(LoginRequiredMixin, ListView):
+    model = Field
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            model: Model = get_object_or_404(Model, *self.args, **self.kwargs)
+
+            user = self.request.user
+            if (
+                not user.is_superuser
+                and model.transformation_mapping.project.user != user
+            ):
+                return super().handle_no_permission()
+
+            return Field.objects.filter(model=model)
+        else:
+            return QuerySet(Field)
+
+
+class ProjectCreateFieldView(LoginRequiredMixin, ProjectFieldViewMixin, CreateView):
+    model = Field
+    form_class = ProjectEditFieldForm
+
+    def form_valid(self, form):
+        model: Model = get_object_or_404(Model, *self.args, **self.kwargs)
+        form.instance.model = model
+        init_index(form.instance)
+        return super().form_valid(form)
+
+    def get_initial(self) -> dict[str, Any]:
+        initial: dict = super().get_initial()
+        # model: Model = get_object_or_404(Project, *self.args, **self.kwargs)
+        return initial
+
+
+class ProjectUpdateFieldView(
+    LoginRequiredMixin, ProjectFieldViewMixin, ModelUserFieldPermissionMixin, UpdateView
+):
+    model = Field
+    form_class = ProjectEditFieldForm
+
+    def form_valid(self, form) -> HttpResponse:
+        return super().form_valid(form)
+
+
+class ProjectFieldUpView(
+    LoginRequiredMixin, ProjectFieldViewMixin, ModelUserFieldPermissionMixin, UpdateView
+):
+    model = Field
+    fields = []
+
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def post(self, request: HtmxHttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        field: Field = field_up(*args, **kwargs)
+        return HttpResponseRedirect(get_field_success_url(field))
+
+
+class ProjectFieldDownView(
+    LoginRequiredMixin, ProjectFieldViewMixin, ModelUserFieldPermissionMixin, UpdateView
+):
+    model = Field
+    fields = []
+
+    # noinspection PyMethodMayBeStatic,PyUnusedLocal
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        field: Field = field_down(*args, **kwargs)
+        return HttpResponseRedirect(get_field_success_url(field))
+
+
+class ProjectDeleteFieldView(
+    LoginRequiredMixin, ProjectFieldViewMixin, ModelUserFieldPermissionMixin, DeleteView
+):
+    model = Field
+    form_class = ProjectDeleteFieldForm
+
+    def form_valid(self, form: ProjectDeleteFieldForm) -> HttpResponse:
+        return super().form_valid(form)

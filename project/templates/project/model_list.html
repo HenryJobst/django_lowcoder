@@ -15,6 +15,7 @@
     <thead>
     <tr>
       <th scope="col">Name</th>
+      <th scope="col">Spalten</th>
       <th scope="col">Haupt-Tabelle</th>
       <th scope="col">Reihenfolge</th>
       <th scope="col">Aktionen</th>
@@ -26,6 +27,9 @@
       <td>
         <a href="{% url 'project_update_model' model.id %}">
           {{ model.name }} </a>
+      </td>
+      <td>
+        {{ model.fields|length }}
       </td>
       <td>
         {{ model.is_main_entity|iconbool }}
