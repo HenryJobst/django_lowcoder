@@ -25,7 +25,7 @@
     {% for model in model_list %}
     <tr>
       <td>
-        <a href="{% url 'project_detail_model' model.id %}">
+        <a href="{% url 'project_detail_model' model.id %}?next={{request.path}}">
           {{ model.name }} </a>
       </td>
       <td>
@@ -49,11 +49,11 @@
         >
         </i></a>
         <a title="Bearbeiten" role="button"
-           href="{% url 'project_update_model' model.id %}"><i
+           href="{% url 'project_update_model' model.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="edit"></i></a>
         <a title="Löschen" role="button"
-           href="{% url 'project_delete_model' model.id %}"><i
+           href="{% url 'project_delete_model' model.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="trash-2"></i></a>
 

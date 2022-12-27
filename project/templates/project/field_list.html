@@ -23,7 +23,7 @@
     {% for field in field_list %}
     <tr>
       <td>
-        <a href="{% url 'project_update_field' field.id %}">
+        <a href="{% url 'project_update_field' field.id %}?next={{request.path}}">
           {{ field.name }} </a>
       </td>
       <td>
@@ -31,11 +31,11 @@
       </td>
       <td>
         <a title="Bearbeiten" role="button"
-           href="{% url 'project_update_field' field.id %}"><i
+           href="{% url 'project_update_field' field.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="edit"></i></a>
         <a title="Löschen" role="button"
-           href="{% url 'project_delete_field' field.id %}"><i
+           href="{% url 'project_delete_field' field.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="trash-2"></i></a>
 

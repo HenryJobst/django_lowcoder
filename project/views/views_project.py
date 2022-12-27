@@ -54,6 +54,8 @@ from project.services.edit_project import (
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
 
+NEXT_URL_PARAM = "next"
+
 
 class NextMixin:
     url_or_next_function: Callable[[str], str] = get_projects_or_next_url
@@ -66,14 +68,14 @@ class NextMixin:
     def get_success_url(self) -> str:
         if self.url_or_next_function_with_pk:
             return self.url_or_next_function_with_pk(
-                self.request.GET.get("next"), self.kwargs.get("pk")
+                self.request.GET.get(NEXT_URL_PARAM), self.kwargs.get("pk")
             )
         elif self.url_or_next_function_with_object:
             return self.url_or_next_function_with_object(
-                self.request.GET.get("next"), self.object
+                self.request.GET.get(NEXT_URL_PARAM), self.object
             )
         else:
-            return self.url_or_next_function(self.request.GET.get("next"))
+            return self.url_or_next_function(self.request.GET.get(NEXT_URL_PARAM))
 
 
 class ProjectDetailView(LoginRequiredMixin, ModelUserFieldPermissionMixin, DetailView):
@@ -218,9 +220,13 @@ class ProjectFieldViewMixin(NextMixin):
         return field_object.model.transformation_mapping.project
 
 
-class ProjectCreateModelView(LoginRequiredMixin, ProjectModelViewMixin, CreateView):
+class ProjectCreateModelView(
+    LoginRequiredMixin, ProjectModelViewMixin, ModelUserFieldPermissionMixin, CreateView
+):
     model = Model
     form_class = ProjectEditModelForm
+    url_or_next_function_with_object = None
+    url_or_next_function_with_pk = get_models_or_next_url_via_parent
 
     def form_valid(self, form):
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
@@ -236,6 +242,12 @@ class ProjectCreateModelView(LoginRequiredMixin, ProjectModelViewMixin, CreateVi
         initial["is_main_entity"] = init_main_entity(project)
         return initial
 
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+        data = super().get_context_data(**kwargs)
+        data["project"] = project
+        return data
+
 
 class ProjectDetailModelView(
     LoginRequiredMixin, ProjectModelViewMixin, ModelUserFieldPermissionMixin, DetailView
@@ -248,7 +260,6 @@ class ProjectUpdateModelView(
 ):
     model = Model
     form_class = ProjectEditModelForm
-    success_url = reverse_lazy("project_detail")
 
     def form_valid(self, form) -> HttpResponse:
         unset_main_entity(self.object)
@@ -348,7 +359,9 @@ class ProjectListFieldsView(LoginRequiredMixin, ListView):
             return QuerySet(Field)
 
 
-class ProjectCreateFieldView(LoginRequiredMixin, ProjectFieldViewMixin, CreateView):
+class ProjectCreateFieldView(
+    LoginRequiredMixin, ProjectFieldViewMixin, ModelUserFieldPermissionMixin, CreateView
+):
     model = Field
     form_class = ProjectEditFieldForm
 
@@ -362,6 +375,12 @@ class ProjectCreateFieldView(LoginRequiredMixin, ProjectFieldViewMixin, CreateVi
         initial: dict = super().get_initial()
         # model: Model = get_object_or_404(Project, *self.args, **self.kwargs)
         return initial
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        model: Model = get_object_or_404(Model, *self.args, **self.kwargs)
+        data = super().get_context_data(**kwargs)
+        data["model"] = model
+        return data
 
 
 class ProjectUpdateFieldView(

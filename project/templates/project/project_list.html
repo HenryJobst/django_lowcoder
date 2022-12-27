@@ -25,7 +25,7 @@
         {% for project in project_list %}
         <tr>
             <td>
-                <a href="{% url 'project_detail' project.id %}">
+                <a href="{% url 'project_detail' project.id %}?next={{request.path}}">
                     {{ project.name }} </a>
             </td>
             <td>
@@ -42,7 +42,7 @@
             </td>
             <td>
                 <a title="Auswählen" role="button"
-                   href="{% url 'project_select' project.id %}"><i
+                   href="{% url 'project_select' project.id %}?next={{request.path}}"><i
                         class="feather-24 align-top me-1"
                         {% if request.session.selected != project.id %}
                         data-feather="book"
@@ -52,15 +52,15 @@
                 >
                 </i></a>
                 <a title="Bearbeiten" role="button"
-                   href="{% url 'project_update' project.id %}"><i
+                   href="{% url 'project_update' project.id %}?next={{request.path}}"><i
                         class="feather-24 align-top me-1"
                         data-feather="edit"></i></a>
                 <a title="Löschen" role="button"
-                   href="{% url 'project_delete' project.id %}"><i
+                   href="{% url 'project_delete' project.id %}?next={{request.path}}"><i
                         class="feather-24 align-top me-1"
                         data-feather="trash-2"></i></a>
                 <a title="Generieren und starten" role="button"
-                   href="{% url 'project_deploy' project.id %}"><i
+                   href="{% url 'project_deploy' project.id %}?next={{request.path}}"><i
                         class="feather-24 align-top me-1"
                         data-feather="upload-cloud"></i></a>
             </td>
