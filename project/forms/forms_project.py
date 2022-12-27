@@ -3,7 +3,14 @@ from typing import List
 from crispy_bootstrap5.bootstrap5 import FloatingField
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Submit, Layout, Fieldset, HTML, Field
-from django.forms import ModelForm, TypedChoiceField, RadioSelect, Form
+from django.forms import (
+    ModelForm,
+    TypedChoiceField,
+    RadioSelect,
+    Form,
+    FilePathField,
+    FileField,
+)
 from django.utils.translation import gettext_lazy as _
 
 import project.models
@@ -100,13 +107,15 @@ class ProjectDeployForm(Form):
 
 
 class ProjectImportForm(Form):
+    file = FileField()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.form_method = "post"
         self.helper.form_class = "w-100 m-auto"
         self.helper.layout = Layout(
-            Fieldset(_("Datei importieren"), "type"),
+            Fieldset(_("Datei importieren"), Field("file")),
             Submit("submit", _("Start")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'project_detail\' project.id %}">'
@@ -116,7 +125,7 @@ class ProjectImportForm(Form):
         )
 
     class Meta:
-        fields = []
+        fields = ["file"]
 
 
 class ProjectEditSettingsForm(ModelForm):

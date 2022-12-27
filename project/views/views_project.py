@@ -5,6 +5,8 @@ from django.db.models import QuerySet
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.generic import DetailView, ListView
 from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import (
@@ -30,6 +32,7 @@ from project.models import (
     ProjectSettings,
     generate_random_admin_password,
     Field,
+    TransformationFile,
 )
 from project.services.edit_model import (
     model_up,
@@ -78,14 +81,23 @@ class NextMixin:
             return self.url_or_next_function(self.request.GET.get(NEXT_URL_PARAM))
 
 
-class ProjectDetailView(LoginRequiredMixin, ModelUserFieldPermissionMixin, DetailView):
+class ProjectViewMixin(NextMixin):
+    url_or_next_function_with_pk = get_project_edit_or_next_url
+
+
+class ProjectListMixin(NextMixin):
+    url_or_next_function_with_pk = get_projects_or_next_url
+
+
+class ProjectDetailView(
+    LoginRequiredMixin, ProjectViewMixin, ModelUserFieldPermissionMixin, DetailView
+):
     model = Project
 
 
-class ProjectCreateView(LoginRequiredMixin, NextMixin, CreateView):
+class ProjectCreateView(LoginRequiredMixin, ProjectListMixin, CreateView):
     model = Project
     form_class = ProjectEditForm
-    url_or_next_function = get_projects_or_next_url
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -97,11 +109,10 @@ class ProjectCreateView(LoginRequiredMixin, NextMixin, CreateView):
 
 
 class ProjectUpdateView(
-    LoginRequiredMixin, ModelUserFieldPermissionMixin, NextMixin, UpdateView
+    LoginRequiredMixin, ModelUserFieldPermissionMixin, ProjectViewMixin, UpdateView
 ):
     model = Project
     form_class = ProjectEditForm
-    url_or_next_function_with_pk = get_project_edit_or_next_url
 
     def get_context_data(self, **kwargs):
         context = super(ProjectUpdateView, self).get_context_data(**kwargs)
@@ -130,29 +141,56 @@ class ProjectDeleteView(
 
 
 class ProjectDeployView(
-    LoginRequiredMixin, ModelUserFieldPermissionMixin, NextMixin, FormView
+    LoginRequiredMixin, ProjectListMixin, ModelUserFieldPermissionMixin, FormView
 ):
     template_name = "project/project_deploy.html"
     form_class = ProjectDeployForm
-    url_or_next_function = get_projects_or_next_url
+    model = Project
 
     def form_valid(self, form):
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
         deploy_project(self.request.user, project, self.request.POST)
         return super().form_valid(form)
 
+    def get_object(self):
+        return get_object_or_404(Project, *self.args, **self.kwargs)
 
+
+@method_decorator(csrf_exempt, name="dispatch")
 class ProjectImportView(
-    LoginRequiredMixin, ModelUserFieldPermissionMixin, NextMixin, FormView
+    LoginRequiredMixin, ProjectViewMixin, ModelUserFieldPermissionMixin, FormView
 ):
     template_name = "project/project_import.html"
     form_class = ProjectImportForm
-    url_or_next_function_with_pk = get_project_edit_or_next_url
+
+    @method_decorator(csrf_protect)
+    def post(self, request, *args, **kwargs):
+        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+        files = request.FILES
+        file = files["file"]
+        if file:
+            tm: TransformationMapping
+            created: bool
+            tm, created = TransformationMapping.objects.get_or_create(project=project)
+            tf = TransformationFile()
+            tf.transformation_mapping = tm
+            tf.file = file
+            tf.save()
+
+        return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
         import_project(self.request.user, project, self.request.POST)
         return super().form_valid(form)
+
+    def get_object(self):
+        return get_object_or_404(Project, *self.args, **self.kwargs)
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        data = super().get_context_data(**kwargs)
+        data["project"] = get_object_or_404(Project, *self.args, **self.kwargs)
+        return data
 
 
 class ProjectSelectView(
@@ -198,10 +236,6 @@ class ProjectUpdateSettingsView(
     # noinspection PyMethodMayBeStatic
     def get_user_holder(self, model_object: ProjectSettings):
         return model_object.project
-
-
-class ProjectViewMixin(NextMixin):
-    url_or_next_function_with_pk = get_project_edit_or_next_url
 
 
 class ProjectModelViewMixin(NextMixin):

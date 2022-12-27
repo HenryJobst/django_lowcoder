@@ -116,15 +116,16 @@ class TransformationMapping(models.Model):
         on_delete=models.CASCADE,
         primary_key=True,
     )
-    # files = models.ManyToOneRel('file_id', TransformationFile, )
 
 
 class TransformationFile(models.Model):
     transformation_mapping = models.ForeignKey(
-        TransformationMapping, on_delete=models.CASCADE, null=False
+        TransformationMapping,
+        on_delete=models.CASCADE,
+        null=False,
+        related_name="files",
     )
-    file_path = models.FilePathField("", unique=True, allow_folders=False)
-    file = models.BinaryField()
+    file = models.FileField("Datei", unique=True, max_length=200)
 
 
 class TransformationSheet(models.Model):
