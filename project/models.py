@@ -148,7 +148,7 @@ class TransformationColumn(models.Model):
     )
 
 
-class Model(models.Model):
+class Model(TimeStampMixin, models.Model):
     name = models.CharField(
         "Name", max_length=100, validators=[MinLengthValidator(MIN_MODEL_NAME_LENGTH)]
     )
@@ -180,7 +180,7 @@ class Model(models.Model):
             return super(Model, self).unique_error_message(model_class, unique_check)
 
 
-class Field(models.Model):
+class Field(TimeStampMixin, models.Model):
     name = models.CharField(
         "Name", max_length=100, validators=[MinLengthValidator(MIN_FIELD_NAME_LENGTH)]
     )

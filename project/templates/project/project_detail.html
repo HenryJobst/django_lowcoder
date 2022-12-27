@@ -3,6 +3,7 @@
 {% block content %}
 <h1>{{ object.name }}</h1>
 <p>Beschreibung: {{ object.description }}</p>
+<p>Tabellen: {{ object.transformationmapping.models.all|length }}</p>
 <p>Erzeugt: {{ object.created_at|date:'SHORT_DATETIME_FORMAT' }}</p>
 <p>Modifiziert: {{ object.updated_at|date:'SHORT_DATETIME_FORMAT' }}</p>
 <a class="btn btn-primary"

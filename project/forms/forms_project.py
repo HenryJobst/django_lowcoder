@@ -22,11 +22,19 @@ class ProjectEditForm(ModelForm):
                 FloatingField("name"),
                 FloatingField("description"),
             ),
-            Submit("submit", _("Speichern")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
-                + _("Abbrechen")
+                '<a class="btn btn-primary mb-3" href="{% url \'project_import\' project.id %}">'
+                + _("Datei importieren")
                 + "</a>"
+            ),
+            Fieldset(
+                "",
+                Submit("submit", _("Speichern")),
+                HTML(
+                    '<a class="btn btn-secondary ms-1" href="{% url \'index\' %}">'
+                    + _("Abbrechen")
+                    + "</a>"
+                ),
             ),
         )
 
@@ -89,6 +97,26 @@ class ProjectDeployForm(Form):
         fields = ["type"]
 
 
+class ProjectImportForm(Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_method = "post"
+        self.helper.form_class = "w-100 m-auto"
+        self.helper.layout = Layout(
+            Fieldset(_("Datei importieren"), "type"),
+            Submit("submit", _("Start")),
+            HTML(
+                '<a class="btn btn-secondary" href="{% url \'project_detail\' project.id %}">'
+                + _("Abbrechen")
+                + "</a>"
+            ),
+        )
+
+    class Meta:
+        fields = []
+
+
 class ProjectEditSettingsForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -106,7 +134,7 @@ class ProjectEditSettingsForm(ModelForm):
             ),
             Submit("submit", _("Speichern")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
+                '<a class="btn btn-secondary" href="{% url \'project_detail\' project.id %}">'
                 + _("Abbrechen")
                 + "</a>"
             ),
@@ -137,7 +165,7 @@ class ProjectEditModelForm(ModelForm):
             ),
             Submit("submit", _("Speichern")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
+                '<a class="btn btn-secondary" href="{% url \'project_detail_model\' model.id %}">'
                 + _("Abbrechen")
                 + "</a>"
             ),
@@ -161,7 +189,8 @@ class ProjectDeleteModelForm(ModelForm):
             ),
             Submit("submit", _("Bestätigen")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'project_detail\' object.id '
+                '<a class="btn btn-secondary" href="{% url \'project_list_models\' '
+                "model.transformation_mapping.project.id "
                 '%}">' + _("Abbrechen") + "</a>"
             ),
         )
@@ -191,7 +220,7 @@ class ProjectEditFieldForm(ModelForm):
             ),
             Submit("submit", _("Speichern")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
+                '<a class="btn btn-secondary" href="{% url \'project_detail_model\' model.id %}">'
                 + _("Abbrechen")
                 + "</a>"
             ),
@@ -225,8 +254,8 @@ class ProjectDeleteFieldForm(ModelForm):
             ),
             Submit("submit", _("Bestätigen")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'project_detail\' object.id '
-                '%}">' + _("Abbrechen") + "</a>"
+                '<a class="btn btn-secondary" href="{% url \'project_list_models\' '
+                'model.transformation_mapping.project.id %}">' + _("Abbrechen") + "</a>"
             ),
         )
 

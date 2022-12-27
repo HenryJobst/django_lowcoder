@@ -1,8 +1,8 @@
-from typing import Any
+from typing import Any, Callable
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
-from django.http import QueryDict, HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView
@@ -23,6 +23,7 @@ from project.forms.forms_project import (
     ProjectDeleteModelForm,
     ProjectEditFieldForm,
     ProjectDeleteFieldForm,
+    ProjectImportForm,
 )
 from project.models import (
     TransformationMapping,
@@ -30,7 +31,6 @@ from project.models import (
     generate_random_admin_password,
     Field,
 )
-from project.services.cookiecutter_templete_expander import CookieCutterTemplateExpander
 from project.services.edit_model import (
     model_up,
     model_down,
@@ -38,23 +38,52 @@ from project.services.edit_model import (
     init_index,
     unset_main_entity,
     set_new_main_entity,
-    get_model_success_url,
-    get_field_success_url,
     field_up,
     field_down,
+    get_model_edit_or_next_url_p,
+    get_field_edit_or_next_url_p,
+    get_model_edit_or_next_url,
+    get_models_or_next_url,
+)
+from project.services.edit_project import (
+    get_project_edit_or_next_url,
+    deploy_project,
+    import_project,
+    get_projects_or_next_url,
 )
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
-from project.views.views import HtmxHttpRequest
+
+
+class NextMixin:
+    url_or_next_function: Callable[[str], str] = get_projects_or_next_url
+    url_or_next_function_with_pk: Callable[[str, int], str] | None = None
+    url_or_next_function_with_object: Callable[[str, Project], str] | Callable[
+        [str, Model], str
+    ] | Callable[[str, Field], str] | None = None
+
+    # noinspection PyUnresolvedReferences
+    def get_success_url(self) -> str:
+        if self.url_or_next_function_with_pk:
+            return self.url_or_next_function_with_pk(
+                self.request.GET.get("next"), self.kwargs.get("pk")
+            )
+        elif self.url_or_next_function_with_object:
+            return self.url_or_next_function_with_object(
+                self.request.GET.get("next"), self.object
+            )
+        else:
+            return self.url_or_next_function(self.request.GET.get("next"))
 
 
 class ProjectDetailView(LoginRequiredMixin, ModelUserFieldPermissionMixin, DetailView):
     model = Project
 
 
-class ProjectCreateView(LoginRequiredMixin, CreateView):
+class ProjectCreateView(LoginRequiredMixin, NextMixin, CreateView):
     model = Project
     form_class = ProjectEditForm
+    url_or_next_function = get_projects_or_next_url
 
     def form_valid(self, form):
         form.instance.user = self.request.user
@@ -65,9 +94,12 @@ class ProjectCreateView(LoginRequiredMixin, CreateView):
         return super().get_success_url()
 
 
-class ProjectUpdateView(LoginRequiredMixin, ModelUserFieldPermissionMixin, UpdateView):
+class ProjectUpdateView(
+    LoginRequiredMixin, ModelUserFieldPermissionMixin, NextMixin, UpdateView
+):
     model = Project
     form_class = ProjectEditForm
+    url_or_next_function_with_pk = get_project_edit_or_next_url
 
     def get_context_data(self, **kwargs):
         context = super(ProjectUpdateView, self).get_context_data(**kwargs)
@@ -75,40 +107,50 @@ class ProjectUpdateView(LoginRequiredMixin, ModelUserFieldPermissionMixin, Updat
         # parameter received from previous page to the context
         return context
 
-    def get_success_url(self):
+    def get_success_url(self) -> str:
         set_selection(self.request, self.kwargs["pk"])
-        next_url = self.request.GET.get("next")
-        return next_url if next_url else reverse_lazy("index")
+        return super().get_success_url()
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs) -> HttpResponse:
         set_selection(self.request, self.kwargs["pk"])
         return super().get(request, *args, **kwargs)
 
 
-class ProjectDeleteView(LoginRequiredMixin, ModelUserFieldPermissionMixin, DeleteView):
+class ProjectDeleteView(
+    LoginRequiredMixin, ModelUserFieldPermissionMixin, NextMixin, DeleteView
+):
     model = Project
     form_class = ProjectDeleteForm
-    success_url = reverse_lazy("index")
 
     def form_valid(self, form):
         reset_selection(request=self.request, pk=(self.kwargs["pk"]))
         return super().form_valid(form)
 
 
-class ProjectDeployView(LoginRequiredMixin, ModelUserFieldPermissionMixin, FormView):
+class ProjectDeployView(
+    LoginRequiredMixin, ModelUserFieldPermissionMixin, NextMixin, FormView
+):
     template_name = "project/project_deploy.html"
     form_class = ProjectDeployForm
-    success_url = reverse_lazy("index")
+    url_or_next_function = get_projects_or_next_url
 
     def form_valid(self, form):
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
-        self.deploy_project(self.request.user, project, self.request.POST)
+        deploy_project(self.request.user, project, self.request.POST)
         return super().form_valid(form)
 
-    @staticmethod
-    def deploy_project(user: Any, project: Project, post_dict: QueryDict) -> None:
-        expander = CookieCutterTemplateExpander(user, project, post_dict)
-        expander.expand()
+
+class ProjectImportView(
+    LoginRequiredMixin, ModelUserFieldPermissionMixin, NextMixin, FormView
+):
+    template_name = "project/project_import.html"
+    form_class = ProjectImportForm
+    url_or_next_function_with_pk = get_project_edit_or_next_url
+
+    def form_valid(self, form):
+        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+        import_project(self.request.user, project, self.request.POST)
+        return super().form_valid(form)
 
 
 class ProjectSelectView(
@@ -122,13 +164,13 @@ class ProjectSelectView(
 
 
 class ProjectUpdateSettingsView(
-    LoginRequiredMixin, ModelUserFieldPermissionMixin, UpdateView
+    LoginRequiredMixin, ModelUserFieldPermissionMixin, NextMixin, UpdateView
 ):
 
     model = ProjectSettings
     form_class = ProjectEditSettingsForm
-    success_url = reverse_lazy("project_detail")
     template_name = "project/project_settings_detail.html"
+    url_or_next_function_with_pk = get_project_edit_or_next_url
 
     def get_context_data(self, **kwargs):
         context = super(ProjectUpdateSettingsView, self).get_context_data(**kwargs)
@@ -147,8 +189,7 @@ class ProjectUpdateSettingsView(
 
     def get_success_url(self):
         set_selection(self.request, self.kwargs.get("pk", 0))
-        next_url = self.request.GET.get("next")
-        return next_url if next_url else reverse_lazy("index")
+        return super().get_success_url()
 
     # noinspection PyUnusedLocal
     def get_object(self, queryset=None):
@@ -161,24 +202,24 @@ class ProjectUpdateSettingsView(
         return model_object.project
 
 
-class ProjectModelViewMixin:
+class ProjectViewMixin(NextMixin):
+    url_or_next_function_with_pk = get_project_edit_or_next_url
+
+
+class ProjectModelViewMixin(NextMixin):
+    url_or_next_function_with_object = get_model_edit_or_next_url_p
+
     # noinspection PyMethodMayBeStatic
     def get_user_holder(self, model_object: Model):
         return model_object.transformation_mapping.project
 
-    # noinspection PyUnresolvedReferences
-    def get_success_url(self) -> str:
-        return get_model_success_url(self.object)
-
 
 class ProjectFieldViewMixin:
+    url_or_next_function_with_object = get_field_edit_or_next_url_p
+
     # noinspection PyMethodMayBeStatic
     def get_user_holder(self, field_object: Field):
         return field_object.model.transformation_mapping.project
-
-    # noinspection PyUnresolvedReferences
-    def get_success_url(self) -> str:
-        return get_field_success_url(self.object)
 
 
 class ProjectCreateModelView(LoginRequiredMixin, ProjectModelViewMixin, CreateView):
@@ -200,6 +241,12 @@ class ProjectCreateModelView(LoginRequiredMixin, ProjectModelViewMixin, CreateVi
         return initial
 
 
+class ProjectDetailModelView(
+    LoginRequiredMixin, ProjectModelViewMixin, ModelUserFieldPermissionMixin, DetailView
+):
+    model = Model
+
+
 class ProjectUpdateModelView(
     LoginRequiredMixin, ProjectModelViewMixin, ModelUserFieldPermissionMixin, UpdateView
 ):
@@ -219,9 +266,9 @@ class ProjectModelUpView(
     fields = []
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
-    def post(self, request: HtmxHttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        model: Model = model_up(*args, **kwargs)
-        return HttpResponseRedirect(get_model_success_url(model))
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        model_up(*args, **kwargs)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class ProjectModelDownView(
@@ -232,8 +279,8 @@ class ProjectModelDownView(
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        model: Model = model_down(*args, **kwargs)
-        return HttpResponseRedirect(get_model_success_url(model))
+        model_down(*args, **kwargs)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class ProjectDeleteModelView(
@@ -274,10 +321,12 @@ class ProjectSelectModelView(
     BaseDetailView,
 ):
     model = Model
+    url_or_next_function_with_object = None
+    url_or_next_function_with_pk = get_models_or_next_url
 
     def get(self, request, *args, **kwargs):
-        model = toggle_model_selection(request, self.kwargs.get("pk", 0))
-        return HttpResponseRedirect(get_model_success_url(model))
+        toggle_model_selection(request, self.kwargs.get("pk", 0))
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class ProjectListFieldsView(LoginRequiredMixin, ListView):
@@ -332,9 +381,9 @@ class ProjectFieldUpView(
     fields = []
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
-    def post(self, request: HtmxHttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        field: Field = field_up(*args, **kwargs)
-        return HttpResponseRedirect(get_field_success_url(field))
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        field_up(*args, **kwargs)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class ProjectFieldDownView(
@@ -345,8 +394,8 @@ class ProjectFieldDownView(
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
-        field: Field = field_down(*args, **kwargs)
-        return HttpResponseRedirect(get_field_success_url(field))
+        field_down(*args, **kwargs)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class ProjectDeleteFieldView(

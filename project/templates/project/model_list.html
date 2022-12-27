@@ -25,11 +25,11 @@
     {% for model in model_list %}
     <tr>
       <td>
-        <a href="{% url 'project_update_model' model.id %}">
+        <a href="{% url 'project_detail_model' model.id %}">
           {{ model.name }} </a>
       </td>
       <td>
-        {{ model.fields|length }}
+        {{ model.fields.all|length }}
       </td>
       <td>
         {{ model.is_main_entity|iconbool }}

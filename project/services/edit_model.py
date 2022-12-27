@@ -270,33 +270,41 @@ def set_new_main_entity(model: Model) -> None:
             lowest_entity.save()
 
 
-def get_model_success_url(model: Model) -> str:
-    """
-    The get_model_success_url function returns the URL of the project_list_models view,
-    which is a class-based generic list view that displays all models in a given project.
-    The function takes one argument: model, which is an instance of TransformationMapping.
-    This function uses reverse to return the URL for this page.
-
-    :param model:Model: Get the primary key of the model
-    :return: A string
-    :doc-author: Trelent
-    """
-    return reverse_lazy(
-        "project_list_models",
-        kwargs={"pk": model.transformation_mapping.project.id},
+# noinspection PyUnusedLocal
+def get_models_or_next_url(self: object, next_url: str, pk: int) -> str:
+    return (
+        next_url if next_url else reverse_lazy("project_list_models", kwargs={"pk": pk})
     )
 
 
-def get_field_success_url(field: Field) -> str:
-    """
-    The get_field_success_url function is a helper function that returns the URL of the page to which
-    the user should be redirected after successfully creating a new field. It accepts one parameter,
-    field, which is an instance of the Field model. The get_field_success_url function calls reverse() on
-    the project_list_fields URL name and passes it field.model.id as its argument; this causes Django to
-    look up the URL for that particular view with those particular arguments.
+# noinspection PyUnusedLocal
+def get_model_edit_or_next_url(self: object, next_url: str, pk: int) -> str:
+    return (
+        next_url
+        if next_url
+        else reverse_lazy("project_detail_model", kwargs={"pk": pk})
+    )
 
-    :param field:Field: Get the model id of the field
-    :return: The url of the page to which we are redirected after successfully adding a field
-    :doc-author: Trelent
-    """
-    return reverse_lazy("project_list_fields", kwargs={"pk": field.model.id})
+
+def get_model_edit_or_next_url_p(self: object, next_url: str, model: Model) -> str:
+    return get_model_edit_or_next_url(self, next_url, model.id)
+
+
+# noinspection PyUnusedLocal
+def get_fields_or_next_url(self: object, next_url: str, pk: int) -> str:
+    return (
+        next_url if next_url else reverse_lazy("project_list_fields", kwargs={"pk", pk})
+    )
+
+
+# noinspection PyUnusedLocal
+def get_field_edit_or_next_url(self: object, next_url: str, pk: int) -> str:
+    return (
+        next_url
+        if next_url
+        else reverse_lazy("project_update_field", kwargs={"pk": pk})
+    )
+
+
+def get_field_edit_or_next_url_p(self: object, next_url: str, field: Field) -> str:
+    return get_model_edit_or_next_url(self, next_url, field.id)

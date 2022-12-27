@@ -21,6 +21,8 @@ from project.views.views_project import (
     ProjectDeleteFieldView,
     ProjectFieldUpView,
     ProjectFieldDownView,
+    ProjectImportView,
+    ProjectDetailModelView,
 )
 from project.views.views_registration import LoginView, RegisterView
 from project.views.views import IndexView, favicon
@@ -34,6 +36,7 @@ urlpatterns = [
     path("<int:pk>/edit", ProjectUpdateView.as_view(), name="project_update"),
     path("<int:pk>/delete", ProjectDeleteView.as_view(), name="project_delete"),
     path("<int:pk>/deploy", ProjectDeployView.as_view(), name="project_deploy"),
+    path("<int:pk>/import", ProjectImportView.as_view(), name="project_import"),
     path("accounts/register", RegisterView.as_view(), name="register"),
     path("accounts/login", LoginView.as_view(), name="login"),
     path(
@@ -48,6 +51,11 @@ urlpatterns = [
         "<int:pk>/model/create",
         ProjectCreateModelView.as_view(),
         name="project_create_model",
+    ),
+    path(
+        "model/<int:pk>",
+        ProjectDetailModelView.as_view(),
+        name="project_detail_model",
     ),
     path(
         "model/<int:pk>/edit",

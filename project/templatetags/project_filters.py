@@ -20,10 +20,13 @@ def iconbool(value):
     """
     if bool(value):
         result = (
-            '<i class="feather-24" data-feather="check" title="Ja" aria-hidden="true"></i>'
+            '<i class="feather-24" data-feather="check-square" title="Ja" aria-hidden="true"></i>'
             '<span class="visually-hidden">Ja</span>'
         )
     else:
-        result = '<span class="visually-hidden">Nein</span>'
+        result = (
+            '<i class="feather-24" data-feather="x-square" title="Nein" aria-hidden="true"></i>'
+            '<span class="visually-hidden">Nein</span>'
+        )
 
     return mark_safe(result)
