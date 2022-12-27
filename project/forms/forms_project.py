@@ -134,7 +134,7 @@ class ProjectEditSettingsForm(ModelForm):
             ),
             Submit("submit", _("Speichern")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'project_detail\' project.id %}">'
+                '<a class="btn btn-secondary" href="{% url \'project_detail\' projectsettings.project.id %}">'
                 + _("Abbrechen")
                 + "</a>"
             ),

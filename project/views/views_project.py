@@ -42,8 +42,8 @@ from project.services.edit_model import (
     field_down,
     get_model_edit_or_next_url_p,
     get_field_edit_or_next_url_p,
-    get_model_edit_or_next_url,
-    get_models_or_next_url,
+    get_models_or_next_url_via_parent,
+    get_fields_or_next_url_via_parent,
 )
 from project.services.edit_project import (
     get_project_edit_or_next_url,
@@ -187,10 +187,6 @@ class ProjectUpdateSettingsView(
             self.initial["admin_password"] = generate_random_admin_password()
         return super().get_initial()
 
-    def get_success_url(self):
-        set_selection(self.request, self.kwargs.get("pk", 0))
-        return super().get_success_url()
-
     # noinspection PyUnusedLocal
     def get_object(self, queryset=None):
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
@@ -214,7 +210,7 @@ class ProjectModelViewMixin(NextMixin):
         return model_object.transformation_mapping.project
 
 
-class ProjectFieldViewMixin:
+class ProjectFieldViewMixin(NextMixin):
     url_or_next_function_with_object = get_field_edit_or_next_url_p
 
     # noinspection PyMethodMayBeStatic
@@ -264,6 +260,8 @@ class ProjectModelUpView(
 ):
     model = Model
     fields = []
+    url_or_next_function_with_object = None
+    url_or_next_function_with_pk = get_models_or_next_url_via_parent
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -276,6 +274,8 @@ class ProjectModelDownView(
 ):
     model = Model
     fields = []
+    url_or_next_function_with_object = None
+    url_or_next_function_with_pk = get_models_or_next_url_via_parent
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -322,7 +322,7 @@ class ProjectSelectModelView(
 ):
     model = Model
     url_or_next_function_with_object = None
-    url_or_next_function_with_pk = get_models_or_next_url
+    url_or_next_function_with_pk = get_models_or_next_url_via_parent
 
     def get(self, request, *args, **kwargs):
         toggle_model_selection(request, self.kwargs.get("pk", 0))
@@ -379,6 +379,8 @@ class ProjectFieldUpView(
 ):
     model = Field
     fields = []
+    url_or_next_function_with_object = None
+    url_or_next_function_with_pk = get_fields_or_next_url_via_parent
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -391,6 +393,8 @@ class ProjectFieldDownView(
 ):
     model = Field
     fields = []
+    url_or_next_function_with_object = None
+    url_or_next_function_with_pk = get_fields_or_next_url_via_parent
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:

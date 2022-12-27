@@ -6,6 +6,12 @@
 <p>Tabellen: {{ object.transformationmapping.models.all|length }}</p>
 <p>Erzeugt: {{ object.created_at|date:'SHORT_DATETIME_FORMAT' }}</p>
 <p>Modifiziert: {{ object.updated_at|date:'SHORT_DATETIME_FORMAT' }}</p>
+<hr>
+<p>Administrator-Benutzername: {{ object.projectsettings.admin_name }}</p>
+<p>Administrator-Passwort: {{ object.projectsettings.admin_password }}</p>
+<p>Demo-Nutzer-Benutzername: {{ object.projectsettings.demo_user_name }}</p>
+<p>Demo-Nutzer-Passwort: {{ object.projectsettings.demo_user_password|default_if_none:"-" }}</p>
+<p>Domain: {{ object.projectsettings.domain_name|default_if_none:"-" }}</p>
 <a class="btn btn-primary"
    href="{% url 'project_update' object.id %}?next={{request.path}}">Bearbeiten</a>
 <a class="btn btn-secondary"

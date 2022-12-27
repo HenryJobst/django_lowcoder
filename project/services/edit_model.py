@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from project.models import Model, TransformationMapping, Project, Field
 
 
+# noinspection GrazieInspection
 def set_index(model: Model | Field, index: int) -> None:
     """
     The set_index function is a helper function that allows us to change the index of a model.
@@ -30,6 +31,7 @@ def set_index(model: Model | Field, index: int) -> None:
         save_with_index(model, index)
 
 
+# noinspection GrazieInspection
 def save_with_index(model: Model | Field, index: int) -> int:
     """
     The save_with_index function is a helper function that allows us to save the model with an index.
@@ -46,6 +48,7 @@ def save_with_index(model: Model | Field, index: int) -> int:
     return old_index
 
 
+# noinspection GrazieInspection
 def switch_index(actual_entity: Model | Field, other_entity: Model | Field) -> None:
     """
     The switch_index function is used to switch the index of two models.
@@ -88,6 +91,7 @@ def get_max_index(tm: TransformationMapping) -> int:
     )
 
 
+# noinspection GrazieInspection
 def get_max_field_index(model: Model) -> int:
     """
     The get_max_field_index function returns the maximum index of all fields in a model.
@@ -99,6 +103,7 @@ def get_max_field_index(model: Model) -> int:
     return Field.objects.filter(model=model).aggregate(max=Max("index")).get("max", 0)
 
 
+# noinspection PyIncorrectDocstring,GrazieInspection
 def model_up(*args, **kwargs) -> Model:
     """
     The model_up function takes a model as an argument and sets its index to the next highest integer.
@@ -119,6 +124,7 @@ def model_up(*args, **kwargs) -> Model:
     return actual_model
 
 
+# noinspection PyIncorrectDocstring
 def model_down(*args, **kwargs) -> Model:
     """
     The model_down function is used to move a model down in the list of models
@@ -144,6 +150,7 @@ def model_down(*args, **kwargs) -> Model:
     return actual_model
 
 
+# noinspection PyIncorrectDocstring
 def field_up(*args, **kwargs) -> Field:
     """
     The field_up function takes a field and moves it up one position in the list of fields.
@@ -163,6 +170,7 @@ def field_up(*args, **kwargs) -> Field:
     return actual_field
 
 
+# noinspection PyIncorrectDocstring
 def field_down(*args, **kwargs) -> Field:
     """
     The field_down function moves the field with the given pk down one position in
@@ -203,6 +211,7 @@ def init_main_entity(project: Project) -> int:
     return not main_entity if main_entity else 1
 
 
+# noinspection GrazieInspection
 def init_index(entity: Model | Field):
     """
     The init_index function is used to assign an index value to a model or field.
@@ -225,6 +234,7 @@ def init_index(entity: Model | Field):
         entity.index = max_index + 1
 
 
+# noinspection GrazieInspection
 def unset_main_entity(model: Model) -> None:
     """
     The unset_main_entity function is used to unset the main entity of a transformation mapping.
@@ -243,6 +253,7 @@ def unset_main_entity(model: Model) -> None:
         ).update(is_main_entity=0)
 
 
+# noinspection GrazieInspection
 def set_new_main_entity(model: Model) -> None:
     """
     The set_new_main_entity function is used to set the main entity of a transformation mapping.
@@ -271,9 +282,26 @@ def set_new_main_entity(model: Model) -> None:
 
 
 # noinspection PyUnusedLocal
-def get_models_or_next_url(self: object, next_url: str, pk: int) -> str:
+def get_models_or_next_url(self: object, next_url: str, project_pk: int) -> str:
     return (
-        next_url if next_url else reverse_lazy("project_list_models", kwargs={"pk": pk})
+        next_url
+        if next_url
+        else reverse_lazy("project_list_models", kwargs={"pk": project_pk})
+    )
+
+
+# noinspection PyUnusedLocal
+def get_models_or_next_url_via_parent(
+    self: object, next_url: str, model_pk: int
+) -> str:
+    model: Model = Model.objects.get(pk=model_pk)
+    return (
+        next_url
+        if next_url
+        else reverse_lazy(
+            "project_list_models",
+            kwargs={"pk": model.transformation_mapping.project.id},
+        )
     )
 
 
@@ -286,14 +314,29 @@ def get_model_edit_or_next_url(self: object, next_url: str, pk: int) -> str:
     )
 
 
+# noinspection PyUnresolvedReferences
 def get_model_edit_or_next_url_p(self: object, next_url: str, model: Model) -> str:
     return get_model_edit_or_next_url(self, next_url, model.id)
 
 
 # noinspection PyUnusedLocal
-def get_fields_or_next_url(self: object, next_url: str, pk: int) -> str:
+def get_fields_or_next_url(self: object, next_url: str, model_pk: int) -> str:
     return (
-        next_url if next_url else reverse_lazy("project_list_fields", kwargs={"pk", pk})
+        next_url
+        if next_url
+        else reverse_lazy("project_list_fields", kwargs={"pk": model_pk})
+    )
+
+
+# noinspection PyUnusedLocal
+def get_fields_or_next_url_via_parent(
+    self: object, next_url: str, field_pk: int
+) -> str:
+    field: Field = Field.objects.get(pk=field_pk)
+    return (
+        next_url
+        if next_url
+        else reverse_lazy("project_list_fields", kwargs={"pk": field.model.id})
     )
 
 
@@ -306,5 +349,6 @@ def get_field_edit_or_next_url(self: object, next_url: str, pk: int) -> str:
     )
 
 
+# noinspection PyUnresolvedReferences
 def get_field_edit_or_next_url_p(self: object, next_url: str, field: Field) -> str:
     return get_model_edit_or_next_url(self, next_url, field.id)
