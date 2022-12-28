@@ -8,13 +8,19 @@ from django.forms import (
     TypedChoiceField,
     RadioSelect,
     Form,
-    FilePathField,
     FileField,
+    ClearableFileInput,
 )
 from django.utils.translation import gettext_lazy as _
 
-import project.models
-from project.models import Project, ProjectSettings, Model
+from project.models import (
+    Project,
+    ProjectSettings,
+    Model,
+    Field as ModelField,
+    TransformationFile,
+    VALID_MIMETYPES,
+)
 
 
 class ProjectEditForm(ModelForm):
@@ -31,10 +37,8 @@ class ProjectEditForm(ModelForm):
             ),
             HTML(
                 "{% if project %}"
-                + '<a class="btn btn-primary mb-3" href="{% url \'project_import\' project.id %}">'
-                + _("Datei importieren")
-                + "</a>"
-                + "{% endif %}"
+                + '<a class="btn btn-primary mb-3" href="{% url \'project_create_file\' project.id %}?next={{'
+                'next_url}}">' + _("Datei importieren") + "</a>" + "{% endif %}"
             ),
             Fieldset(
                 "",
@@ -106,28 +110,6 @@ class ProjectDeployForm(Form):
         fields = ["type"]
 
 
-class ProjectImportForm(Form):
-    file = FileField()
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.form_method = "post"
-        self.helper.form_class = "w-100 m-auto"
-        self.helper.layout = Layout(
-            Fieldset(_("Datei importieren"), Field("file")),
-            Submit("submit", _("Start")),
-            HTML(
-                '<a class="btn btn-secondary" href="{% url \'project_detail\' project.id %}">'
-                + _("Abbrechen")
-                + "</a>"
-            ),
-        )
-
-    class Meta:
-        fields = ["file"]
-
-
 class ProjectEditSettingsForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -145,7 +127,7 @@ class ProjectEditSettingsForm(ModelForm):
             ),
             Submit("submit", _("Speichern")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'project_detail\' projectsettings.project.id %}">'
+                '<a class="btn btn-secondary" href="{% url \'project_detail\' object.project.id %}">'
                 + _("Abbrechen")
                 + "</a>"
             ),
@@ -176,8 +158,8 @@ class ProjectEditModelForm(ModelForm):
             ),
             Submit("submit", _("Speichern")),
             HTML(
-                "{% if model.id %}"
-                + '<a class="btn btn-secondary" href="{% url \'project_detail_model\' model.id %}">'
+                "{% if object.id %}"
+                + '<a class="btn btn-secondary" href="{% url \'project_detail_model\' object.id %}">'
                 + _("Abbrechen")
                 + "</a>"
                 + "{% elif project %}"
@@ -207,7 +189,7 @@ class ProjectDeleteModelForm(ModelForm):
             Submit("submit", _("Bestätigen")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'project_list_models\' '
-                "model.transformation_mapping.project.id "
+                "object.transformation_mapping.project.id "
                 '%}">' + _("Abbrechen") + "</a>"
             ),
         )
@@ -237,8 +219,8 @@ class ProjectEditFieldForm(ModelForm):
             ),
             Submit("submit", _("Speichern")),
             HTML(
-                "{% if field.id %}"
-                + '<a class="btn btn-secondary" href="{% url \'project_detail_field\' field.id %}">'
+                "{% if object.id %}"
+                + '<a class="btn btn-secondary" href="{% url \'project_detail_field\' object.id %}">'
                 + _("Abbrechen")
                 + "</a>"
                 + "{% elif model %}"
@@ -250,7 +232,7 @@ class ProjectEditFieldForm(ModelForm):
         )
 
     class Meta:
-        model = project.models.Field
+        model = ModelField
         fields = [
             "name",
             "datatype",
@@ -283,5 +265,64 @@ class ProjectDeleteFieldForm(ModelForm):
         )
 
     class Meta:
-        model = Model
+        model = ModelField
+        fields: List = []
+
+
+class ProjectEditFileForm(ModelForm):
+    file = FileField(
+        label=_("Datei"),
+        localize=True,
+        help_text=_("Wählen sie eine Datei zum Import."),
+        widget=ClearableFileInput(attrs={"accept": ",".join(VALID_MIMETYPES)}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_method = "post"
+        self.helper.form_class = "m-auto"
+        self.helper.layout = Layout(
+            Field("file"),
+            Submit("submit", _("Speichern")),
+            HTML(
+                "{% if object.id %}"
+                + '<a class="btn btn-secondary" href="{% url \'project_list_files\' '
+                'object.transformation_mapping.project.id %}">'
+                + _("Abbrechen")
+                + "</a>"
+                + "{% elif project %}"
+                + '<a class="btn btn-secondary" href="{% url \'project_list_files\' project.id %}">'
+                + _("Abbrechen")
+                + "</a>"
+                + "{% endif %}"
+            ),
+        )
+
+    class Meta:
+        model = TransformationFile
+        fields = ["file"]
+
+
+class ProjectDeleteFileForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_method = "post"
+        self.helper.form_class = "w-100 m-auto text-center"
+        self.helper.layout = Layout(
+            HTML(
+                """<p>Wollen Sie die Datei <b>{{ object.file }}</b>
+                wirklich löschen?</p>"""
+            ),
+            Submit("submit", _("Bestätigen")),
+            HTML(
+                '<a class="btn btn-secondary" href="{% url \'project_list_files\' '
+                "object.transformation_mapping.project.id "
+                '%}">' + _("Abbrechen") + "</a>"
+            ),
+        )
+
+    class Meta:
+        model = TransformationFile
         fields: List = []

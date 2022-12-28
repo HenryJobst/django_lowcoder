@@ -2,7 +2,13 @@ from django.db.models import Max
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 
-from project.models import Model, TransformationMapping, Project, Field
+from project.models import (
+    Model,
+    TransformationMapping,
+    Project,
+    Field,
+    TransformationFile,
+)
 
 
 # noinspection GrazieInspection
@@ -352,3 +358,23 @@ def get_field_edit_or_next_url(self: object, next_url: str, pk: int) -> str:
 # noinspection PyUnresolvedReferences
 def get_field_edit_or_next_url_p(self: object, next_url: str, field: Field) -> str:
     return get_model_edit_or_next_url(self, next_url, field.id)
+
+
+# noinspection PyUnresolvedReferences
+def get_file_edit_or_next_url_p(
+    self: object, next_url: str, file: TransformationFile
+) -> str:
+    return get_files_or_next_url_via_parent(self, next_url, file.id)
+
+
+# noinspection PyUnusedLocal
+def get_files_or_next_url_via_parent(self: object, next_url: str, file_pk: int) -> str:
+    file: TransformationFile = TransformationFile.objects.get(pk=file_pk)
+    return (
+        next_url
+        if next_url
+        else reverse_lazy(
+            "project_list_files",
+            kwargs={"pk": file.transformation_mapping.project.id},
+        )
+    )

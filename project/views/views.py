@@ -1,15 +1,21 @@
+from http import HTTPStatus
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
-from django.http import HttpResponse, HttpRequest
-from django.views.decorators.http import require_GET
+from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
+from django.views.decorators.http import require_GET, require_POST
 from django.views.generic import ListView
 from django_htmx.middleware import HtmxDetails
 
-from project.models import Project
+import project.services.import_file
+from project.models import Project, TransformationFile
 
 
 # Typing pattern recommended by django-stubs:
-# https://github.com/typeddjango/django-stubs#how-can-i-create-a-httprequest-thats-guaranteed-to-have-an-authenticated-user
+# https://github.com/typeddjango/django-stubs#how-can-i-create-a-httprequest-thats-guaranteed-to-have-an
+# -authenticated-user
 class HtmxHttpRequest(HttpRequest):
     htmx: HtmxDetails
 
@@ -25,6 +31,10 @@ def favicon(request: HtmxHttpRequest) -> HttpResponse:
         ),
         content_type="image/svg+xml",
     )
+
+
+class HttpResponseUnprocessableEntity(HttpResponse):
+    status_code = HTTPStatus.UNPROCESSABLE_ENTITY
 
 
 class IndexView(LoginRequiredMixin, ListView):

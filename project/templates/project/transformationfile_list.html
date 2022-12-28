@@ -1,0 +1,60 @@
+{% extends "project/base_generic.html" %}
+
+{% block content %}
+{% load project_filters %}
+<h1 class="h2">Dateien ({{ transformationfile_list|length }})</h1>
+<div>
+  <a role="button"
+     href="{% url 'project_create_file' request.session.selected %}"><i
+    class="feather-48" data-feather="folder-plus"></i>
+  </a>
+</div>
+{% if transformationfile_list %}
+<div class="table-responsive">
+  <table id="file-table" class="table table-striped table-sm">
+    <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Blätter</th>
+      <th scope="col">Tabellen</th>
+      <th scope="col">Spalten</th>
+      <th scope="col">Aktionen</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for file in transformationfile_list %}
+    <tr>
+      <td>
+        {{ file.file.name }}
+      </td>
+      <td>
+        {{ file.sheets.all|length }}
+      </td>
+      <td>
+        {{ file.sheets.headlines.all|length }}
+      </td>
+      <td>
+        {{ file.sheets.headlines.columns.all|length }}
+      </td>
+      <td>
+        <a hx-ext="debug" hx-post="{% url 'project_import_file' file.id %}"
+           hx-trigger="click" hx-target="#file-table" hx-select="#file-table" hx-swap="innerHTML"
+           title="Import"
+           role="button"
+           href="#"><i
+          class="feather-24 align-top me-1"
+          data-feather="fast-forward"></i></a>
+        <a title="Löschen" role="button"
+           href="{% url 'project_delete_file' file.id %}?next={{request.path}}"><i
+          class="feather-24 align-top me-1"
+          data-feather="trash-2"></i></a>
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p>Es gibt noch keine Dateien.</p>
+{% endif %}
+{% endblock %}
