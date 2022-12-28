@@ -89,8 +89,18 @@ class ProjectListMixin(NextMixin):
     url_or_next_function_with_pk = get_projects_or_next_url
 
 
+class ProjectSelectionMixin:
+    def get(self, request, *args, **kwargs) -> HttpResponse:
+        set_selection(self.request, self.kwargs["pk"])
+        return super().get(request, *args, **kwargs)
+
+
 class ProjectDetailView(
-    LoginRequiredMixin, ProjectViewMixin, ModelUserFieldPermissionMixin, DetailView
+    LoginRequiredMixin,
+    ProjectViewMixin,
+    ModelUserFieldPermissionMixin,
+    ProjectSelectionMixin,
+    DetailView,
 ):
     model = Project
 
@@ -109,7 +119,11 @@ class ProjectCreateView(LoginRequiredMixin, ProjectListMixin, CreateView):
 
 
 class ProjectUpdateView(
-    LoginRequiredMixin, ModelUserFieldPermissionMixin, ProjectViewMixin, UpdateView
+    LoginRequiredMixin,
+    ModelUserFieldPermissionMixin,
+    ProjectViewMixin,
+    ProjectSelectionMixin,
+    UpdateView,
 ):
     model = Project
     form_class = ProjectEditForm
@@ -124,13 +138,13 @@ class ProjectUpdateView(
         set_selection(self.request, self.kwargs["pk"])
         return super().get_success_url()
 
-    def get(self, request, *args, **kwargs) -> HttpResponse:
-        set_selection(self.request, self.kwargs["pk"])
-        return super().get(request, *args, **kwargs)
-
 
 class ProjectDeleteView(
-    LoginRequiredMixin, ModelUserFieldPermissionMixin, NextMixin, DeleteView
+    LoginRequiredMixin,
+    ModelUserFieldPermissionMixin,
+    NextMixin,
+    ProjectSelectionMixin,
+    DeleteView,
 ):
     model = Project
     form_class = ProjectDeleteForm
@@ -141,7 +155,11 @@ class ProjectDeleteView(
 
 
 class ProjectDeployView(
-    LoginRequiredMixin, ProjectListMixin, ModelUserFieldPermissionMixin, FormView
+    LoginRequiredMixin,
+    ProjectListMixin,
+    ModelUserFieldPermissionMixin,
+    ProjectSelectionMixin,
+    FormView,
 ):
     template_name = "project/project_deploy.html"
     form_class = ProjectDeployForm
@@ -158,7 +176,11 @@ class ProjectDeployView(
 
 @method_decorator(csrf_exempt, name="dispatch")
 class ProjectImportView(
-    LoginRequiredMixin, ProjectViewMixin, ModelUserFieldPermissionMixin, FormView
+    LoginRequiredMixin,
+    ProjectViewMixin,
+    ModelUserFieldPermissionMixin,
+    ProjectSelectionMixin,
+    FormView,
 ):
     template_name = "project/project_import.html"
     form_class = ProjectImportForm

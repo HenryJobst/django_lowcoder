@@ -111,9 +111,20 @@
              class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
             <div class="position-sticky pt-3 sidebar-sticky">
                 {% block sidebar %}
+                {% url 'index' as url_index %}
+                {% url 'project_detail' request.session.selected as url_project_detail %}
+                {% url 'project_update' request.session.selected as url_project_update %}
+                {% url 'project_delete' request.session.selected as url_project_delete %}
+                {% url 'project_update_settings' request.session.selected as url_project_settings %}
+                {% url 'project_deploy' request.session.selected as url_project_deploy %}
+                {% url 'project_import' request.session.selected as url_project_import %}
+                {% url 'project_list_models' request.session.selected as url_project_list_models %}
+                {% url 'project_list_fields' request.session.selected_model as url_project_list_fields %}
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="{% url 'index' %}">
+                        <a class="nav-link {% if request.path == url_index %}active{% endif %}"
+                           aria-current="page"
+                           href="{% url 'index' %}">
                             <span data-feather="home"
                                   class="align-text-bottom"></span>
                             Projekte
@@ -121,7 +132,9 @@
                     </li>
                     {% if 'selected' in request.session and request.session.selected != 0 %}
                     <ul class="nav nav-item flex-column ps-2">
-                    <li><a class="nav-link active" aria-current="page"
+                    <li><a
+                      class="nav-link {% if request.path == url_project_detail or request.path == url_project_update or request.path == url_project_delete or request.path == url_project_deploy or request.path == url_project_import %}active{% endif %}"
+                           aria-current="page"
                            href="{% url 'project_detail' request.session.selected %}">
                             <span data-feather="book-open"
                                   class="align-text-bottom"></span>
@@ -129,14 +142,16 @@
                         </a>
                     </li>
                     <ul class="nav nav-item flex-column ps-2">
-                    <li><a class="nav-link active" aria-current="page"
+                    <li><a class="nav-link {% if request.path == url_project_settings %}active{% endif %}"
+                           aria-current="page"
                            href="{% url 'project_update_settings' request.session.selected %}">
                             <span data-feather="more-horizontal"
                                   class="align-text-bottom"></span>
                         Einstellungen
                     </a>
                     </li>
-                    <li><a class="nav-link active" aria-current="page"
+                    <li><a class="nav-link {%if request.path == url_project_list_models%}active{%endif%}"
+                           aria-current="page"
                            href="{% url 'project_list_models' request.session.selected %}">
                             <span data-feather="list"
                                   class="align-text-bottom"></span>
@@ -145,7 +160,9 @@
                     </li>
                       {% if 'selected_model' in request.session and request.session.selected_model != 0 %}
                       <ul class="nav nav-item flex-column ps-2">
-                        <li><a class="nav-link active" aria-current="page"
+                        <li><a
+                          class="nav-link {%if request.path == url_project_list_fields %}active{% endif %}"
+                          aria-current="page"
                                href="{% url 'project_list_fields' request.session.selected_model %}">
                             <span data-feather="book-open"
                                   class="align-text-bottom"></span>
