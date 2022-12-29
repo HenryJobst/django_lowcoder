@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Any, Callable
 
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -521,9 +522,9 @@ class ProjectImportFileView(
     def get_initial(self) -> dict[str, Any]:
         initial = super().get_initial()
         file: TransformationFile = self.get_object()
-        successfull, models = import_file(file)
+        successfull, df_by_sheet = import_file(Path(file))
         if successfull:
-            initial["models"] = models
+            initial["df_by_sheet"] = df_by_sheet
         return initial
 
     def get_object(self):
