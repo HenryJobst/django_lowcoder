@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
@@ -6,6 +7,7 @@ from pandas import ExcelFile, DataFrame
 
 
 class Importer:
+    @dataclass
     class SheetReaderParams:
         def __init__(self):
             self.header = 0
@@ -18,7 +20,7 @@ class Importer:
     def __init__(
         self,
         filepath: Path,
-    ):
+        ):
         self.filepath: Path = filepath
         self.is_csv = self.filepath.suffix == ".csv"
         if not self.is_csv:
@@ -34,14 +36,14 @@ class Importer:
         self,
         sheet_name: str,
         sheet_reader_params: SheetReaderParams = SheetReaderParams(),
-    ) -> DataFrame:
+        ) -> DataFrame:
         if self.is_csv:
             df = pd.read_csv(
                 self.filepath,
                 engine="python",
                 sep=None,  # automatic detection
                 encoding_errors="replace",
-            )
+                )
         else:
             df = pd.read_excel(
                 self.xlsx,
@@ -54,7 +56,7 @@ class Importer:
                 skipfooter=sheet_reader_params.skipfooter,
                 dtype=object,  # no conversion
                 decimal=",",  # use "," as decimal point
-            )
+                )
 
         return df
 
@@ -64,9 +66,9 @@ class Importer:
             columns={
                 column: slugify(column).replace("-", "_")
                 for column in dataframe.columns
-            },
+                },
             inplace=True,
-        )
+            )
 
         print()
         print("---")

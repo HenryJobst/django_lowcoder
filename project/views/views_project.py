@@ -5,6 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect
+from django.template.defaultfilters import slugify
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView
 from django.views.generic.detail import BaseDetailView
@@ -26,6 +27,8 @@ from project.forms.forms_project import (
     ProjectDeleteFieldForm,
     ProjectEditFileForm,
     ProjectDeleteFileForm,
+    ProjectImportFileForm,
+    var_name,
 )
 from project.models import (
     TransformationMapping,
@@ -55,8 +58,11 @@ from project.services.edit_project import (
     get_projects_or_next_url,
 )
 from project.services.import_file import import_file
+from project.services.importer import Importer
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
+
+SHEET_PARAMS = "sheet_params"
 
 NEXT_URL_PARAM = "next"
 
@@ -173,7 +179,9 @@ class ProjectDeployView(
         return super().form_valid(form)
 
     def get_object(self):
-        return get_object_or_404(Project, *self.args, **self.kwargs)
+        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+        set_selection(self.request, project.pk)
+        return project
 
 
 class ProjectSelectView(
@@ -213,6 +221,7 @@ class ProjectUpdateSettingsView(
     # noinspection PyUnusedLocal
     def get_object(self, queryset=None):
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+        set_selection(self.request, project.pk)
         obj, created = ProjectSettings.objects.get_or_create(project=project)
         return obj
 
@@ -261,7 +270,9 @@ class ProjectCreateModelView(
 
     # noinspection PyUnusedLocal
     def get_object(self, **kwargs):
-        return get_object_or_404(Project, *self.args, **self.kwargs)
+        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+        set_selection(self.request, project.pk)
+        return project
 
     def form_valid(self, form):
         tm, created = TransformationMapping.objects.get_or_create(
@@ -345,7 +356,7 @@ class ProjectListModelsView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         if self.request.user.is_authenticated:
             project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
-
+            set_selection(self.request, project.pk)
             user = self.request.user
             if not user.is_superuser and project.user != user:
                 return super().handle_no_permission()
@@ -380,6 +391,7 @@ class ProjectListFieldsView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         if self.request.user.is_authenticated:
             model: Model = get_object_or_404(Model, *self.args, **self.kwargs)
+            set_model_selection(self.request, model.pk)
 
             user = self.request.user
             if (
@@ -399,8 +411,11 @@ class ProjectCreateFieldView(
     model = Field
     form_class = ProjectEditFieldForm
 
-    def get_object(self):
-        return get_object_or_404(Model, *self.args, **self.kwargs)
+    # noinspection PyUnusedLocal
+    def get_object(self, **kwargs):
+        model: Model = get_object_or_404(Model, *self.args, **self.kwargs)
+        set_model_selection(self.request, model.pk)
+        return model
 
     def form_valid(self, form):
         form.instance.model = self.get_object()
@@ -467,7 +482,7 @@ class ProjectListFilesView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         if self.request.user.is_authenticated:
             project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
-
+            set_selection(self.request, project.pk)
             user = self.request.user
             if not user.is_superuser and project.user != user:
                 return super().handle_no_permission()
@@ -488,7 +503,9 @@ class ProjectCreateFileView(
     form_class = ProjectEditFileForm
 
     def get_object(self):
-        return get_object_or_404(Project, *self.args, **self.kwargs)
+        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+        set_selection(self.request, project.pk)
+        return project
 
     def form_valid(self, form):
         tm, created = TransformationMapping.objects.get_or_create(
@@ -513,8 +530,44 @@ class ProjectDeleteFileView(
 class ProjectImportFileView(
     LoginRequiredMixin, ProjectFileViewMixin, ModelUserFieldPermissionMixin, FormView
 ):
-
     model = TransformationFile
+    template_name = "project/project_import.html"
+
+    def get_form(self, form_class=None):
+        file: TransformationFile = self.get_object()
+        importer = Importer(Path(file.file.path))
+        sheet_params = self.get_session_sheet_params(importer.sheets())
+        successfull, df_by_sheet = import_file(importer, sheet_params)
+        assert successfull
+        self.set_session_sheet_params(df_by_sheet)
+
+        form = ProjectImportFileForm(**self.get_form_kwargs())
+        form.init_helper(df_by_sheet, file.pk)
+        return form
+
+    def set_session_sheet_params(self, df_by_sheet):
+        sheet_params: dict[str, Importer.SheetReaderParams] = {}
+        for k, v in df_by_sheet.items():
+            sheet = slugify(k)
+            sheet_params[sheet] = v[1]
+        self.request.session[SHEET_PARAMS] = sheet_params
+
+    def get_session_sheet_params(
+        self, sheets: list[str]
+    ) -> dict[str, Importer.SheetReaderParams]:
+        sheet_params = {}
+        if SHEET_PARAMS in self.request.session:
+            session_params = self.request.session[SHEET_PARAMS]
+            for s in sheets:
+                sheet = slugify(s)
+                if sheet in session_params:
+                    sheet_params[sheet] = session_params[sheet]
+                else:
+                    sheet_params[sheet] = Importer.SheetReaderParams()
+                sheet_params[sheet].header = self.request.GET.get(
+                    var_name(sheet, "header"), sheet_params[sheet].header
+                )
+        return sheet_params
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         return super().post(request, *args, **kwargs)
@@ -522,10 +575,22 @@ class ProjectImportFileView(
     def get_initial(self) -> dict[str, Any]:
         initial = super().get_initial()
         file: TransformationFile = self.get_object()
-        successfull, df_by_sheet = import_file(Path(file))
+        successfull, df_by_sheet = import_file(Importer(Path(file.file.path)))
         if successfull:
             initial["df_by_sheet"] = df_by_sheet
         return initial
 
     def get_object(self):
-        return get_object_or_404(TransformationFile, *self.args, **self.kwargs)
+        file: TransformationFile = get_object_or_404(
+            TransformationFile, *self.args, **self.kwargs
+        )
+        set_selection(self.request, file.transformation_mapping.project.id)
+        return file
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        file: TransformationFile = self.get_object()
+        successfull, df_by_sheet = import_file(Importer(Path(file.file.path)))
+        if successfull:
+            context["df_by_sheet"] = df_by_sheet
+        return context

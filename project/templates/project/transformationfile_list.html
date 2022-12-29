@@ -37,11 +37,8 @@
         {{ file.sheets.headlines.columns.all|length }}
       </td>
       <td>
-        <a hx-ext="debug" hx-post="{% url 'project_import_file' file.id %}"
-           hx-trigger="click" hx-target="#file-table" hx-select="#file-table" hx-swap="innerHTML"
-           title="Import"
-           role="button"
-           href="#"><i
+        <a title="Import" role="button"
+           href="{% url 'project_import_file' file.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="fast-forward"></i></a>
         <a title="Löschen" role="button"

@@ -111,6 +111,7 @@ def set_model_selection(request: HttpRequest, pk: int) -> Model:
     :doc-author: Trelent
     """
     model = Model.objects.get(pk=pk)
+    set_selection(request, model.transformation_mapping.project.id)
     request.session[SELECTED_MODEL] = pk
     request.session[SELECTED_MODEL_NAME] = model.name
     return model
