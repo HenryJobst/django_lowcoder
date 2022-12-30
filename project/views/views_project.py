@@ -58,12 +58,24 @@ from project.services.edit_project import (
     get_projects_or_next_url,
 )
 from project.services.import_file import import_file
-from project.services.importer import Importer
+from project.services.importer import (
+    Importer,
+    SheetReaderParams,
+    READ_PARAM_HEADER,
+    READ_PARAM_USECOLS,
+    READ_PARAM_INDEX_COL,
+    READ_PARAM_NROWS,
+    READ_PARAM_SKIPROWS,
+    READ_PARAM_SKIPFOOTER,
+    TABLE_PARAM_HEAD_ROWS,
+    TABLE_PARAM_TAIL_ROWS,
+    convert_param,
+)
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
 
-SHEET_PARAMS = "sheet_params"
 
+SHEET_PARAMS = "sheet_params"
 NEXT_URL_PARAM = "next"
 
 
@@ -543,10 +555,11 @@ class ProjectImportFileView(
 
         form = ProjectImportFileForm(**self.get_form_kwargs())
         form.init_helper(df_by_sheet, file.pk)
+
         return form
 
     def set_session_sheet_params(self, df_by_sheet):
-        sheet_params: dict[str, Importer.SheetReaderParams] = {}
+        sheet_params: dict[str, SheetReaderParams] = {}
         for k, v in df_by_sheet.items():
             sheet = slugify(k)
             sheet_params[sheet] = v[1]
@@ -554,7 +567,7 @@ class ProjectImportFileView(
 
     def get_session_sheet_params(
         self, sheets: list[str]
-    ) -> dict[str, Importer.SheetReaderParams]:
+    ) -> dict[str, SheetReaderParams]:
         sheet_params = {}
         if SHEET_PARAMS in self.request.session:
             session_params = self.request.session[SHEET_PARAMS]
@@ -563,11 +576,32 @@ class ProjectImportFileView(
                 if sheet in session_params:
                     sheet_params[sheet] = session_params[sheet]
                 else:
-                    sheet_params[sheet] = Importer.SheetReaderParams()
-                sheet_params[sheet].header = self.request.GET.get(
-                    var_name(sheet, "header"), sheet_params[sheet].header
+                    sheet_params[sheet] = SheetReaderParams()
+
+                sheet_params = self.set_param(sheet_params, sheet, READ_PARAM_HEADER)
+                sheet_params = self.set_param(sheet_params, sheet, READ_PARAM_INDEX_COL)
+                sheet_params = self.set_param(sheet_params, sheet, READ_PARAM_NROWS)
+                sheet_params = self.set_param(
+                    sheet_params, sheet, READ_PARAM_SKIPFOOTER
                 )
+                sheet_params = self.set_param(sheet_params, sheet, READ_PARAM_SKIPROWS)
+                sheet_params = self.set_param(sheet_params, sheet, READ_PARAM_USECOLS)
+                sheet_params = self.set_param(
+                    sheet_params, sheet, TABLE_PARAM_HEAD_ROWS
+                )
+                sheet_params = self.set_param(
+                    sheet_params, sheet, TABLE_PARAM_TAIL_ROWS
+                )
+
         return sheet_params
+
+    def set_param(self, sheet_params, sheet, param):
+        local_sheet_params = sheet_params
+        form_value = self.request.GET.get(
+            var_name(sheet, param), local_sheet_params[sheet].get(param)
+        )
+        local_sheet_params[sheet][param] = convert_param(param, form_value)
+        return local_sheet_params
 
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         return super().post(request, *args, **kwargs)

@@ -1,26 +1,73 @@
-from dataclasses import dataclass
 from pathlib import Path
+from typing import Sequence, Callable
 
 import pandas as pd
 from django.template.defaultfilters import slugify
 from pandas import ExcelFile, DataFrame
 
+READ_PARAM_HEADER = "header"
+READ_PARAM_INDEX_COL = "index_col"
+READ_PARAM_NROWS = "nrows"
+READ_PARAM_SKIPFOOTER = "skipfooter"
+READ_PARAM_SKIPROWS = "skiprows"
+READ_PARAM_USECOLS = "usecols"
 
-class Importer:
-    @dataclass
-    class SheetReaderParams:
-        def __init__(self):
-            self.header = 0
-            self.usecols = None
-            self.index_col = None
-            self.skiprows = None
-            self.nrows = None
-            self.skipfooter = 0
+TABLE_PARAM_HEAD_ROWS = "head_rows"
+TABLE_PARAM_TAIL_ROWS = "tail_rows"
+DEFAULT_HEAD_TAIL_ROWS = 5
 
+
+def convert_param(param, value):
+    if param == READ_PARAM_HEADER:
+        return int(value) if value else 0
+    elif param == READ_PARAM_USECOLS:
+        return str(value) if value and value != "" else None
+    elif param == READ_PARAM_SKIPROWS:
+        return int(value) if value else None
+    elif param == READ_PARAM_NROWS:
+        return int(value) if value else None
+    elif param == READ_PARAM_SKIPFOOTER:
+        return int(value) if value else 0
+    elif param == TABLE_PARAM_HEAD_ROWS:
+        return int(value) if value else DEFAULT_HEAD_TAIL_ROWS
+    elif param == TABLE_PARAM_TAIL_ROWS:
+        return int(value) if value else DEFAULT_HEAD_TAIL_ROWS
+
+    return None
+
+
+class SheetReaderParams(dict):
     def __init__(
         self,
-        filepath: Path,
-        ):
+        header: int | Sequence[int] | None = 0,
+        usecols: int
+        | str
+        | Sequence[int]
+        | Sequence[str]
+        | Callable[[str], bool]
+        | None = None,
+        index_col: int | Sequence[int] | None = None,
+        skiprows: Sequence[int] | int | Callable[[int], object] | None = None,
+        nrows: int | None = None,
+        skipfooter: int = 0,
+        head_rows: int = DEFAULT_HEAD_TAIL_ROWS,
+        tail_rows: int = DEFAULT_HEAD_TAIL_ROWS,
+    ):
+        dict.__init__(
+            self,
+            header=header,
+            usecols=usecols,
+            index_col=index_col,
+            skiprows=skiprows,
+            nrows=nrows,
+            skipfooter=skipfooter,
+            head_rows=head_rows,
+            tail_rows=tail_rows,
+        )
+
+
+class Importer:
+    def __init__(self, filepath: Path):
         self.filepath: Path = filepath
         self.is_csv = self.filepath.suffix == ".csv"
         if not self.is_csv:
@@ -35,28 +82,28 @@ class Importer:
     def run(
         self,
         sheet_name: str,
-        sheet_reader_params: SheetReaderParams = SheetReaderParams(),
-        ) -> DataFrame:
+        sheet_reader_params: SheetReaderParams,
+    ) -> DataFrame:
         if self.is_csv:
             df = pd.read_csv(
                 self.filepath,
                 engine="python",
                 sep=None,  # automatic detection
                 encoding_errors="replace",
-                )
+            )
         else:
             df = pd.read_excel(
                 self.xlsx,
                 sheet_name=sheet_name,
-                header=sheet_reader_params.header,
-                usecols=sheet_reader_params.usecols,
-                index_col=sheet_reader_params.index_col,
-                skiprows=sheet_reader_params.skiprows,
-                nrows=sheet_reader_params.nrows,
-                skipfooter=sheet_reader_params.skipfooter,
+                header=sheet_reader_params.get(READ_PARAM_HEADER),
+                usecols=sheet_reader_params.get(READ_PARAM_USECOLS),
+                index_col=sheet_reader_params.get(READ_PARAM_INDEX_COL),
+                skiprows=sheet_reader_params.get(READ_PARAM_SKIPROWS),
+                nrows=sheet_reader_params.get(READ_PARAM_NROWS),
+                skipfooter=sheet_reader_params.get(READ_PARAM_SKIPFOOTER),
                 dtype=object,  # no conversion
                 decimal=",",  # use "," as decimal point
-                )
+            )
 
         return df
 
@@ -66,9 +113,9 @@ class Importer:
             columns={
                 column: slugify(column).replace("-", "_")
                 for column in dataframe.columns
-                },
+            },
             inplace=True,
-            )
+        )
 
         print()
         print("---")

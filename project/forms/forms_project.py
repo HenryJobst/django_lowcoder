@@ -27,7 +27,23 @@ from project.models import (
     TransformationFile,
     VALID_MIMETYPES,
 )
-from project.services.importer import Importer
+from project.services.importer import (
+    SheetReaderParams,
+    READ_PARAM_HEADER,
+    READ_PARAM_USECOLS,
+    READ_PARAM_NROWS,
+    READ_PARAM_SKIPROWS,
+    READ_PARAM_SKIPFOOTER,
+    TABLE_PARAM_HEAD_ROWS,
+    TABLE_PARAM_TAIL_ROWS,
+    DEFAULT_HEAD_TAIL_ROWS,
+)
+
+TABLE_FULL = "table-full"
+TABLE_HEAD = "table-head"
+TABLE_TAIL = "table-tail"
+
+SETTINGS = "settings"
 
 
 class ProjectEditForm(ModelForm):
@@ -339,6 +355,27 @@ def var_name(sheet_name: str, v_name: str) -> str:
     return slugify(sheet_name.lower() + "_" + v_name)
 
 
+def var_name_id(sheet_name: str, v_name: str) -> str:
+    return "#" + var_name(sheet_name, v_name)
+
+
+class FloatingFieldWithHtmx(FloatingField):
+    def __init__(self, file_pk, sheet, *args, **kwargs):
+        self.add_to_kwargs("hx_get", get_success_url(file_pk), kwargs)
+        self.add_to_kwargs("hx_include", var_name_id(sheet, SETTINGS), kwargs)
+        self.add_to_kwargs("hx_target", var_name_id(sheet, TABLE_FULL), kwargs)
+        self.add_to_kwargs("hx_select", var_name_id(sheet, TABLE_FULL), kwargs)
+        super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def add_to_kwargs(key, value, kwargs):
+        kwargs[key] = value
+
+
+def get_success_url(file_pk):
+    return reverse_lazy("project_import_file", kwargs={"pk": file_pk})
+
+
 class ProjectImportFileForm(Form):
 
     # noinspection PyUnusedLocal
@@ -360,10 +397,10 @@ class ProjectImportFileForm(Form):
     def init_helper(self, df_by_sheet, file_pk: int):
         tab_holder: TabHolder = TabHolder()
         sheet: str
-        df_settings: tuple[DataFrame, Importer.SheetReaderParams]
+        df_settings: tuple[DataFrame, SheetReaderParams]
         for sheet, df_settings in df_by_sheet.items():
             df: DataFrame = df_settings[0]
-            settings: Importer.SheetReaderParams = df_settings[1]
+            settings: SheetReaderParams = df_settings[1]
             self.register_fields(sheet, settings)
             tab_holder.fields.append(
                 Tab(
@@ -375,70 +412,116 @@ class ProjectImportFileForm(Form):
                     Div(
                         Row(
                             Column(
-                                FloatingField(
-                                    Field(
-                                        var_name(sheet, "header"),
-                                        hx_get=reverse_lazy(
-                                            "project_import_file",
-                                            kwargs={"pk": file_pk},
-                                        ),
-                                        hx_include=("#" + var_name(sheet, "settings")),
-                                        hx_target=("#" + var_name(sheet, "table-head")),
-                                        hx_select=("#" + var_name(sheet, "table-head")),
-                                    )
+                                FloatingFieldWithHtmx(
+                                    file_pk,
+                                    sheet,
+                                    var_name(sheet, READ_PARAM_HEADER),
                                 ),
                                 css_class="form-group col-md-4 mb-0",
                             ),
                             Column(
-                                FloatingField(var_name(sheet, "usecols")),
+                                FloatingFieldWithHtmx(
+                                    file_pk,
+                                    sheet,
+                                    var_name(sheet, READ_PARAM_USECOLS),
+                                ),
                                 css_class="form-group col-md-4 mb-0",
                             ),
                             Column(
-                                FloatingField(var_name(sheet, "nrows")),
+                                FloatingFieldWithHtmx(
+                                    file_pk,
+                                    sheet,
+                                    var_name(sheet, READ_PARAM_NROWS),
+                                ),
                                 css_class="form-group col-md-4 mb-0",
                             ),
                             css_class="form-row",
                         ),
                         Row(
                             Column(
-                                FloatingField(var_name(sheet, "skiprows")),
+                                FloatingFieldWithHtmx(
+                                    file_pk,
+                                    sheet,
+                                    var_name(sheet, READ_PARAM_SKIPROWS),
+                                ),
                                 css_class="form-group col-md-4 mb-0",
                             ),
                             Column(
-                                FloatingField(var_name(sheet, "skipfooter")),
+                                FloatingFieldWithHtmx(
+                                    file_pk,
+                                    sheet,
+                                    var_name(sheet, READ_PARAM_SKIPFOOTER),
+                                ),
                                 css_class="form-group col-md-4 mb-0",
                             ),
                             css_class="form-row",
                         ),
-                        css_id=var_name(sheet, "settings"),
+                        css_id=var_name(sheet, SETTINGS),
                     ),
                     HTML("<hr>"),
                     HTML("<h5>" + _("Tabellenausschnitt") + "</h5>"),
                     Div(
-                        HTML("<h6>" + _("Kopfteil") + "</h6>"),
                         Div(
-                            HTML(
-                                df.head().to_html(
-                                    table_id=var_name(sheet, "table-head"),
-                                    classes="table table-striped table-bordered table-sm ",
-                                )
+                            Row(
+                                Column(
+                                    HTML("<h6>" + _("Kopfteil") + "</h6>"),
+                                    css_class="form-group col-md-10 mb-0",
+                                ),
+                                Column(
+                                    FloatingFieldWithHtmx(
+                                        file_pk,
+                                        sheet,
+                                        var_name(sheet, TABLE_PARAM_HEAD_ROWS),
+                                    ),
+                                    css_class="form-group col-md-2 mb-0",
+                                ),
+                                css_class="form-row",
                             ),
-                            css_class="table-responsive",
+                            Div(
+                                HTML(
+                                    df.head(
+                                        n=settings.get(TABLE_PARAM_HEAD_ROWS)
+                                    ).to_html(
+                                        table_id=var_name(sheet, TABLE_HEAD),
+                                        classes="table table-striped table-bordered table-sm",
+                                        justify="left",
+                                    )
+                                ),
+                                css_class="table-responsive",
+                            ),
+                            css_class="form-row mt-3",
                         ),
-                        css_class="form-row",
-                    ),
-                    Div(
-                        HTML("<h6>" + _("Fußteil") + "</h6>"),
                         Div(
-                            HTML(
-                                df.tail().to_html(
-                                    table_id=var_name(sheet, "table-tail"),
-                                    classes="table table-striped table-bordered table-sm ",
-                                )
+                            Row(
+                                Column(
+                                    HTML("<h6>" + _("Fußteil") + "</h6>"),
+                                    css_class="form-group col-md-10 mb-0",
+                                ),
+                                Column(
+                                    FloatingFieldWithHtmx(
+                                        file_pk,
+                                        sheet,
+                                        var_name(sheet, TABLE_PARAM_TAIL_ROWS),
+                                    ),
+                                    css_class="form-group col-md-2 mb-0",
+                                ),
+                                css_class="form-row",
                             ),
-                            css_class="table-responsive",
+                            Div(
+                                HTML(
+                                    df.tail(
+                                        n=settings.get(TABLE_PARAM_TAIL_ROWS)
+                                    ).to_html(
+                                        table_id=var_name(sheet, TABLE_TAIL),
+                                        classes="table table-striped table-bordered table-sm",
+                                        justify="left",
+                                    )
+                                ),
+                                css_class="table-responsive",
+                            ),
+                            css_class="form-row mt-3",
                         ),
-                        css_class="form-row",
+                        css_id=var_name(sheet, TABLE_FULL),
                     ),
                 )
             )
@@ -446,59 +529,79 @@ class ProjectImportFileForm(Form):
         self.helper.layout.fields.append(tab_holder)
         self.helper.layout.fields.append(Submit("submit", _("Import")))
 
-    def register_fields(self, sheet, settings):
+    def register_fields(self, sheet: str, settings: SheetReaderParams):
         self.register_field(
-            var_name(sheet, "header"),
+            var_name(sheet, READ_PARAM_HEADER),
             IntegerField(
                 label=_("Tabellenkopf"),
                 help_text=_("Zeile für den Tabellenkopf (0-basiert)"),
                 required=True,
-                initial=settings.header,
+                initial=settings.get(READ_PARAM_HEADER),
                 min_value=0,
             ),
         )
         self.register_field(
-            var_name(sheet, "usecols"),
+            var_name(sheet, READ_PARAM_USECOLS),
             CharField(
                 label=_("Tabellenbereich"),
                 help_text=_(
                     "Ausschnitt der Tabelle (Form: 'A:E' or 'A,C,E:F' - leer: alle Spalten)"
                 ),
                 required=False,
-                initial=settings.usecols,
+                initial=settings.get(READ_PARAM_USECOLS),
             ),
         )
         self.register_field(
-            var_name(sheet, "nrows"),
+            var_name(sheet, READ_PARAM_NROWS),
             IntegerField(
                 label=_("Zeilenanzahl"),
                 help_text=_("Anzahl der Zeilen (leer: alle Zeilen)"),
                 required=False,
-                initial=settings.nrows,
+                initial=settings.get(READ_PARAM_NROWS),
                 min_value=0,
             ),
         )
         self.register_field(
-            var_name(sheet, "skiprows"),
+            var_name(sheet, READ_PARAM_SKIPROWS),
             IntegerField(
                 label=_("Übersprungene Zeilen am Anfang"),
                 help_text=_(
                     "Anzahl der zu überspringenden Zeilen am Anfang (leer: keine Zeilen)"
                 ),
                 required=False,
-                initial=settings.skiprows,
+                initial=settings.get(READ_PARAM_SKIPROWS),
                 min_value=0,
             ),
         )
         self.register_field(
-            var_name(sheet, "skipfooter"),
+            var_name(sheet, READ_PARAM_SKIPFOOTER),
             IntegerField(
                 label=_("Ausgelassene Zeilen am Ende"),
                 help_text=_(
                     "Anzahl der ausgelassenen Zeilen am Ende (0: keine Zeilen)"
                 ),
                 required=True,
-                initial=settings.skipfooter,
+                initial=settings.get(READ_PARAM_SKIPFOOTER),
                 min_value=0,
+            ),
+        )
+        self.register_field(
+            var_name(sheet, TABLE_PARAM_HEAD_ROWS),
+            IntegerField(
+                label=_("Zeilenanzahl"),
+                initial=settings.get(TABLE_PARAM_HEAD_ROWS, DEFAULT_HEAD_TAIL_ROWS),
+                min_value=3,
+                max_value=100,
+                required=True,
+            ),
+        )
+        self.register_field(
+            var_name(sheet, TABLE_PARAM_TAIL_ROWS),
+            IntegerField(
+                label=_("Zeilenanzahl"),
+                initial=settings.get(TABLE_PARAM_TAIL_ROWS, DEFAULT_HEAD_TAIL_ROWS),
+                min_value=3,
+                max_value=100,
+                required=True,
             ),
         )
