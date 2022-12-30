@@ -14,7 +14,7 @@ from django.views.generic.edit import (
     DeleteView,
     UpdateView,
     FormView,
-)
+    )
 
 from project.forms.forms_project import (
     ProjectEditForm,
@@ -94,7 +94,7 @@ class NextMixin:
             )
         elif self.url_or_next_function_with_object:
             return self.url_or_next_function_with_object(
-                self.request.GET.get(NEXT_URL_PARAM), self.object
+                self.request.GET.get(NEXT_URL_PARAM), self.get_object()
             )
         else:
             return self.url_or_next_function(self.request.GET.get(NEXT_URL_PARAM))
@@ -542,21 +542,26 @@ class ProjectDeleteFileView(
 class ProjectImportFileView(
     LoginRequiredMixin, ProjectFileViewMixin, ModelUserFieldPermissionMixin, FormView
 ):
+
     model = TransformationFile
     template_name = "project/project_import.html"
 
     def get_form(self, form_class=None):
         file: TransformationFile = self.get_object()
-        importer = Importer(Path(file.file.path))
-        sheet_params = self.get_session_sheet_params(importer.sheets())
-        successfull, df_by_sheet = import_file(importer, sheet_params)
-        assert successfull
-        self.set_session_sheet_params(df_by_sheet)
+        df_by_sheet = self.get_df_by_sheet(file)
 
         form = ProjectImportFileForm(**self.get_form_kwargs())
         form.init_helper(df_by_sheet, file.pk)
 
         return form
+
+    def get_df_by_sheet(self, file):
+        importer = Importer(Path(file.file.path))
+        sheet_params = self.get_session_sheet_params(importer.sheets())
+        successfull, df_by_sheet = import_file(importer, sheet_params)
+        assert successfull
+        self.set_session_sheet_params(df_by_sheet)
+        return df_by_sheet
 
     def set_session_sheet_params(self, df_by_sheet):
         sheet_params: dict[str, SheetReaderParams] = {}
@@ -606,13 +611,8 @@ class ProjectImportFileView(
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         return super().post(request, *args, **kwargs)
 
-    def get_initial(self) -> dict[str, Any]:
-        initial = super().get_initial()
-        file: TransformationFile = self.get_object()
-        successfull, df_by_sheet = import_file(Importer(Path(file.file.path)))
-        if successfull:
-            initial["df_by_sheet"] = df_by_sheet
-        return initial
+    def form_valid(self, form) -> HttpResponse:
+        return super().form_valid(form)
 
     def get_object(self):
         file: TransformationFile = get_object_or_404(
@@ -621,10 +621,3 @@ class ProjectImportFileView(
         set_selection(self.request, file.transformation_mapping.project.id)
         return file
 
-    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        context = super().get_context_data(**kwargs)
-        file: TransformationFile = self.get_object()
-        successfull, df_by_sheet = import_file(Importer(Path(file.file.path)))
-        if successfull:
-            context["df_by_sheet"] = df_by_sheet
-        return context

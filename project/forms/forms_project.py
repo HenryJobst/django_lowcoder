@@ -379,9 +379,9 @@ def get_success_url(file_pk):
 class ProjectImportFileForm(Form):
 
     # noinspection PyUnusedLocal
-    def __init__(self, **kwargs):
-        super().__init__()
-        self.helper = FormHelper()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
         self.helper.layout = Layout()
 
     def register_field(self, field_name, field):
