@@ -161,6 +161,10 @@ class TransformationHeadline(models.Model):
     )
     row_index = models.IntegerField()
 
+    class Meta:
+        ordering = ["transformation_sheet", "row_index"]
+        unique_together = ["transformation_sheet", "row_index"]
+
 
 class TransformationColumn(models.Model):
     column_index = models.IntegerField()
@@ -168,13 +172,20 @@ class TransformationColumn(models.Model):
         TransformationHeadline, on_delete=models.CASCADE, related_name="columns"
     )
 
+    class Meta:
+        ordering = ["transformation_headline", "column_index"]
+        unique_together = ["transformation_headline", "column_index"]
+
 
 class Model(TimeStampMixin, models.Model):
     name = models.CharField(
         "Name", max_length=100, validators=[MinLengthValidator(MIN_MODEL_NAME_LENGTH)]
     )
     transformation_headline = models.OneToOneField(
-        TransformationHeadline, on_delete=models.SET_NULL, null=True
+        TransformationHeadline,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="models",
     )
     transformation_mapping = models.ForeignKey(
         TransformationMapping,

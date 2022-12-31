@@ -14,7 +14,8 @@ from django.views.generic.edit import (
     DeleteView,
     UpdateView,
     FormView,
-    )
+)
+from pandas import DataFrame
 
 from project.forms.forms_project import (
     ProjectEditForm,
@@ -73,7 +74,6 @@ from project.services.importer import (
 )
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
-
 
 SHEET_PARAMS = "sheet_params"
 NEXT_URL_PARAM = "next"
@@ -548,20 +548,22 @@ class ProjectImportFileView(
 
     def get_form(self, form_class=None):
         file: TransformationFile = self.get_object()
-        df_by_sheet = self.get_df_by_sheet(file)
+        df_by_sheet, importer = self.get_df_by_sheet(file)
 
         form = ProjectImportFileForm(**self.get_form_kwargs())
         form.init_helper(df_by_sheet, file.pk)
 
         return form
 
-    def get_df_by_sheet(self, file):
+    def get_df_by_sheet(
+        self, file: TransformationFile
+    ) -> tuple[dict[str, tuple[DataFrame, SheetReaderParams]], Importer]:
         importer = Importer(Path(file.file.path))
         sheet_params = self.get_session_sheet_params(importer.sheets())
         successfull, df_by_sheet = import_file(importer, sheet_params)
         assert successfull
         self.set_session_sheet_params(df_by_sheet)
-        return df_by_sheet
+        return df_by_sheet, importer
 
     def set_session_sheet_params(self, df_by_sheet):
         sheet_params: dict[str, SheetReaderParams] = {}
@@ -612,6 +614,10 @@ class ProjectImportFileView(
         return super().post(request, *args, **kwargs)
 
     def form_valid(self, form) -> HttpResponse:
+        file: TransformationFile = self.get_object()
+        df_by_sheet, importer = self.get_df_by_sheet(file)
+        clean_existing_models = True
+        importer.create_models(file, df_by_sheet, clean_existing_models)
         return super().form_valid(form)
 
     def get_object(self):
@@ -620,4 +626,3 @@ class ProjectImportFileView(
         )
         set_selection(self.request, file.transformation_mapping.project.id)
         return file
-
