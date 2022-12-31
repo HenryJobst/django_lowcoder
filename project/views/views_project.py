@@ -71,6 +71,7 @@ from project.services.importer import (
     TABLE_PARAM_HEAD_ROWS,
     TABLE_PARAM_TAIL_ROWS,
     convert_param,
+    create_models,
 )
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
@@ -617,7 +618,7 @@ class ProjectImportFileView(
         file: TransformationFile = self.get_object()
         df_by_sheet, importer = self.get_df_by_sheet(file)
         clean_existing_models = True
-        importer.create_models(file, df_by_sheet, clean_existing_models)
+        create_models(self.request, file, df_by_sheet, clean_existing_models)
         return super().form_valid(form)
 
     def get_object(self):

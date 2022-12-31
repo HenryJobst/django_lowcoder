@@ -5,7 +5,7 @@ description = "Web application to generate crud web applications out ofexcel spr
 authors = ["Henry Jobst <github@jobst-berlin.de>"]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<3.12"
 Django = "^4.1.4"
 django-crispy-forms = "^1.14.0"
 crispy-bootstrap5 = "^0.7"
@@ -24,6 +24,7 @@ django-htmx = "^1.13.0"
 pandas = "^1.5.2"
 openpyxl = "^3.0.10"
 xlrd = "^2.0.1"
+pandas-stubs = "^1.5.2"
 
 [tool.poetry.dev-dependencies]
 tox = {version = "^4.0.16"}

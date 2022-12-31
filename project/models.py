@@ -32,18 +32,18 @@ VALID_MIMETYPES = [
 
 
 class TimeStampMixin(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)  # type: ignore
+    updated_at = models.DateTimeField(auto_now=True)  # type: ignore
 
     class Meta:
         abstract = True
 
 
 class Project(TimeStampMixin, models.Model):
-    user = models.ForeignKey(
+    user = models.ForeignKey(  # type: ignore
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+"
     )
-    name = models.CharField(
+    name = models.CharField(  # type: ignore
         "Name",
         max_length=MAX_PROJECT_NAME_LENGTH,
         unique=True,
@@ -51,9 +51,11 @@ class Project(TimeStampMixin, models.Model):
         blank=False,
         validators=[MinLengthValidator(MIN_PROJECT_NAME_LENGTH)],
     )
-    description = models.CharField(
+    description = models.CharField(  # type: ignore
         "Beschreibung", max_length=1000, null=True, blank=True
     )
+
+    projectsettings = "ProjectSettings"  # forward decl for mypy
 
     class Meta:
         ordering = ["name"]
@@ -84,27 +86,27 @@ class NullOrMinLengthValidator(BaseValidator):
 
 
 class ProjectSettings(models.Model):
-    project = models.OneToOneField(
+    project = models.OneToOneField(  # type: ignore
         Project,
         on_delete=models.CASCADE,
         primary_key=True,
     )
-    domain_name = models.CharField(
+    domain_name = models.CharField(  # type: ignore
         "Domain", max_length=100, null=True, validators=[MinLengthValidator(4)]
     )
-    admin_name = models.CharField(
+    admin_name = models.CharField(  # type: ignore
         "Administrator-Benutzername",
         max_length=60,
         default="admin",
         validators=[MinLengthValidator(MIN_USER_NAME_LENGTH)],
     )
-    admin_password = models.CharField(
+    admin_password = models.CharField(  # type: ignore
         "Administrator-Passwort",
         max_length=100,
         default=generate_random_admin_password(),
         validators=[MinLengthValidator(MIN_PASSWORD_LENGTH)],
     )
-    demo_user_name = models.CharField(
+    demo_user_name = models.CharField(  # type: ignore
         "Demo-Nutzer-Benutzername",
         max_length=60,
         null=True,
@@ -112,7 +114,7 @@ class ProjectSettings(models.Model):
         default="demo",
         validators=[NullOrMinLengthValidator(MIN_USER_NAME_LENGTH)],
     )
-    demo_user_password = models.CharField(
+    demo_user_password = models.CharField(  # type: ignore
         "Demo-Nutzer-Passwort",
         max_length=100,
         null=True,
@@ -126,20 +128,26 @@ class ProjectSettings(models.Model):
 
 
 class TransformationMapping(models.Model):
-    project = models.OneToOneField(
+    project = models.OneToOneField(  # type: ignore
         Project,
         on_delete=models.CASCADE,
         primary_key=True,
     )
 
+    files: models.QuerySet["TransformationFile"]  # forward decl for mypy
+    models: models.QuerySet["Model"]  # forward decl for mypy
+
 
 class TransformationFile(models.Model):
-    transformation_mapping = models.ForeignKey(
+    transformation_mapping = models.ForeignKey(  # type: ignore
         TransformationMapping,
         on_delete=models.CASCADE,
         null=False,
         related_name="files",
     )
+
+    sheets: models.QuerySet["TransformationSheet"]  # forward decl for mypy
+
     file = models.FileField(
         "Datei",
         unique=True,
@@ -147,19 +155,34 @@ class TransformationFile(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=VALID_SUFFIXES)],
     )
 
+    class Meta:
+        ordering = ["transformation_mapping", "file"]
+        unique_together = ["transformation_mapping", "file"]
+
 
 class TransformationSheet(models.Model):
-    transformation_file = models.ForeignKey(
+    transformation_file = models.ForeignKey(  # type: ignore
         TransformationFile, on_delete=models.CASCADE, related_name="sheets"
     )
-    index = models.IntegerField()
+
+    headlines: models.QuerySet["TransformationHeadline"]  # forward decl for mypy
+
+    index = models.IntegerField()  # type: ignore
+
+    class Meta:
+        ordering = ["transformation_file", "index"]
+        unique_together = ["transformation_file", "index"]
 
 
 class TransformationHeadline(models.Model):
-    transformation_sheet = models.ForeignKey(
+    transformation_sheet = models.ForeignKey(  # type: ignore
         TransformationSheet, on_delete=models.CASCADE, related_name="headlines"
     )
-    row_index = models.IntegerField()
+
+    columns: models.QuerySet["TransformationColumn"]  # forward decl for mypy
+    model: "Model"  # forward decl for mypy
+
+    row_index = models.IntegerField()  # type: ignore
 
     class Meta:
         ordering = ["transformation_sheet", "row_index"]
@@ -167,10 +190,12 @@ class TransformationHeadline(models.Model):
 
 
 class TransformationColumn(models.Model):
-    column_index = models.IntegerField()
-    transformation_headline = models.ForeignKey(
+    column_index = models.IntegerField()  # type: ignore
+    transformation_headline = models.ForeignKey(  # type: ignore
         TransformationHeadline, on_delete=models.CASCADE, related_name="columns"
     )
+
+    field: "Field"  # forward decl for mypy
 
     class Meta:
         ordering = ["transformation_headline", "column_index"]
@@ -178,28 +203,30 @@ class TransformationColumn(models.Model):
 
 
 class Model(TimeStampMixin, models.Model):
-    name = models.CharField(
+    name = models.CharField(  # type: ignore
         "Name", max_length=100, validators=[MinLengthValidator(MIN_MODEL_NAME_LENGTH)]
     )
-    transformation_headline = models.OneToOneField(
+    transformation_headline = models.OneToOneField(  # type: ignore
         TransformationHeadline,
         on_delete=models.SET_NULL,
         null=True,
-        related_name="models",
+        related_name="model",
     )
-    transformation_mapping = models.ForeignKey(
+    transformation_mapping = models.ForeignKey(  # type: ignore
         TransformationMapping,
         on_delete=models.CASCADE,
         null=False,
         related_name="models",
     )
-    is_main_entity = models.BooleanField("Haupt-Tabelle?", default=False)
-    index = models.PositiveSmallIntegerField(
+    is_main_entity = models.BooleanField("Haupt-Tabelle?", default=False)  # type: ignore
+    index = models.PositiveSmallIntegerField(  # type: ignore
         "Reihenfolge", null=True, validators=[MinValueValidator(1)]
     )
 
+    fields: models.QuerySet["Field"]  # forward decl for mypy
+
     class Meta:
-        ordering = ["index"]
+        ordering = ["index", "transformation_mapping"]
         unique_together = ["index", "transformation_mapping"]
 
     def unique_error_message(self, model_class, unique_check):
@@ -244,35 +271,35 @@ class Field(TimeStampMixin, models.Model):
         (27, "UUIDField"),
     ]
 
-    name = models.CharField(
+    name = models.CharField(  # type: ignore
         "Name", max_length=100, validators=[MinLengthValidator(MIN_FIELD_NAME_LENGTH)]
     )
-    transformation_column = models.ForeignKey(
+    transformation_column = models.ForeignKey(  # type: ignore
         TransformationColumn, on_delete=models.SET_NULL, null=True
     )
-    model = models.ForeignKey(Model, on_delete=models.CASCADE, related_name="fields")
-    datatype = models.IntegerField(
+    model = models.ForeignKey(Model, on_delete=models.CASCADE, related_name="fields")  # type: ignore
+    datatype = models.IntegerField(  # type: ignore
         "Datentyp", choices=DATATYPES, default=DATATYPES[4][0]
     )
-    datatype_length = models.IntegerField("Länge", null=True, blank=True)
-    default_value = models.CharField(
+    datatype_length = models.IntegerField("Länge", null=True, blank=True)  # type: ignore
+    default_value = models.CharField(  # type: ignore
         "Standardwert", max_length=100, null=True, blank=True
     )
-    foreign_key_entity = models.ForeignKey(
+    foreign_key_entity = models.ForeignKey(  # type: ignore
         Model, on_delete=models.SET_NULL, null=True, blank=True
     )
-    is_unique = models.BooleanField("Eindeutig?", default=False, blank=True)
-    use_index = models.BooleanField("Index?", default=False)
-    validation_pattern = models.CharField(
+    is_unique = models.BooleanField("Eindeutig?", default=False, blank=True)  # type: ignore
+    use_index = models.BooleanField("Index?", default=False)  # type: ignore
+    validation_pattern = models.CharField(  # type: ignore
         "Prüfmuster", max_length=100, null=True, blank=True
     )
-    show_in_list = models.BooleanField("Anzeigen?", default=True)
-    index = models.PositiveSmallIntegerField(
+    show_in_list = models.BooleanField("Anzeigen?", default=True)  # type: ignore
+    index = models.PositiveSmallIntegerField(  # type: ignore
         "Reihenfolge", null=True, validators=[MinValueValidator(1)]
     )
 
     class Meta:
-        ordering = ["index"]
+        ordering = ["index", "model"]
         unique_together = ["index", "model"]
 
     def unique_error_message(self, model_class, unique_check):
