@@ -2,9 +2,9 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Fieldset, HTML
-from crispy_bootstrap5.bootstrap5 import FloatingField
+from crispy_forms.helper import FormHelper  # type: ignore
+from crispy_forms.layout import Submit, Layout, Fieldset, HTML  # type: ignore
+from crispy_bootstrap5.bootstrap5 import FloatingField  # type: ignore
 
 from project.views.views_project import NEXT_URL_PARAM
 
@@ -43,30 +43,6 @@ class RegisterForm(UserCreationForm):
 
 class LoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
-        """
-        The __init__ function is called when an instance of the class is created.
-        It initializes all the variables and sets up a layout for our form.
-        The helper object allows us to set up how our form will be rendered,
-        and what functionality to include.
-
-        :param self: Reference the current instance of the class
-        :param *args: Pass a non-keyworded, variable-length argument list
-        :param **kwargs: Pass any additional keyword arguments that are passed to the constructor of the parent class
-        :return: The layout of the form
-        :doc-author: Trelent
-        """
-        """
-        The __init__ function is called when an instance of the class is created.
-        It initializes all the variables and sets up a layout for our form.
-        The helper object allows us to set up how our form will be rendered,
-        and what functionality to include.
-
-        :param self: Reference the current instance of the class
-        :param *args: Pass a non-keyworded, variable-length argument list
-        :param **kwargs: Pass any additional keyword arguments that are passed to the constructor of the parent class
-        :return: The layout of the form
-        :doc-author: Trelent
-        """
         super().__init__(*args, **kwargs)
         self.helper = FormHelper(self)
         self.helper.form_method = "post"

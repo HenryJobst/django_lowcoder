@@ -1,9 +1,9 @@
 from typing import List
 
-from crispy_bootstrap5.bootstrap5 import FloatingField
-from crispy_forms.bootstrap import TabHolder, Tab
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Submit, Layout, Fieldset, HTML, Field, Row, Column, Div
+from crispy_bootstrap5.bootstrap5 import FloatingField  # type: ignore
+from crispy_forms.bootstrap import TabHolder, Tab  # type: ignore
+from crispy_forms.helper import FormHelper  # type: ignore
+from crispy_forms.layout import Submit, Layout, Fieldset, HTML, Field, Row, Column, Div  # type: ignore
 from django.forms import (
     ModelForm,
     TypedChoiceField,
@@ -480,7 +480,10 @@ class ProjectImportFileForm(Form):
                             Div(
                                 HTML(
                                     df.head(
-                                        n=settings.get(TABLE_PARAM_HEAD_ROWS)
+                                        n=settings.get(
+                                            TABLE_PARAM_HEAD_ROWS,
+                                            DEFAULT_HEAD_TAIL_ROWS,
+                                        )
                                     ).to_html(
                                         table_id=var_name(sheet, TABLE_HEAD),
                                         classes="table table-striped table-bordered table-sm",
@@ -510,7 +513,10 @@ class ProjectImportFileForm(Form):
                             Div(
                                 HTML(
                                     df.tail(
-                                        n=settings.get(TABLE_PARAM_TAIL_ROWS)
+                                        n=settings.get(
+                                            TABLE_PARAM_TAIL_ROWS,
+                                            DEFAULT_HEAD_TAIL_ROWS,
+                                        )
                                     ).to_html(
                                         table_id=var_name(sheet, TABLE_TAIL),
                                         classes="table table-striped table-bordered table-sm",

@@ -1,5 +1,15 @@
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Dict, Generic, TypeVar, Optional
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    Generic,
+    TypeVar,
+    Optional,
+    List,
+    Tuple,
+)
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
@@ -200,9 +210,10 @@ class NextMixin(Generic[ET]):
                 next_url, self.kwargs.get("pk", 0)
             )
         elif self.url_or_next_function_with_object:
-            return self.url_or_next_function_with_object(
-                self, next_url, self.get_object()
+            return self.url_or_next_function_with_object(  # type: ignore
+                next_url, self.object if hasattr(self, 'object') else self.get_object()
             )
+            # type: ignore
         else:
             return NextMixin[ET].url_or_next_function(next_url)
 
@@ -680,9 +691,11 @@ class ProjectImportFileView(
 
     def get_df_by_sheet(
         self, file: TransformationFile
-    ) -> tuple[dict[str, tuple[DataFrame, SheetReaderParams]], Importer]:
+    ) -> Tuple[Dict[str | int, Tuple[DataFrame, SheetReaderParams]], Importer]:
         importer = Importer(Path(file.file.path))
-        sheet_params = self.get_session_sheet_params(importer.sheets())
+        sheet_params: Dict[
+            str | int, SheetReaderParams
+        ] = self.get_session_sheet_params(importer.sheets())
         successfull, df_by_sheet = import_file(importer, sheet_params)
         assert successfull
         self.set_session_sheet_params(df_by_sheet)
@@ -696,17 +709,18 @@ class ProjectImportFileView(
         self.request.session[SHEET_PARAMS] = sheet_params
 
     def get_session_sheet_params(
-        self, sheets: list[str | int]
-    ) -> Dict[str, SheetReaderParams]:
-        sheet_params: Dict[str, SheetReaderParams] = {}
+        self, sheets: List[str | int]
+    ) -> Dict[str | int, SheetReaderParams]:
+        sheet_params: Dict[str | int, SheetReaderParams] = {}
         if SHEET_PARAMS in self.request.session:
             session_params = self.request.session[SHEET_PARAMS]
+            s: str | int
             for s in sheets:
-                sheet: str
+                sheet: str | int
                 if isinstance(s, str):
                     sheet = slugify(s)
                 else:
-                    sheet = str(s)
+                    sheet = s
 
                 if sheet in session_params:
                     sheet_params[sheet] = session_params[sheet]
@@ -743,6 +757,8 @@ class ProjectImportFileView(
 
     def form_valid(self, form) -> HttpResponse:
         file: TransformationFile = self.get_object()
+        df_by_sheet: Dict[str | int, Tuple[DataFrame, SheetReaderParams]]
+        importer: Importer
         df_by_sheet, importer = self.get_df_by_sheet(file)
         clean_existing_models = True
         create_models(self.request, file, df_by_sheet, clean_existing_models)

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Sequence, Callable, Any, Optional
+from typing import Sequence, Callable, Any, Optional, List, Tuple, Dict
 
 import pandas as pd
 from django.contrib import messages
@@ -83,7 +83,7 @@ class SheetReaderParams(dict):
 def create_models(
     request: HttpRequest,
     file: TransformationFile,
-    df_by_sheet: dict[str, tuple[DataFrame, SheetReaderParams]],
+    df_by_sheet: Dict[str | int, Tuple[DataFrame, SheetReaderParams]],
     clean_existing_models: bool,
 ):
 
@@ -97,11 +97,12 @@ def create_models(
         #     file.sheets.headlines.models.all().delete()
         file.sheets.all().delete()
 
-    index = -1
-    for item in df_by_sheet.items():
+    index: int = -1
+    items = df_by_sheet.items()
+    for item in items:
         index += 1
-        sheet = item[0]
-        df_tuple = item[1]
+        sheet: str | int = item[0]
+        df_tuple: Tuple[DataFrame, SheetReaderParams] = item[1]
 
         # tm.models.filter(name=slugified_sheet).delete()
 
@@ -164,7 +165,7 @@ class Importer:
         if not self.is_csv:
             self.xlsx: ExcelFile = pd.ExcelFile(self.filepath)
 
-    def sheets(self) -> list[int | str]:
+    def sheets(self) -> List[int | str]:
         if self.is_csv:
             return [DEFAULT_SHEET_NAME_FOR_CSV_FILE]
         else:
@@ -172,7 +173,7 @@ class Importer:
 
     def run(
         self,
-        sheet_name: str,
+        sheet: str | int,
         sheet_reader_params: SheetReaderParams,
     ) -> DataFrame:
         if self.is_csv:
@@ -185,7 +186,7 @@ class Importer:
         else:
             df = pd.read_excel(  # type: ignore
                 self.xlsx,
-                sheet_name=sheet_name,
+                sheet_name=sheet,
                 header=sheet_reader_params.get(READ_PARAM_HEADER),
                 usecols=sheet_reader_params.get(READ_PARAM_USECOLS),
                 index_col=sheet_reader_params.get(READ_PARAM_INDEX_COL),
