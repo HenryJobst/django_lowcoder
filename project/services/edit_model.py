@@ -1,13 +1,11 @@
 from django.db.models import Max
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
 
 from project.models import (
     Model,
     TransformationMapping,
     Project,
     Field,
-    TransformationFile,
 )
 
 
@@ -277,7 +275,7 @@ def set_new_main_entity(model: Model) -> None:
     ).first()
     if not main_entity or main_entity == model:
         # set main entity to the one with the lowest index
-        lowest_entity: Model = (
+        lowest_entity: Model | None = (
             Model.objects.filter(transformation_mapping=model.transformation_mapping)
             .exclude(pk=model.pk)
             .first()
@@ -285,96 +283,3 @@ def set_new_main_entity(model: Model) -> None:
         if lowest_entity:
             lowest_entity.is_main_entity = 1
             lowest_entity.save()
-
-
-# noinspection PyUnusedLocal
-def get_models_or_next_url(self: object, next_url: str, project_pk: int) -> str:
-    return (
-        next_url
-        if next_url
-        else reverse_lazy("project_list_models", kwargs={"pk": project_pk})
-    )
-
-
-# noinspection PyUnusedLocal
-def get_models_or_next_url_via_parent(
-    self: object, next_url: str, model_pk: int
-) -> str:
-    model: Model = Model.objects.get(pk=model_pk)
-    return (
-        next_url
-        if next_url
-        else reverse_lazy(
-            "project_list_models",
-            kwargs={"pk": model.transformation_mapping.project.id},
-        )
-    )
-
-
-# noinspection PyUnusedLocal
-def get_model_edit_or_next_url(self: object, next_url: str, pk: int) -> str:
-    return (
-        next_url
-        if next_url
-        else reverse_lazy("project_detail_model", kwargs={"pk": pk})
-    )
-
-
-# noinspection PyUnresolvedReferences
-def get_model_edit_or_next_url_p(self: object, next_url: str, model: Model) -> str:
-    return get_model_edit_or_next_url(self, next_url, model.id)
-
-
-# noinspection PyUnusedLocal
-def get_fields_or_next_url(self: object, next_url: str, model_pk: int) -> str:
-    return (
-        next_url
-        if next_url
-        else reverse_lazy("project_list_fields", kwargs={"pk": model_pk})
-    )
-
-
-# noinspection PyUnusedLocal
-def get_fields_or_next_url_via_parent(
-    self: object, next_url: str, field_pk: int
-) -> str:
-    field: Field = Field.objects.get(pk=field_pk)
-    return (
-        next_url
-        if next_url
-        else reverse_lazy("project_list_fields", kwargs={"pk": field.model.id})
-    )
-
-
-# noinspection PyUnusedLocal
-def get_field_edit_or_next_url(self: object, next_url: str, pk: int) -> str:
-    return (
-        next_url
-        if next_url
-        else reverse_lazy("project_update_field", kwargs={"pk": pk})
-    )
-
-
-# noinspection PyUnresolvedReferences
-def get_field_edit_or_next_url_p(self: object, next_url: str, field: Field) -> str:
-    return get_model_edit_or_next_url(self, next_url, field.id)
-
-
-# noinspection PyUnresolvedReferences
-def get_file_edit_or_next_url_p(
-    self: object, next_url: str, file: TransformationFile
-) -> str:
-    return get_files_or_next_url_via_parent(self, next_url, file.id)
-
-
-# noinspection PyUnusedLocal
-def get_files_or_next_url_via_parent(self: object, next_url: str, file_pk: int) -> str:
-    file: TransformationFile = TransformationFile.objects.get(pk=file_pk)
-    return (
-        next_url
-        if next_url
-        else reverse_lazy(
-            "project_list_files",
-            kwargs={"pk": file.transformation_mapping.project.id},
-        )
-    )

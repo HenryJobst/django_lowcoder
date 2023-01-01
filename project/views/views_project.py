@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, ClassVar, Dict, Generic, TypeVar, Optional
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
@@ -47,16 +47,9 @@ from project.services.edit_model import (
     set_new_main_entity,
     field_up,
     field_down,
-    get_model_edit_or_next_url_p,
-    get_field_edit_or_next_url_p,
-    get_models_or_next_url_via_parent,
-    get_fields_or_next_url_via_parent,
-    get_file_edit_or_next_url_p,
 )
 from project.services.edit_project import (
-    get_project_edit_or_next_url,
     deploy_project,
-    get_projects_or_next_url,
 )
 from project.services.import_file import import_file
 from project.services.importer import (
@@ -80,40 +73,159 @@ SHEET_PARAMS = "sheet_params"
 NEXT_URL_PARAM = "next"
 
 
-class NextMixin:
-    url_or_next_function: Callable[[str], str] = get_projects_or_next_url
-    url_or_next_function_with_pk: Callable[[str, int], str] | None = None
-    url_or_next_function_with_object: Callable[[str, Project], str] | Callable[
-        [str, Model], str
-    ] | Callable[[str, Field], str] | None = None
+# noinspection PyUnusedLocal
+def get_projects_or_next_url(next_url: str | None) -> Any:
+    return next_url if next_url else reverse_lazy("index")
+
+
+# noinspection PyUnusedLocal
+def get_project_edit_or_next_url(next_url: str | None, pk: int) -> Any:
+    return next_url if next_url else reverse_lazy("project_detail", kwargs={"pk": pk})
+
+
+def get_project_edit_or_next_url_p(next_url: str | None, project: Project) -> Any:
+    return get_project_edit_or_next_url(next_url, project.pk)
+
+
+def get_models_or_next_url(next_url: str | None, project_pk: int) -> Any:
+    return (
+        next_url
+        if next_url
+        else reverse_lazy("project_list_models", kwargs={"pk": project_pk})
+    )
+
+
+def get_models_or_next_url_via_parent(next_url: str | None, model_pk: int) -> Any:
+    model: Model = Model.objects.get(pk=model_pk)
+    return (
+        next_url
+        if next_url
+        else reverse_lazy(
+            "project_list_models",
+            kwargs={"pk": model.transformation_mapping.project.id},
+        )
+    )
+
+
+# noinspection PyUnusedLocal
+def get_model_edit_or_next_url(next_url: str | None, pk: int) -> Any:
+    return (
+        next_url
+        if next_url
+        else reverse_lazy("project_detail_model", kwargs={"pk": pk})
+    )
+
+
+# noinspection PyUnresolvedReferences,PyUnusedLocal
+def get_model_edit_or_next_url_p(self, next_url: str | None, model: Model) -> Any:
+    return get_model_edit_or_next_url(next_url, model.pk)
+
+
+# noinspection PyUnusedLocal
+def get_fields_or_next_url(next_url: str | None, model_pk: int) -> Any:
+    return (
+        next_url
+        if next_url
+        else reverse_lazy("project_list_fields", kwargs={"pk": model_pk})
+    )
+
+
+# noinspection PyUnusedLocal
+def get_fields_or_next_url_via_parent(next_url: str | None, field_pk: int) -> Any:
+    field: Field = Field.objects.get(pk=field_pk)
+    return (
+        next_url
+        if next_url
+        else reverse_lazy("project_list_fields", kwargs={"pk": field.model.id})
+    )
+
+
+# noinspection PyUnusedLocal
+def get_field_edit_or_next_url(next_url: str | None, pk: int) -> Any:
+    return (
+        next_url
+        if next_url
+        else reverse_lazy("project_update_field", kwargs={"pk": pk})
+    )
+
+
+# noinspection PyUnresolvedReferences,PyUnusedLocal
+def get_field_edit_or_next_url_p(self, next_url: str | None, field: Field) -> Any:
+    return get_model_edit_or_next_url(next_url, field.pk)
+
+
+# noinspection PyUnresolvedReferences,PyUnusedLocal
+def get_file_edit_or_next_url_p(
+    self, next_url: str | None, file: TransformationFile
+) -> Any:
+    return get_files_or_next_url_via_parent(next_url, file.pk)
+
+
+# noinspection PyUnusedLocal
+def get_files_or_next_url_via_parent(next_url: str | None, file_pk: int) -> Any:
+    file: TransformationFile = TransformationFile.objects.get(pk=file_pk)
+    return (
+        next_url
+        if next_url
+        else reverse_lazy(
+            "project_list_files",
+            kwargs={"pk": file.transformation_mapping.project.id},
+        )
+    )
+
+
+ET = TypeVar("ET")
+
+
+class NextMixin(Generic[ET]):
+    url_or_next_function: ClassVar[
+        Callable[[str | None], Any]
+    ] = get_projects_or_next_url
+    url_or_next_function_with_pk: ClassVar[
+        Callable[[str | None, int], Any] | None
+    ] = None
+    url_or_next_function_with_object: Optional[
+        Callable[[Any, str | None, ET], Any]
+    ] = None
+
+    request: HttpRequest  # forward decl
+    kwargs: dict[str, Any]  # forward decl
+    get_object: Any  # forward decl
 
     # noinspection PyUnresolvedReferences,PyArgumentList
-    def get_success_url(self) -> str:
-        if self.url_or_next_function_with_pk:
-            return self.url_or_next_function_with_pk(
-                self.request.GET.get(NEXT_URL_PARAM), self.kwargs.get("pk")
+    def get_success_url(self) -> Any:
+        next_url: str | None = self.request.GET.get(NEXT_URL_PARAM)
+        if NextMixin[ET].url_or_next_function_with_pk:
+            return NextMixin[ET].url_or_next_function_with_pk(  # type: ignore
+                next_url, self.kwargs.get("pk", 0)
             )
         elif self.url_or_next_function_with_object:
             return self.url_or_next_function_with_object(
-                self.request.GET.get(NEXT_URL_PARAM), self.get_object()
+                self, next_url, self.get_object()
             )
         else:
-            return self.url_or_next_function(self.request.GET.get(NEXT_URL_PARAM))
+            return NextMixin[ET].url_or_next_function(next_url)
 
 
 class ProjectViewMixin(NextMixin):
-    url_or_next_function_with_pk = get_project_edit_or_next_url
+    url_or_next_function_with_pk: ClassVar[
+        Callable[[str | None, int], Any] | None
+    ] = get_project_edit_or_next_url
 
 
 class ProjectListMixin(NextMixin):
-    url_or_next_function_with_pk = get_projects_or_next_url
+    pass
 
 
 class ProjectSelectionMixin:
+
+    request: HttpRequest  # forward decl
+    kwargs: dict[str, Any]  # forward decl
+
     # noinspection PyUnresolvedReferences
     def get(self, request, *args, **kwargs) -> HttpResponse:
         set_selection(self.request, self.kwargs["pk"])
-        return super().get(request, *args, **kwargs)
+        return super().get(request, *args, **kwargs)  # type: ignore
 
 
 class ProjectDetailView(
@@ -160,7 +272,7 @@ class ProjectUpdateView(
         return super().get_success_url()
 
 
-class ProjectDeleteView(
+class ProjectDeleteView(  # type: ignore
     LoginRequiredMixin,
     ModelUserFieldPermissionMixin,
     NextMixin,
@@ -187,12 +299,12 @@ class ProjectDeployView(
     model = Project
 
     def form_valid(self, form):
-        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore
         deploy_project(self.request.user, project, self.request.POST)
         return super().form_valid(form)
 
     def get_object(self):
-        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore
         set_selection(self.request, project.pk)
         return project
 
@@ -233,7 +345,7 @@ class ProjectUpdateSettingsView(
 
     # noinspection PyUnusedLocal
     def get_object(self, queryset=None):
-        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore
         set_selection(self.request, project.pk)
         obj, created = ProjectSettings.objects.get_or_create(project=project)
         return obj
@@ -243,18 +355,23 @@ class ProjectUpdateSettingsView(
         return model_object.project
 
 
-class ProjectModelViewMixin(NextMixin):
-    url_or_next_function_with_object = get_model_edit_or_next_url_p
+class ProjectModelViewMixin(NextMixin[Model]):
+    url_or_next_function_with_object: Optional[
+        Callable[[Any, str | None, Model], Any]
+    ] = get_model_edit_or_next_url_p
 
     # noinspection PyMethodMayBeStatic
-    def get_user_holder(self, entity: Model | Project):
+
+    def get_user_holder(self, entity: Model | Project) -> Project:
         if isinstance(entity, Project):
             return entity
         return entity.transformation_mapping.project
 
 
-class ProjectFieldViewMixin(NextMixin):
-    url_or_next_function_with_object = get_field_edit_or_next_url_p
+class ProjectFieldViewMixin(NextMixin[Field]):
+    url_or_next_function_with_object: Optional[
+        Callable[[Any, str | None, Field], Any]
+    ] = get_field_edit_or_next_url_p
 
     # noinspection PyMethodMayBeStatic
     def get_user_holder(self, entity: Field | Project):
@@ -263,8 +380,10 @@ class ProjectFieldViewMixin(NextMixin):
         return entity.model.transformation_mapping.project
 
 
-class ProjectFileViewMixin(NextMixin):
-    url_or_next_function_with_object = get_file_edit_or_next_url_p
+class ProjectFileViewMixin(NextMixin[TransformationFile]):
+    url_or_next_function_with_object: Optional[
+        Callable[[Any, str | None, TransformationFile], Any]
+    ] = get_file_edit_or_next_url_p
 
     # noinspection PyMethodMayBeStatic
     def get_user_holder(self, entity: TransformationFile | Project):
@@ -278,12 +397,12 @@ class ProjectCreateModelView(
 ):
     model = Model
     form_class = ProjectEditModelForm
-    url_or_next_function_with_object = None
     url_or_next_function_with_pk = get_models_or_next_url_via_parent
+    url_or_next_function_with_object = None
 
     # noinspection PyUnusedLocal
     def get_object(self, **kwargs):
-        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore
         set_selection(self.request, project.pk)
         return project
 
@@ -352,7 +471,7 @@ class ProjectModelDownView(
         return HttpResponseRedirect(self.get_success_url())
 
 
-class ProjectDeleteModelView(
+class ProjectDeleteModelView(  # type: ignore
     LoginRequiredMixin, ProjectModelViewMixin, ModelUserFieldPermissionMixin, DeleteView
 ):
     model = Model
@@ -368,7 +487,7 @@ class ProjectListModelsView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+            project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore
             set_selection(self.request, project.pk)
             user = self.request.user
             if not user.is_superuser and project.user != user:
@@ -403,7 +522,7 @@ class ProjectListFieldsView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            model: Model = get_object_or_404(Model, *self.args, **self.kwargs)
+            model: Model = get_object_or_404(Model, *self.args, **self.kwargs)  # type: ignore
             set_model_selection(self.request, model.pk)
 
             user = self.request.user
@@ -426,7 +545,7 @@ class ProjectCreateFieldView(
 
     # noinspection PyUnusedLocal
     def get_object(self, **kwargs):
-        model: Model = get_object_or_404(Model, *self.args, **self.kwargs)
+        model: Model = get_object_or_404(Model, *self.args, **self.kwargs)  # type: ignore
         set_model_selection(self.request, model.pk)
         return model
 
@@ -456,8 +575,10 @@ class ProjectFieldUpView(
 ):
     model = Field
     fields = []
-    url_or_next_function_with_object = None
     url_or_next_function_with_pk = get_fields_or_next_url_via_parent
+    url_or_next_function_with_object: Optional[
+        Callable[[Any, str | None, Field], Any]
+    ] = None
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -470,8 +591,8 @@ class ProjectFieldDownView(
 ):
     model = Field
     fields = []
-    url_or_next_function_with_object = None
     url_or_next_function_with_pk = get_fields_or_next_url_via_parent
+    url_or_next_function_with_object = None
 
     # noinspection PyMethodMayBeStatic,PyUnusedLocal
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -479,7 +600,7 @@ class ProjectFieldDownView(
         return HttpResponseRedirect(self.get_success_url())
 
 
-class ProjectDeleteFieldView(
+class ProjectDeleteFieldView(  # type: ignore
     LoginRequiredMixin, ProjectFieldViewMixin, ModelUserFieldPermissionMixin, DeleteView
 ):
     model = Field
@@ -494,7 +615,7 @@ class ProjectListFilesView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+            project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore
             set_selection(self.request, project.pk)
             user = self.request.user
             if not user.is_superuser and project.user != user:
@@ -515,8 +636,9 @@ class ProjectCreateFileView(
     model = TransformationFile
     form_class = ProjectEditFileForm
 
-    def get_object(self):
-        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)
+    # noinspection PyUnusedLocal
+    def get_object(self, **kwargs):
+        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore
         set_selection(self.request, project.pk)
         return project
 
@@ -533,7 +655,7 @@ class ProjectCreateFileView(
         return data
 
 
-class ProjectDeleteFileView(
+class ProjectDeleteFileView(  # type: ignore
     LoginRequiredMixin, ProjectFileViewMixin, ModelUserFieldPermissionMixin, DeleteView
 ):
     model = TransformationFile
@@ -548,7 +670,7 @@ class ProjectImportFileView(
     template_name = "project/project_import.html"
 
     def get_form(self, form_class=None):
-        file: TransformationFile = self.get_object()
+        file: TransformationFile = self.get_object()  # type: ignore
         df_by_sheet, importer = self.get_df_by_sheet(file)
 
         form = ProjectImportFileForm(**self.get_form_kwargs())
@@ -567,20 +689,25 @@ class ProjectImportFileView(
         return df_by_sheet, importer
 
     def set_session_sheet_params(self, df_by_sheet):
-        sheet_params: dict[str, SheetReaderParams] = {}
+        sheet_params: dict[str, SheetReaderParams] = {}  # type: ignore
         for k, v in df_by_sheet.items():
             sheet = slugify(k)
             sheet_params[sheet] = v[1]
         self.request.session[SHEET_PARAMS] = sheet_params
 
     def get_session_sheet_params(
-        self, sheets: list[str]
-    ) -> dict[str, SheetReaderParams]:
-        sheet_params = {}
+        self, sheets: list[str | int]
+    ) -> Dict[str, SheetReaderParams]:
+        sheet_params: Dict[str, SheetReaderParams] = {}
         if SHEET_PARAMS in self.request.session:
             session_params = self.request.session[SHEET_PARAMS]
             for s in sheets:
-                sheet = slugify(s)
+                sheet: str
+                if isinstance(s, str):
+                    sheet = slugify(s)
+                else:
+                    sheet = str(s)
+
                 if sheet in session_params:
                     sheet_params[sheet] = session_params[sheet]
                 else:
@@ -622,7 +749,7 @@ class ProjectImportFileView(
         return super().form_valid(form)
 
     def get_object(self):
-        file: TransformationFile = get_object_or_404(
+        file: TransformationFile = get_object_or_404(  # type: ignore
             TransformationFile, *self.args, **self.kwargs
         )
         set_selection(self.request, file.transformation_mapping.project.id)

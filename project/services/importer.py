@@ -106,14 +106,14 @@ def create_models(
         # tm.models.filter(name=slugified_sheet).delete()
 
         df: DataFrame = df_tuple[0]
-        settings = df_tuple[1]
+        settings: SheetReaderParams = df_tuple[1]
 
         ts, created = TransformationSheet.objects.get_or_create(
             transformation_file=file, index=index + 1
         )
 
-        header_offset = settings.get(READ_PARAM_HEADER)
-        skiprows = settings.get(READ_PARAM_SKIPROWS)
+        header_offset: int = settings.get(READ_PARAM_HEADER, 0)
+        skiprows: int = settings.get(READ_PARAM_SKIPROWS, 0)
         skiprows = skiprows if skiprows else 0
 
         th, created = TransformationHeadline.objects.get_or_create(
