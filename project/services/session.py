@@ -85,18 +85,11 @@ def set_model_selection_name(request: HttpRequest, pk: int) -> None:
 
 
 def set_selection(request: HttpRequest, pk: int) -> None:
-    """
-    The set_selection function sets the session variable SELECTED to the primary key of a project, and
-    sets the session variable SELECTED_NAME to that project's name. This function is called when a user clicks on
-    a project in order to select it for further action.
+    if SELECTED not in request.session or request.session[SELECTED] != pk:
+        reset_model_selection(request, request.session.get(SELECTED_MODEL, 0))
 
-    :param request:HttpRequest: Access the session
-    :param pk:int: Identify the project in the database
-    :return: None
-    :doc-author: Trelent
-    """
-    request.session[SELECTED] = pk
-    request.session[SELECTED_NAME] = Project.objects.get(pk=pk).name
+        request.session[SELECTED] = pk
+        request.session[SELECTED_NAME] = Project.objects.get(pk=pk).name
 
 
 def set_model_selection(request: HttpRequest, pk: int) -> Model:

@@ -211,7 +211,7 @@ class NextMixin(Generic[ET]):
             )
         elif self.url_or_next_function_with_object:
             return self.url_or_next_function_with_object(  # type: ignore
-                next_url, self.object if hasattr(self, 'object') else self.get_object()
+                next_url, self.object if hasattr(self, "object") else self.get_object()
             )
             # type: ignore
         else:
@@ -579,6 +579,12 @@ class ProjectUpdateFieldView(
 
     def form_valid(self, form) -> HttpResponse:
         return super().form_valid(form)
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        data = super().get_context_data(**kwargs)
+        field: Field = get_object_or_404(Field, *self.args, **self.kwargs)  # type: ignore
+        data["model"] = field.model
+        return data
 
 
 class ProjectFieldUpView(

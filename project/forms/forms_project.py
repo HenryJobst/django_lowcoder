@@ -242,11 +242,7 @@ class ProjectEditFieldForm(ModelForm):
             ),
             Submit("submit", _("Speichern")),
             HTML(
-                "{% if object.id %}"
-                + '<a class="btn btn-secondary" href="{% url \'project_detail_field\' object.id %}">'
-                + _("Abbrechen")
-                + "</a>"
-                + "{% elif model %}"
+                "{% if model %}"
                 + '<a class="btn btn-secondary" href="{% url \'project_list_fields\' model.id %}">'
                 + _("Abbrechen")
                 + "</a>"
