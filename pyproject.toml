@@ -60,7 +60,7 @@ exclude = [
 legacy_tox_ini = """
     [tox]
     skipsdist=true
-    env_list = py311,format
+    env_list = py311,format,mypy
     minversion = 4.0.16
 
     [testenv]
