@@ -508,9 +508,9 @@ class ProjectListModelsView(LoginRequiredMixin, ListView):
             if tm:
                 return Model.objects.filter(transformation_mapping=tm)
             else:
-                return QuerySet(Model)
+                return QuerySet(Model).none()
         else:
-            return QuerySet(Model)
+            return QuerySet(Model).none()
 
 
 class ProjectSelectModelView(
@@ -545,7 +545,7 @@ class ProjectListFieldsView(LoginRequiredMixin, ListView):
 
             return Field.objects.filter(model=model)
         else:
-            return QuerySet(Field)
+            return QuerySet(Field).none()
 
 
 class ProjectCreateFieldView(
@@ -642,9 +642,9 @@ class ProjectListFilesView(LoginRequiredMixin, ListView):
             if tm:
                 return TransformationFile.objects.filter(transformation_mapping=tm)
             else:
-                return QuerySet(TransformationFile)
+                return QuerySet(TransformationFile).none()
         else:
-            return QuerySet(TransformationFile)
+            return QuerySet(TransformationFile).none()
 
 
 class ProjectCreateFileView(
