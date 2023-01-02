@@ -1,6 +1,7 @@
 {% extends "project/base_generic.html" %}
 
 {% block content %}
+{% load project_filters %}
 <h1 class="h2">Projekte ({{ project_list|length }})</h1>
 <div>
   <a role="button"
@@ -16,6 +17,7 @@
       <th scope="col">Name</th>
       <th scope="col">Beschreibung</th>
       <th scope="col">Tabellen</th>
+      <th scope="col">Spalten</th>
       <th scope="col">Erzeugt</th>
       <th scope="col">Bearbeitet</th>
       <th scope="col">Aktionen</th>
@@ -32,7 +34,10 @@
         {{project.description}}
       </td>
       <td>
-        {{ project.transformationmapping.models.all|length }}
+        {{ project|models_count }}
+      </td>
+      <td>
+        {{ project|fields_count }}
       </td>
       <td>
         {{project.created_at|date:'SHORT_DATETIME_FORMAT'}}

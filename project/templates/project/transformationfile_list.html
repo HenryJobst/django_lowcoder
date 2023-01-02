@@ -28,15 +28,19 @@
         {{ file.file.name }}
       </td>
       <td>
-        {{ file.sheets.all|length }}
+        {{ file|sheets_count }}
       </td>
       <td>
-        {{ file.sheets.headlines.all|length }}
+        {{ file|headlines_count }}
       </td>
       <td>
-        {{ file.sheets.headlines.columns.all|length }}
+        {{ file|columns_count }}
       </td>
       <td>
+        <a title="Tabellen" role="button"
+           href="{% url 'project_list_models' file.transformation_mapping.project.id %}?next={{request.path}}"><i
+          class="feather-24 align-top me-1"
+          data-feather="list"></i></a>
         <a title="Import" role="button"
            href="{% url 'project_import_file' file.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
