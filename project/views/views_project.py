@@ -650,6 +650,7 @@ class ProjectListFilesView(LoginRequiredMixin, ListView):
 class ProjectCreateFileView(
     LoginRequiredMixin, ProjectFileViewMixin, ModelUserFieldPermissionMixin, CreateView
 ):
+
     model = TransformationFile
     form_class = ProjectEditFileForm
 
@@ -659,12 +660,23 @@ class ProjectCreateFileView(
         set_selection(self.request, project.pk)
         return project
 
-    def form_valid(self, form):
-        tm, created = TransformationMapping.objects.get_or_create(
-            project=(self.get_object())
-        )
-        form.instance.transformation_mapping = tm
-        return super().form_valid(form)
+    def get_form_kwargs(self) -> dict[str, Any]:
+        kwargs = super().get_form_kwargs()
+        if self.request.method == "POST":
+            tm, created = TransformationMapping.objects.get_or_create(
+                project=(self.get_object())
+            )
+            kwargs["instance"] = TransformationFile(transformation_mapping=tm)
+        return kwargs
+
+    def get_initial(self) -> dict[str, Any]:
+        initial = super().get_initial()
+        if self.request.method == "POST":
+            tm, created = TransformationMapping.objects.get_or_create(
+                project=(self.get_object())
+            )
+            initial["transformation_mapping"] = tm
+        return initial
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         data = super().get_context_data(**kwargs)

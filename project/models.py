@@ -182,7 +182,6 @@ class TransformationFile(models.Model):
 
     file = models.FileField(
         "Datei",
-        unique=True,
         max_length=200,
         validators=[FileExtensionValidator(allowed_extensions=VALID_SUFFIXES)],
     )
