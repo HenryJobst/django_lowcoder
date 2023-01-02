@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.files.storage import default_storage
 from django.core.validators import (
     MinLengthValidator,
     MinValueValidator,
@@ -10,6 +11,7 @@ from django.core.validators import (
     FileExtensionValidator,
 )
 from django.db import models
+from django.db.models.signals import post_delete
 from django.urls import reverse
 from django.utils.translation import ngettext_lazy
 
@@ -29,6 +31,36 @@ VALID_MIMETYPES = [
     "application/vnd.ms-excel",
     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ]
+
+
+# noinspection PyProtectedMember
+def file_cleanup(sender, **kwargs):
+    """
+    File cleanup callback used to emulate the old delete
+    behavior using signals. Initially django deleted linked
+    files when an object containing a File/ImageField was deleted.
+
+    Usage:
+    >>> from django.db.models.signals import post_delete
+    >>> post_delete.connect(file_cleanup, sender=TransformationFile, dispatch_uid="transformation_file.file_cleanup")
+    """
+    for field in sender._meta.get_fields():
+        if not isinstance(field, models.FileField):
+            continue
+        instance = kwargs["instance"]
+        f = getattr(instance, field.name)
+        m = instance.__class__._default_manager
+        if (
+            hasattr(f, "path")
+            and Path(f.path).exists()
+            and not m.filter(
+                **{"%s__exact" % field.name: getattr(instance, field.name)}
+            ).exclude(pk=instance._get_pk_val())
+        ):
+            try:
+                default_storage.delete(f.path)
+            except:
+                pass
 
 
 class TimeStampMixin(models.Model):
@@ -158,6 +190,13 @@ class TransformationFile(models.Model):
     class Meta:
         ordering = ["transformation_mapping", "file"]
         unique_together = ["transformation_mapping", "file"]
+
+
+post_delete.connect(
+    file_cleanup,
+    sender=TransformationFile,
+    dispatch_uid="transformation_file.file_cleanup",
+)
 
 
 class TransformationSheet(models.Model):
