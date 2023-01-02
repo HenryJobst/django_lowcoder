@@ -52,6 +52,10 @@
            href="{% url 'project_update_model' model.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="edit"></i></a>
+        <a title="Spalten" role="button"
+           href="{% url 'project_list_fields' model.id %}?next={{request.path}}"><i
+          class="feather-24 align-top me-1"
+          data-feather="list"></i></a>
         <a title="Löschen" role="button"
            href="{% url 'project_delete_model' model.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
