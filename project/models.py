@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import List
 from uuid import uuid4
 
 from django.conf import settings
@@ -33,7 +34,7 @@ VALID_MIMETYPES = [
 ]
 
 
-# noinspection PyProtectedMember
+# noinspection PyProtectedMember,PyBroadException
 def file_cleanup(sender, **kwargs):
     """
     File cleanup callback used to emulate the old delete
@@ -283,35 +284,46 @@ class Model(TimeStampMixin, models.Model):
 
 class Field(TimeStampMixin, models.Model):
     DATATYPES = [
-        (0, "Keiner"),
-        (1, "BigIntegerField"),
-        (2, "BinaryField"),
-        (3, "BooleanField"),
-        (4, "CharField"),
-        (5, "CommaSeparatedIntegerField"),
-        (6, "DateField"),
-        (7, "DateTimeField"),
-        (8, "DecimalField"),
-        (9, "DurationField"),
-        (10, "EmailField"),
-        (11, "Field"),
-        (12, "FilePathField"),
-        (13, "FloatField"),
-        (14, "GenericIPAddressField"),
-        (15, "IPAddressField"),
-        (16, "IntegerField"),
-        (17, "NullBooleanField"),
-        (18, "PositiveBigIntegerField"),
-        (19, "PositiveIntegerField"),
-        (20, "PositiveSmallIntegerField"),
-        (21, "SlugField"),
-        (22, "SmallAutoField"),
-        (23, "SmallIntegerField"),
-        (24, "TextField"),
-        (25, "TimeField"),
-        (26, "URLField"),
-        (27, "UUIDField"),
+        "Keiner",
+        "BigIntegerField",
+        "BinaryField",
+        "BooleanField",
+        "CharField",
+        "CommaSeparatedIntegerField",
+        "DateField",
+        "DateTimeField",
+        "DecimalField",
+        "DurationField",
+        "EmailField",
+        "Field",
+        "FilePathField",
+        "FloatField",
+        "GenericIPAddressField",
+        "IPAddressField",
+        "IntegerField",
+        "NullBooleanField",
+        "PositiveBigIntegerField",
+        "PositiveIntegerField",
+        "PositiveSmallIntegerField",
+        "SlugField",
+        "SmallAutoField",
+        "SmallIntegerField",
+        "TextField",
+        "TimeField",
+        "URLField",
+        "UUIDField",
     ]
+    DATATYPE_CHOICES = [(k, v) for k, v in enumerate(DATATYPES)]
+    DATATYPE_ID_BY_DATATYPE = {v: k for k, v in enumerate(DATATYPES)}
+
+    CHAR_MAX_LENGTH_STEPS: List[int] = [10, 30, 60, 100, 200, 1000, 2000]
+
+    @staticmethod
+    def find_next_step(requested_size: int):
+        for step in Field.CHAR_MAX_LENGTH_STEPS:
+            if step >= requested_size:
+                return step
+        return requested_size
 
     name = models.CharField(  # type: ignore
         "Name", max_length=100, validators=[MinLengthValidator(MIN_FIELD_NAME_LENGTH)]
@@ -321,16 +333,23 @@ class Field(TimeStampMixin, models.Model):
     )
     model = models.ForeignKey(Model, on_delete=models.CASCADE, related_name="fields")  # type: ignore
     datatype = models.IntegerField(  # type: ignore
-        "Datentyp", choices=DATATYPES, default=DATATYPES[4][0]
+        "Datentyp", choices=DATATYPE_CHOICES, default=DATATYPES[4][0]
     )
-    datatype_length = models.IntegerField("Länge", null=True, blank=True)  # type: ignore
+    max_length = models.IntegerField("Länge", null=True, blank=True)  # type: ignore
+    max_digits = models.IntegerField("Anzahl der Stellen bei einer Dezimalzahl", null=True, blank=True)  # type: ignore
+    decimal_places = models.IntegerField(
+        "Anzahl der Nachkommastellen bei einer Dezimalzahl", null=True, blank=True
+    )  # type: ignore
     default_value = models.CharField(  # type: ignore
         "Standardwert", max_length=100, null=True, blank=True
     )
+    choices = models.JSONField(null=True, blank=True)  # type: ignore
+    blank = models.BooleanField("leeres Eingabefeld zulässig?", default=False)  # type: ignore
+    null = models.BooleanField("leerer Spaltenwert zulässig?", default=False)  # type: ignore
     foreign_key_entity = models.ForeignKey(  # type: ignore
         Model, on_delete=models.SET_NULL, null=True, blank=True
     )
-    is_unique = models.BooleanField("Eindeutig?", default=False, blank=True)  # type: ignore
+    is_unique = models.BooleanField("Eindeutig?", default=False)  # type: ignore
     use_index = models.BooleanField("Index?", default=False)  # type: ignore
     validation_pattern = models.CharField(  # type: ignore
         "Prüfmuster", max_length=100, null=True, blank=True

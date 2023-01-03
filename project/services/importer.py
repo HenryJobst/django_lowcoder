@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Sequence, Callable, Any, Optional, List, Tuple, Dict
+from typing import Sequence, Callable, Any, Optional, List, Tuple, Dict, Final
 
 import pandas as pd
 from django.contrib import messages
@@ -16,6 +16,7 @@ from project.models import (
     Model,
     Field,
 )
+from project.services.import_field import ImportField
 
 DEFAULT_SHEET_NAME_FOR_CSV_FILE = "sheet0"
 
@@ -87,6 +88,15 @@ def create_models(
     clean_existing_models: bool,
 ):
 
+    kwarg_fields: Final[List[str]] = [
+        ImportField.CHOICES,
+        ImportField.MAX_DIGITS,
+        ImportField.MAX_LENGTH,
+        ImportField.DECIMAL_PLACES,
+        ImportField.BLANK,
+        ImportField.NULL,
+    ]
+
     tm: TransformationMapping = file.transformation_mapping
 
     if clean_existing_models:
@@ -97,10 +107,8 @@ def create_models(
         #     file.sheets.headlines.models.all().delete()
         file.sheets.all().delete()
 
-    index: int = -1
-    items = df_by_sheet.items()
-    for item in items:
-        index += 1
+    item: Tuple[str | int, Tuple[DataFrame, SheetReaderParams]]
+    for index, item in enumerate(df_by_sheet.items()):
         sheet: str | int = item[0]
         df_tuple: Tuple[DataFrame, SheetReaderParams] = item[1]
 
@@ -138,18 +146,34 @@ def create_models(
             messages.info(request, f"Die Tabelle: {model.name} wurde aktualisiert.")
 
         for col_index, col in enumerate(df.columns):
+
+            import_field = ImportField(df[col])
+
             tc, created = TransformationColumn.objects.get_or_create(
                 transformation_headline=th, column_index=col_index
+            )
+
+            defaults = {
+                "name": col,
+                "transformation_column": tc,
+                "datatype": Field.DATATYPE_ID_BY_DATATYPE[import_field.field_type]
+                if import_field.field_type
+                else None,
+                "is_unique": not import_field.has_duplicate_values,
+            }
+
+            defaults.update(
+                {
+                    k: import_field.kwargs.get(k)
+                    for k in kwarg_fields
+                    if k in import_field.kwargs
+                }
             )
 
             field, created = Field.objects.update_or_create(
                 model=model,
                 index=col_index + 1,
-                defaults={
-                    "name": col,
-                    "transformation_column": tc,
-                    "datatype": Field.DATATYPES[4][0],
-                },
+                defaults=defaults,
             )
 
             if created:

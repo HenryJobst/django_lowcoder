@@ -178,6 +178,7 @@ class ProjectEditModelForm(ModelForm):
                 _("Tabelle"),
                 FloatingField("name"),
                 Field("is_main_entity", label=_("Haupt-Tabelle")),
+                Field("exclude"),
             ),
             Submit("submit", _("Speichern")),
             HTML(
@@ -195,7 +196,7 @@ class ProjectEditModelForm(ModelForm):
 
     class Meta:
         model = Model
-        fields = ["name", "is_main_entity"]
+        fields = ["name", "is_main_entity", "exclude"]
 
 
 class ProjectDeleteModelForm(ModelForm):
@@ -233,12 +234,19 @@ class ProjectEditFieldForm(ModelForm):
                 _("Spalte"),
                 FloatingField("name"),
                 FloatingField("datatype"),
-                FloatingField("datatype_length"),
+                FloatingField("max_length"),
+                FloatingField("max_digits"),
+                FloatingField("decimal_places"),
                 FloatingField("default_value"),
+                FloatingField("choices"),
                 FloatingField("foreign_key_entity"),
+                Field("blank"),
+                Field("null"),
                 Field("is_unique"),
                 Field("use_index"),
                 Field("show_in_list"),
+                Field("show_in_detail"),
+                Field("exclude"),
             ),
             Submit("submit", _("Speichern")),
             HTML(
@@ -255,12 +263,19 @@ class ProjectEditFieldForm(ModelForm):
         fields = [
             "name",
             "datatype",
-            "datatype_length",
+            "max_length",
+            "max_digits",
+            "decimal_places",
             "default_value",
+            "choices",
             "foreign_key_entity",
+            "blank",
+            "null",
             "is_unique",
             "use_index",
             "show_in_list",
+            "show_in_detail",
+            "exclude",
         ]
 
 

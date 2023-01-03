@@ -18,7 +18,9 @@
       <th scope="col">Reihenfolge</th>
       <th scope="col">Datentyp</th>
       <th scope="col">Länge</th>
+      <th scope="col">Nachkommastellen</th>
       <th scope="col">Standard-Wert</th>
+      <th scope="col">Exkludieren</th>
       <th scope="col">Aktionen</th>
     </tr>
     </thead>
@@ -36,10 +38,17 @@
         {{ field.datatype|datatype_as_str }}
       </td>
       <td>
-        {{ field.datatype_length|default_if_none:'' }}
+        {{ field.max_length|default_if_none:'' }}
+        {{ field.max_digits|default_if_none:'' }}
+      </td>
+      <td>
+        {{ field.decimal_places|default_if_none:'' }}
       </td>
       <td>
         {{ field.default_value|default_if_none:'' }}
+      </td>
+      <td>
+        {{ field.exclude }}
       </td>
       <td>
         <a title="Bearbeiten" role="button"

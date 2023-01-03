@@ -84,4 +84,4 @@ def fields_count(project: Project) -> int:
 
 @register.filter("datatype_as_str", is_safe=True)
 def datatype_as_str(datatype) -> str:
-    return Field.DATATYPES[datatype][1]
+    return Field.DATATYPES[datatype]
