@@ -1,8 +1,11 @@
 [tool.poetry]
 name = "django_lowcoder"
 version = "0.1.0"
-description = "Web application to generate crud web applications out ofexcel spreadsheets"
+description = "Web application to generate crud web applications out of excel spreadsheets"
 authors = ["Henry Jobst <github@jobst-berlin.de>"]
+repository = 'https://github.com/HenryJobst/django_lowcoder'
+license = "MIT"
+keywords = ['excel', 'convert', 'spreadsheet', 'django', 'model']
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
