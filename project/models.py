@@ -206,6 +206,7 @@ class TransformationSheet(models.Model):
     headlines: models.QuerySet["TransformationHeadline"]  # forward decl for mypy
 
     index = models.IntegerField()  # type: ignore
+    exclude = models.BooleanField(default=False)  # type: ignore
 
     class Meta:
         ordering = ["transformation_file", "index"]
@@ -221,6 +222,7 @@ class TransformationHeadline(models.Model):
     model: "Model"  # forward decl for mypy
 
     row_index = models.IntegerField()  # type: ignore
+    exclude = models.BooleanField(default=False)  # type: ignore
 
     class Meta:
         ordering = ["transformation_sheet", "row_index"]
@@ -234,6 +236,7 @@ class TransformationColumn(models.Model):
     )
 
     field: "Field"  # forward decl for mypy
+    exclude = models.BooleanField(default=False)  # type: ignore
 
     class Meta:
         ordering = ["transformation_headline", "column_index"]
@@ -260,6 +263,7 @@ class Model(TimeStampMixin, models.Model):
     index = models.PositiveSmallIntegerField(  # type: ignore
         "Reihenfolge", null=True, validators=[MinValueValidator(1)]
     )
+    exclude = models.BooleanField(default=False)  # type: ignore
 
     fields: models.QuerySet["Field"]  # forward decl for mypy
 
@@ -331,7 +335,9 @@ class Field(TimeStampMixin, models.Model):
     validation_pattern = models.CharField(  # type: ignore
         "Prüfmuster", max_length=100, null=True, blank=True
     )
-    show_in_list = models.BooleanField("Anzeigen?", default=True)  # type: ignore
+    show_in_list = models.BooleanField("in Liste anzeigen?", default=True)  # type: ignore
+    show_in_detail = models.BooleanField("in Detailansicht anzeigen?", default=True)  # type: ignore
+    exclude = models.BooleanField("nicht anlegen", default=False)  # type: ignore
     index = models.PositiveSmallIntegerField(  # type: ignore
         "Reihenfolge", null=True, validators=[MinValueValidator(1)]
     )
