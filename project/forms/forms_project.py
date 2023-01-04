@@ -236,10 +236,12 @@ class ProjectEditFieldForm(ModelForm):
         super().__init__(*args, **kwargs)
 
         if self.instance:
+            # noinspection PyUnresolvedReferences
             self.fields["foreign_key_entity"].queryset = Model.objects.filter(
                 transformation_mapping=self.instance.model.transformation_mapping
             )
         else:
+            # noinspection PyUnresolvedReferences
             self.fields["foreign_key_entity"].queryset = Model.objects.none()
 
         self.helper = FormHelper(self)
