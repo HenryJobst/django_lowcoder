@@ -13,6 +13,7 @@ from django.forms import (
     ClearableFileInput,
     IntegerField,
     CharField,
+    Textarea,
 )
 from django.template.defaultfilters import slugify
 from django.urls import reverse_lazy
@@ -77,6 +78,9 @@ class ProjectEditForm(ModelForm):
     class Meta:
         model = Project
         fields = ["name", "description"]
+        widgets = {
+            "description": Textarea(attrs={"style": "height: 8rem"}),
+        }
 
 
 class ProjectDeleteForm(ModelForm):
@@ -176,9 +180,10 @@ class ProjectEditModelForm(ModelForm):
         self.helper.layout = Layout(
             Fieldset(
                 _("Tabelle"),
-                FloatingField("name"),
-                Field("is_main_entity", label=_("Haupt-Tabelle")),
                 Field("exclude"),
+                FloatingField("name"),
+                FloatingField("description"),
+                Field("is_main_entity", label=_("Haupt-Tabelle")),
             ),
             Submit("submit", _("Speichern")),
             HTML(
@@ -196,7 +201,10 @@ class ProjectEditModelForm(ModelForm):
 
     class Meta:
         model = Model
-        fields = ["name", "is_main_entity", "exclude"]
+        fields = ["name", "description", "is_main_entity", "exclude"]
+        widgets = {
+            "description": Textarea(attrs={"style": "height: 8rem"}),
+        }
 
 
 class ProjectDeleteModelForm(ModelForm):
@@ -232,21 +240,52 @@ class ProjectEditFieldForm(ModelForm):
         self.helper.layout = Layout(
             Fieldset(
                 _("Spalte"),
+                Field("exclude"),
                 FloatingField("name"),
-                FloatingField("datatype"),
-                FloatingField("max_length"),
-                FloatingField("max_digits"),
-                FloatingField("decimal_places"),
-                FloatingField("default_value"),
+                FloatingField("description"),
+                Row(
+                    Column(
+                        FloatingField("datatype"),
+                    ),
+                    Column(
+                        FloatingField("max_length"),
+                    ),
+                    Column(
+                        FloatingField("default_value"),
+                    ),
+                ),
+                Row(
+                    Column(
+                        FloatingField("max_digits"),
+                    ),
+                    Column(
+                        FloatingField("decimal_places"),
+                    ),
+                ),
                 FloatingField("choices"),
                 FloatingField("foreign_key_entity"),
-                Field("blank"),
-                Field("null"),
-                Field("is_unique"),
-                Field("use_index"),
-                Field("show_in_list"),
-                Field("show_in_detail"),
-                Field("exclude"),
+                Row(
+                    Column(
+                        Field("blank"),
+                    ),
+                    Column(Field("null")),
+                ),
+                Row(
+                    Column(
+                        Field("is_unique"),
+                    ),
+                    Column(
+                        Field("use_index"),
+                    ),
+                ),
+                Row(
+                    Column(
+                        Field("show_in_list"),
+                    ),
+                    Column(
+                        Field("show_in_detail"),
+                    ),
+                ),
             ),
             Submit("submit", _("Speichern")),
             HTML(
@@ -262,6 +301,7 @@ class ProjectEditFieldForm(ModelForm):
         model = ModelField
         fields = [
             "name",
+            "description",
             "datatype",
             "max_length",
             "max_digits",
@@ -277,6 +317,10 @@ class ProjectEditFieldForm(ModelForm):
             "show_in_detail",
             "exclude",
         ]
+        widgets = {
+            "description": Textarea(attrs={"style": "height: 8rem"}),
+            "choices": Textarea(attrs={"style": "height: 8rem"}),
+        }
 
 
 class ProjectDeleteFieldForm(ModelForm):

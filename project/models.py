@@ -245,9 +245,15 @@ class TransformationColumn(models.Model):
 
 
 class Model(TimeStampMixin, models.Model):
+
     name = models.CharField(  # type: ignore
         "Name", max_length=100, validators=[MinLengthValidator(MIN_MODEL_NAME_LENGTH)]
     )
+
+    description = models.TextField(
+        "Beschreibung", max_length=1000, null=True, blank=True  # type: ignore
+    )
+
     transformation_headline = models.OneToOneField(  # type: ignore
         TransformationHeadline,
         on_delete=models.SET_NULL,
@@ -264,7 +270,7 @@ class Model(TimeStampMixin, models.Model):
     index = models.PositiveSmallIntegerField(  # type: ignore
         "Reihenfolge", null=True, validators=[MinValueValidator(1)]
     )
-    exclude = models.BooleanField(default=False)  # type: ignore
+    exclude = models.BooleanField("nicht anlegen", default=False)  # type: ignore
 
     fields: models.QuerySet["Field"]  # forward decl for mypy
 
@@ -280,6 +286,9 @@ class Model(TimeStampMixin, models.Model):
             return "%(model_name)s's %(field_labels)s are not unique."
         else:
             return super(Model, self).unique_error_message(model_class, unique_check)
+
+    def __str__(self) -> str:
+        return f"Tabelle: {self.name}"
 
 
 class Field(TimeStampMixin, models.Model):
@@ -312,6 +321,10 @@ class Field(TimeStampMixin, models.Model):
         "TimeField",
         "URLField",
         "UUIDField",
+        "AutoField",
+        "BigAutoField",
+        "FileField",
+        "JSONField",
     ]
     DATATYPE_CHOICES = [(k, v) for k, v in enumerate(DATATYPES)]
     DATATYPE_ID_BY_DATATYPE = {v: k for k, v in enumerate(DATATYPES)}
@@ -328,6 +341,11 @@ class Field(TimeStampMixin, models.Model):
     name = models.CharField(  # type: ignore
         "Name", max_length=100, validators=[MinLengthValidator(MIN_FIELD_NAME_LENGTH)]
     )
+
+    description = models.TextField(
+        "Beschreibung", max_length=1000, null=True, blank=True  # type: ignore
+    )
+
     transformation_column = models.ForeignKey(  # type: ignore
         TransformationColumn, on_delete=models.SET_NULL, null=True
     )
@@ -343,11 +361,15 @@ class Field(TimeStampMixin, models.Model):
     default_value = models.CharField(  # type: ignore
         "Standardwert", max_length=100, null=True, blank=True
     )
-    choices = models.JSONField(null=True, blank=True)  # type: ignore
+    choices = models.JSONField("Auswahlwerte", null=True, blank=True)  # type: ignore
     blank = models.BooleanField("leeres Eingabefeld zulässig?", default=False)  # type: ignore
     null = models.BooleanField("leerer Spaltenwert zulässig?", default=False)  # type: ignore
     foreign_key_entity = models.ForeignKey(  # type: ignore
-        Model, on_delete=models.SET_NULL, null=True, blank=True
+        Model,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Fremdschlüssel",
     )
     is_unique = models.BooleanField("Eindeutig?", default=False)  # type: ignore
     use_index = models.BooleanField("Index?", default=False)  # type: ignore
@@ -370,6 +392,9 @@ class Field(TimeStampMixin, models.Model):
             return "%(model_name)s's %(field_labels)s are not unique."
         else:
             return super(Field, self).unique_error_message(model_class, unique_check)
+
+    def __str__(self) -> str:
+        return f"Spalte: {self.name}"
 
 
 def validate_file_type(file: TransformationFile) -> None:

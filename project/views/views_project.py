@@ -438,11 +438,20 @@ class ProjectCreateModelView(
         data["project"] = self.get_object()
         return data
 
+    def get_success_url(self):
+        set_model_selection(self.request, self.object.id)
+        return super().get_success_url()
+
 
 class ProjectDetailModelView(
     LoginRequiredMixin, ProjectModelViewMixin, ModelUserFieldPermissionMixin, DetailView
 ):
     model = Model
+
+    def get_object(self, **kwargs):
+        model: Model = get_object_or_404(Model, *self.args, **self.kwargs)  # type: ignore
+        set_model_selection(self.request, model.pk)
+        return model
 
 
 class ProjectUpdateModelView(
@@ -454,6 +463,11 @@ class ProjectUpdateModelView(
     def form_valid(self, form) -> HttpResponse:
         unset_main_entity(self.object)
         return super().form_valid(form)
+
+    def get_object(self, **kwargs):
+        model: Model = get_object_or_404(Model, *self.args, **self.kwargs)  # type: ignore
+        set_model_selection(self.request, model.pk)
+        return model
 
 
 class ProjectModelUpView(
@@ -548,6 +562,11 @@ class ProjectListFieldsView(LoginRequiredMixin, ListView):
             return Field.objects.filter(model=model)
         else:
             return QuerySet(Field).none()
+
+    def get_object(self, **kwargs):
+        model: Model = get_object_or_404(Model, *self.args, **self.kwargs)  # type: ignore
+        set_model_selection(self.request, model.pk)
+        return model
 
 
 class ProjectCreateFieldView(

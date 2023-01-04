@@ -24,17 +24,17 @@
     <tbody>
     {% for model in model_list %}
     <tr>
-      <td>
+      <td {% if model.exclude %} class="text-decoration-line-through" {% endif %}>
         <a href="{% url 'project_detail_model' model.id %}?next={{request.path}}">
           {{ model.name }} </a>
       </td>
-      <td>
+      <td {% if model.exclude %} class="text-decoration-line-through" {% endif %}>
         {{ model.fields.all|length }}
       </td>
       <td>
         {{ model.is_main_entity|iconbool }}
       </td>
-      <td>
+      <td {% if model.exclude %} class="text-decoration-line-through" {% endif %}>
         {{ model.index }}
       </td>
       <td>
