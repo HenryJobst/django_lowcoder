@@ -9,3 +9,4 @@ output
 /.pytest_cache/
 /upload/
 /project/tests/sample_files/Testtabelle2.numbers
+/django_lowcoder.log
