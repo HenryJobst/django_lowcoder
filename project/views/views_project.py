@@ -161,7 +161,7 @@ def get_field_edit_or_next_url(next_url: str | None, pk: int) -> Any:
 
 # noinspection PyUnresolvedReferences,PyUnusedLocal
 def get_field_edit_or_next_url_p(self, next_url: str | None, field: Field) -> Any:
-    return get_model_edit_or_next_url(next_url, field.pk)
+    return get_field_edit_or_next_url(next_url, field.pk)
 
 
 # noinspection PyUnresolvedReferences,PyUnusedLocal
@@ -385,9 +385,11 @@ class ProjectFieldViewMixin(NextMixin[Field]):
     ] = get_field_edit_or_next_url_p
 
     # noinspection PyMethodMayBeStatic
-    def get_user_holder(self, entity: Field | Project):
+    def get_user_holder(self, entity: Field | Model | Project):
         if isinstance(entity, Project):
             return entity
+        if isinstance(entity, Model):
+            return entity.transformation_mapping.project
         return entity.model.transformation_mapping.project
 
 
@@ -553,6 +555,8 @@ class ProjectCreateFieldView(
 ):
     model = Field
     form_class = ProjectEditFieldForm
+    url_or_next_function_with_pk = get_fields_or_next_url_via_parent
+    url_or_next_function_with_object = None
 
     # noinspection PyUnusedLocal
     def get_object(self, **kwargs):
