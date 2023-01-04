@@ -234,6 +234,15 @@ class ProjectDeleteModelForm(ModelForm):
 class ProjectEditFieldForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        instance: ModelField = kwargs.get("instance")  # type: ignore
+        if instance:
+            self.fields["foreign_key_entity"].queryset = Model.objects.filter(
+                transformation_mapping=instance.model.transformation_mapping
+            )
+        else:
+            self.fields["foreign_key_entity"].queryset = Model.objects.none()
+
         self.helper = FormHelper(self)
         self.helper.form_method = "post"
         self.helper.form_class = "m-auto"
