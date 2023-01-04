@@ -235,10 +235,9 @@ class ProjectEditFieldForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        instance: ModelField = kwargs.get("instance")  # type: ignore
-        if instance:
+        if self.instance:
             self.fields["foreign_key_entity"].queryset = Model.objects.filter(
-                transformation_mapping=instance.model.transformation_mapping
+                transformation_mapping=self.instance.model.transformation_mapping
             )
         else:
             self.fields["foreign_key_entity"].queryset = Model.objects.none()
