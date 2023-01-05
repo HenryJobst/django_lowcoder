@@ -30,6 +30,7 @@ if READ_DOT_ENV_FILE:
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY", os.urandom(32))
+DEFAULT_ADMIN_PASSWORD = os.getenv("DEFAULT_ADMIN_PASSWORD", "")
 
 DEBUG = os.getenv("DEBUG", False) == "True"
 

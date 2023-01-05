@@ -2,14 +2,20 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Final
 
 import slugify
-from cookiecutter.main import cookiecutter
+from cookiecutter.main import cookiecutter  # type: ignore
 from django.contrib.auth.models import User
 from django.http import QueryDict
 
-from project.models import Project
+from project.models import Project, CodeTemplate
+
+COOKIECUTTER_REPLAY_ = "cookiecutter_replay/"
+
+COOKIECUTTERS_ = "cookiecutters/"
+
+OUTPUT_DIR: Final[str] = "output/"
 
 # from fs.memoryfs import MemoryFS
 
@@ -17,9 +23,11 @@ logger = logging.getLogger(__name__)
 
 
 class CookiecutterConfig:
-    filename = os.path.join(
-        os.getcwd(), "output/config/cookiecutter-django/config.json"
-    )
+    def get_filename(self):
+        return os.path.join(
+            os.getcwd(), os.path.join(OUTPUT_DIR, self.config_json_path)
+        )
+
     config = None
     extra_context = None
 
@@ -27,9 +35,67 @@ class CookiecutterConfig:
         self.user: User = user
         self.project: Project = project
         self.post_dict: QueryDict = post_dict
-        self.create_config()
+        self.code_template: CodeTemplate = CodeTemplate.objects.get(
+            self.post_dict.get("app_type")
+        )
+        self.programming_language = self.code_template.programming_language.name
+        self.init_cookiecutter_template_config(self.code_template.pk)
+        self.config_json_path: str | None = None
 
-    def create_config(self) -> None:
+    def init_cookiecutter_template_config(self, pk: int):
+        if pk == 1:  # Java-Template
+            return self.init_cookiecutter_java_config()
+        elif pk == 2:  # Django-Template
+            return self.init_cookiecutter_django_config()
+
+        self.config_json_path = (
+            f"config/cookiecutter-{self.code_template.pk}/config.json"
+        )
+
+        with open(self.get_filename(), "w") as f:
+            f.write(json.dumps(self.config, sort_keys=False))
+
+    def init_cookiecutter_java_config(self):
+        # TODO: move the cookiecutter template parameters to the code template table entry
+        # for the values define some fixed placeholders which will be filled here with project settings
+        project: Project = self.project  # type: ignore
+        self.config = {
+            "project_name": project.name,
+            "project_slug": slugify.slugify(project.name),
+            "description": project.description,
+            "author_name": self.user.first_name + " " + self.user.last_name,
+            "domain_name": project.project_settings.domain_name
+            if hasattr(project, "project_settings")
+            else "domain.de",
+            "email": self.user.email,
+            "version": "0.0.1",
+            "open_source_license": "Not open source",
+            "timezone": "UTC",
+            "windows": "n",
+            "use_intellij": "n",
+            "use_docker": "y" if self.post_dict["type"] == "1" else "n",
+            "exposed_port": "8001",
+            "postgresql_version": "14",
+            "cloud_provider": "None",
+            "mail_service": "Other SMTP",
+            "frontend_pipeline": "None",
+            "use_mailhog": "y",
+            "ci_tool": "Gitlab",
+            "keep_local_envs_in_vcs": "y",
+            "debug": "n",
+            "_template": self.code_template.path,
+            "_output_dir": os.path.join(os.getcwd(), OUTPUT_DIR),
+            "cookiecutters_dir": os.path.join(
+                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTERS_)
+            ),
+            "replay_dir": os.path.join(
+                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTER_REPLAY_)
+            ),
+        }
+
+    def init_cookiecutter_django_config(self) -> None:
+        # TODO: move the cookiecutter template parameters to the code template table entry
+        # for the values define some fixed placeholders which will be filled here with project settings
         project: Project = self.project
         self.config = {
             "project_name": project.name,
@@ -62,21 +128,21 @@ class CookiecutterConfig:
             "keep_local_envs_in_vcs": "y",
             "debug": "n",
             "_template": "gh:cookiecutter/cookiecutter-django",
-            "_output_dir": os.path.join(os.getcwd(), "output/"),
-            "cookiecutters_dir": os.path.join(os.getcwd(), "output/cookiecutters/"),
-            "replay_dir": os.path.join(os.getcwd(), "output/cookiecutter_replay/"),
+            "_output_dir": os.path.join(os.getcwd(), OUTPUT_DIR),
+            "cookiecutters_dir": os.path.join(
+                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTERS_)
+            ),
+            "replay_dir": os.path.join(
+                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTER_REPLAY_)
+            ),
         }
-
-        with open(self.filename, "w") as f:
-            f.write(json.dumps(self.config, sort_keys=False))
 
 
 @dataclass
 class ExpanderParameters:
     # for the meaning of the parameters see:
     # https://cookiecutter.readthedocs.io/en/stable/cookiecutter.html#module
-    # -cookiecutter.main
-    template: str = "https://github.com/HenryJobst/cookiecutter-django.git"
+    template: str | None = None
     checkout: str | None = None
     no_input: bool = True
     extra_context: dict[Any, Any] | None = None
@@ -89,6 +155,12 @@ class ExpanderParameters:
     directory: str | None = None
     skip_if_file_exists: bool = False
     accept_hooks: bool = True
+
+    def __init__(self, template, config_file, overwrite_if_exists, extra_context):
+        self.template = template
+        self.config_file = config_file
+        self.overwrite_if_exists = overwrite_if_exists
+        self.extra_context = extra_context
 
 
 class CookieCutterTemplateExpander:
@@ -105,10 +177,12 @@ class CookieCutterTemplateExpander:
 
     def expand(self):
         config = self.create_config()
-        expand_parameter = ExpanderParameters()
-        expand_parameter.config_file = config.filename
-        expand_parameter.overwrite_if_exists = True
-        expand_parameter.extra_context = config.config
+        expand_parameter = ExpanderParameters(
+            template=config.code_template.path,
+            config_file=config.get_filename(),
+            overwrite_if_exists=True,
+            extra_context=config.config,
+        )
         CookieCutterTemplateExpander._expand(expand_parameter)
 
     @staticmethod
@@ -132,5 +206,4 @@ class CookieCutterTemplateExpander:
         )
 
     def create_config(self) -> CookiecutterConfig:
-        config = CookiecutterConfig(self.user, self.project, self.post_dict)
-        return config
+        return CookiecutterConfig(self.user, self.project, self.post_dict)

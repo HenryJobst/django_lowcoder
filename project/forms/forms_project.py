@@ -14,6 +14,7 @@ from django.forms import (
     IntegerField,
     CharField,
     Textarea,
+    ModelChoiceField,
 )
 from django.template.defaultfilters import slugify
 from django.urls import reverse_lazy
@@ -27,6 +28,7 @@ from project.models import (
     Field as ModelField,
     TransformationFile,
     VALID_MIMETYPES,
+    CodeTemplate,
 )
 from project.services.importer import (
     SheetReaderParams,
@@ -109,9 +111,26 @@ class ProjectDeleteForm(ModelForm):
 
 class ProjectDeployForm(Form):
 
-    type = TypedChoiceField(
-        label=_("Starte Anwendung "),
-        choices=((0, "lokal"), (1, "via Docker")),
+    app_type = ModelChoiceField(
+        label=_("Code-Template"),
+        queryset=CodeTemplate.objects.all(),
+        empty_label=_(
+            "Bitte durch einen Administrator ein Template einrichten lassen."
+        ),
+        initial="0",
+        required=True,
+        blank=False,
+        help_text=_("URL oder Pfad zu einem Cookiecutter-Template"),
+    )
+
+    deploy_type = TypedChoiceField(
+        label=_("Auslieferungstyp"),
+        choices=(
+            (0, _("Lokales Verzeichnis")),
+            (1, _("Git-Repository")),
+            (2, _("Docker/Docker-Compose")),
+            (3, _("PaaS")),
+        ),
         coerce=lambda x: bool(int(x)),
         widget=RadioSelect,
         initial="0",
@@ -124,7 +143,7 @@ class ProjectDeployForm(Form):
         self.helper.form_method = "post"
         self.helper.form_class = "w-100 m-auto"
         self.helper.layout = Layout(
-            Fieldset(_("Projekt generieren"), "type"),
+            Fieldset(_("Projekt generieren"), Field("app_type"), Field("deploy_type")),
             Submit("submit", _("Start")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'index\' %}">'

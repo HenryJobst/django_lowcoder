@@ -1,0 +1,3 @@
+id, name, path
+1, Java, https://github.com/HenryJobst/cookiecutter-java-springboot.git
+2, Python, https://github.com/HenryJobst/cookiecutter-django.git

@@ -73,6 +73,9 @@ class TimeStampMixin(models.Model):
 
 
 class Project(TimeStampMixin, models.Model):
+    def __str__(self) -> str:
+        return f"Projekt: {self.name} - User: {self.user.username}"
+
     user = models.ForeignKey(  # type: ignore
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+"
     )
@@ -136,7 +139,7 @@ class ProjectSettings(models.Model):
     admin_password = models.CharField(  # type: ignore
         "Administrator-Passwort",
         max_length=100,
-        default=generate_random_admin_password(),
+        default=settings.DEFAULT_ADMIN_PASSWORD,
         validators=[MinLengthValidator(MIN_PASSWORD_LENGTH)],
     )
     demo_user_name = models.CharField(  # type: ignore
@@ -403,3 +406,34 @@ def validate_file_type(file: TransformationFile) -> None:
         raise ValidationError(
             f"Der Dateityp {path.suffix} ist ein unzulässiger Dateityp für den Import"
         )
+
+
+class ProgrammingLanguage(models.Model):
+    name = models.CharField(  # type: ignore
+        "Programmiersprache",
+        max_length=60,
+        null=False,
+        blank=False,
+        validators=[MinLengthValidator(1)],
+        unique=True,
+    )
+
+    def __str__(self):
+        return f"Programmiersprache: {self.name}"
+
+
+class CodeTemplate(models.Model):
+    path = models.CharField(  # type: ignore
+        "URL/Pfad",
+        max_length=200,
+        null=False,
+        blank=False,
+        validators=[MinLengthValidator(1)],
+        unique=True,
+    )
+    programming_language = models.ForeignKey(  # type: ignore
+        ProgrammingLanguage, null=False, blank=False, on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return f"Code-Template: {self.programming_language.name} - {self.path}"
