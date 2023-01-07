@@ -1,15 +1,20 @@
 {% extends "project/base_generic.html" %}
+{% load i18n %}
 
 {% block content %}
 {% load project_filters %}
 <h1>{{ object.name }}</h1>
-<p>Spalten: {{ object.fields.all|length }}</p>
-<p>Haupt-Tabelle: {{ object.is_main_entity|iconbool }}</p>
-<p>Reihenfolge: {{ object.index }}</p>
-<p>Erzeugt: {{ object.created_at|date:'SHORT_DATETIME_FORMAT' }}</p>
-<p>Modifiziert: {{ object.updated_at|date:'SHORT_DATETIME_FORMAT' }}</p>
+<p>{% blocktranslate with length=object.fields.all|length %}Columns: {{ length }}
+  {% endblocktranslate %}</p>
+<p>{% blocktranslate with icon=object.is_main_entity|iconbool %}Main Table: {{ icon }} {% endblocktranslate %}</p>
+<p>{% blocktranslate %}Order: {{ object.index }}{% endblocktranslate %}</p>
+<p>{% blocktranslate with created=object.created_at|date:'SHORT_DATETIME_FORMAT' %}
+  Created at: {{ created }}
+  {% endblocktranslate %}</p>
+<p>{% blocktranslate with updated=object.updated_at|date:'SHORT_DATETIME_FORMAT' %}
+  Last modified at: {{ updated }}{% endblocktranslate %}</p>
 <a class="btn btn-primary"
-   href="{% url 'project_update_model' object.id %}?next={{request.path}}">Bearbeiten</a>
+   href="{% url 'project_update_model' object.id %}?next={{request.path}}">{% translate 'Edit' %}</a>
 <a class="btn btn-secondary"
-   href="{% url 'project_list_models' object.transformation_mapping.project.id %}">Liste</a>
+   href="{% url 'project_list_models' object.transformation_mapping.project.id %}">{% translate 'List'%}</a>
 {% endblock %}

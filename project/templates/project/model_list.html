@@ -1,12 +1,16 @@
 {% extends "project/base_generic.html" %}
+{% load i18n %}
 
 {% block content %}
 {% load project_filters %}
-<h1 class="h2">Tabellen ({{ model_list|length }})</h1>
+<h1 class="h2">
+  {% blocktranslate with length=model_list|length %}Tables ({{ length }})
+  {% endblocktranslate %}</h1>
 <div>
   <a role="button"
+     title="{% translate 'Create new model' %}"
      href="{% url 'project_create_model' request.session.selected %}"><i
-    class="feather-48" data-feather="folder-plus"></i>
+     class="feather-48" data-feather="folder-plus"></i>
   </a>
 </div>
 {% if model_list %}
@@ -14,11 +18,11 @@
   <table id="model-table" class="table table-striped table-sm">
     <thead>
     <tr>
-      <th scope="col">Name</th>
-      <th scope="col">Spalten</th>
-      <th scope="col">Haupt-Tabelle</th>
-      <th scope="col">Reihenfolge</th>
-      <th scope="col">Aktionen</th>
+      <th scope="col">{% translate 'Name' %}</th>
+      <th scope="col">{% translate 'Columns' %}</th>
+      <th scope="col">{% translate 'Main Table'%}</th>
+      <th scope="col">{% translate 'Order' %}</th>
+      <th scope="col">{% translate 'Actions' %}</th>
     </tr>
     </thead>
     <tbody>
@@ -38,7 +42,7 @@
         {{ model.index }}
       </td>
       <td>
-        <a title="Auswählen" role="button"
+        <a title="{% translate 'Select' %}" role="button"
            href="{% url 'project_select_model' model.id %}"><i
           class="feather-24 align-top me-1"
           {% if request.session.selected_model != model.id %}
@@ -48,15 +52,15 @@
           {% endif %}
         >
         </i></a>
-        <a title="Bearbeiten" role="button"
+        <a title="{% translate 'Edit' %}" role="button"
            href="{% url 'project_update_model' model.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="edit"></i></a>
-        <a title="Spalten" role="button"
+        <a title="{% translate 'Columns' %}" role="button"
            href="{% url 'project_list_fields' model.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="list"></i></a>
-        <a title="Löschen" role="button"
+        <a title="{% translate 'Delete' %}" role="button"
            href="{% url 'project_delete_model' model.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="trash-2"></i></a>
@@ -65,7 +69,7 @@
 
         <a hx-ext="debug" hx-post="{% url 'project_model_up' model.id %}"
            hx-trigger="click" hx-target="#model-table" hx-select="#model-table" hx-swap="innerHTML"
-           title="Hoch"
+           title="{% translate 'Up' %}"
            role="button"
            href="#"><i
           class="feather-24 align-top me-1"
@@ -81,7 +85,7 @@
 
         <a hx-ext="debug" hx-post="{% url 'project_model_down' model.id %}"
            hx-trigger="click" hx-target="#model-table" hx-select="#model-table" hx-swap="innerHTML"
-           title="Runter"
+           title="{% translate 'Down' %}"
            role="button"
            href="#"><i class="feather-24 align-top me-1" data-feather="arrow-down"></i></a>
 
@@ -102,6 +106,6 @@
   </script>
 </div>
 {% else %}
-<p>Es gibt noch keine Tabellen.</p>
+<p>{% translate 'No tables present yet.' %}</p>
 {% endif %}
 {% endblock %}

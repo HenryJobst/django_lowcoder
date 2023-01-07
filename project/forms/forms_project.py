@@ -57,21 +57,23 @@ class ProjectEditForm(ModelForm):
         self.helper.form_class = "m-auto"
         self.helper.layout = Layout(
             Fieldset(
-                _("Projekteinstellungen"),
+                _("Project Settings"),
                 FloatingField("name"),
                 FloatingField("description"),
             ),
             HTML(
                 "{% if project %}"
-                + '<a class="btn btn-primary mb-3" href="{% url \'project_create_file\' project.id %}?next={{'
-                'next_url}}">' + _("Datei importieren") + "</a>" + "{% endif %}"
+                '<a class="btn btn-primary mb-3" href="'
+                "{% url 'project_create_file' project.id %}?next={{next_url}}\">"
+                + _("Import File")
+                + "</a>{% endif %}"
             ),
             Fieldset(
                 "",
-                Submit("submit", _("Speichern")),
+                Submit("submit", _("Save")),
                 HTML(
                     '<a class="btn btn-secondary ms-1" href="{% url \'index\' %}">'
-                    + _("Abbrechen")
+                    + _("Cancel")
                     + "</a>"
                 ),
             ),
@@ -93,14 +95,12 @@ class ProjectDeleteForm(ModelForm):
         self.helper.form_class = "w-100 m-auto text-center"
         self.helper.layout = Layout(
             HTML(
-                """<p>Wollen Sie das Projekt <b>{{ object.name }}</b> wirklich
-            löschen?</p>"""
+                """<p>{%blocktranslate%}Are you really shure do delete the project <b>{{ object.name
+                }}</b>?{% endblocktranslate %}</p>"""
             ),
             Submit("submit", _("Bestätigen")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
-                + _("Abbrechen")
-                + "</a>"
+                '<a class="btn btn-secondary" href="{% url \'index\' %}">{% translate "Cancel" %}</a>'
             ),
         )
 
@@ -146,9 +146,7 @@ class ProjectDeployForm(Form):
             Fieldset(_("Projekt generieren"), Field("app_type"), Field("deploy_type")),
             Submit("submit", _("Start")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
-                + _("Abbrechen")
-                + "</a>"
+                '<a class="btn btn-secondary" href="{% url \'index\' %}">{% translate "Cancel" %}</a>'
             ),
         )
 
@@ -164,17 +162,17 @@ class ProjectEditSettingsForm(ModelForm):
         self.helper.form_class = "m-auto"
         self.helper.layout = Layout(
             Fieldset(
-                _("weitere Projekteinstellungen"),
+                _("Project settings"),
                 FloatingField("admin_name"),
                 FloatingField("admin_password"),
                 FloatingField("demo_user_name"),
                 FloatingField("demo_user_password"),
                 FloatingField("domain_name"),
             ),
-            Submit("submit", _("Speichern")),
+            Submit("submit", _("Save")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'project_detail\' object.project.id %}">'
-                + _("Abbrechen")
+                + _("Cancel")
                 + "</a>"
             ),
         )
@@ -204,15 +202,15 @@ class ProjectEditModelForm(ModelForm):
                 FloatingField("description"),
                 Field("is_main_entity", label=_("Haupt-Tabelle")),
             ),
-            Submit("submit", _("Speichern")),
+            Submit("submit", _("Save")),
             HTML(
                 "{% if object.id %}"
                 + '<a class="btn btn-secondary" href="{% url \'project_detail_model\' object.id %}">'
-                + _("Abbrechen")
+                + _("Cancel")
                 + "</a>"
                 + "{% elif project %}"
                 + '<a class="btn btn-secondary" href="{% url \'project_list_models\' project.id %}">'
-                + _("Abbrechen")
+                + _("Cancel")
                 + "</a>"
                 + "{% endif %}"
             ),
@@ -234,14 +232,14 @@ class ProjectDeleteModelForm(ModelForm):
         self.helper.form_class = "w-100 m-auto text-center"
         self.helper.layout = Layout(
             HTML(
-                """<p>Wollen Sie die Tabelle <b>{{ object.name }}</b>
-                wirklich löschen?</p>"""
+                """<p>{% blocktranslate %}Are you really shure to delete the table <b>{{
+                object.name }}</b>?</p>{% endblocktranslate %}"""
             ),
             Submit("submit", _("Bestätigen")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'project_list_models\' '
                 "object.transformation_mapping.project.id "
-                '%}">' + _("Abbrechen") + "</a>"
+                '%}">' + _("Cancel") + "</a>"
             ),
         )
 
@@ -316,11 +314,11 @@ class ProjectEditFieldForm(ModelForm):
                     ),
                 ),
             ),
-            Submit("submit", _("Speichern")),
+            Submit("submit", _("Save")),
             HTML(
                 "{% if model %}"
                 + '<a class="btn btn-secondary" href="{% url \'project_list_fields\' model.id %}">'
-                + _("Abbrechen")
+                + _("Cancel")
                 + "</a>"
                 + "{% endif %}"
             ),
@@ -360,14 +358,13 @@ class ProjectDeleteFieldForm(ModelForm):
         self.helper.form_class = "w-100 m-auto text-center"
         self.helper.layout = Layout(
             HTML(
-                """<p>Wollen Sie die Spalte <b>{{ object.name }}</b>
-                wirklich
-            löschen?</p>"""
+                """<p>{% blocktranslate %}Are you really shure to delete the column <b>{{
+                object.name }}</b>?{% endblocktranslate %}</p>"""
             ),
             Submit("submit", _("Bestätigen")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'project_list_models\' '
-                'model.transformation_mapping.project.id %}">' + _("Abbrechen") + "</a>"
+                'model.transformation_mapping.project.id %}">' + _("Cancel") + "</a>"
             ),
         )
 
@@ -391,16 +388,16 @@ class ProjectEditFileForm(ModelForm):
         self.helper.form_class = "m-auto"
         self.helper.layout = Layout(
             Field("file"),
-            Submit("submit", _("Speichern")),
+            Submit("submit", _("Save")),
             HTML(
                 "{% if object.id %}"
                 + '<a class="btn btn-secondary" href="{% url \'project_list_files\' '
                 'object.transformation_mapping.project.id %}">'
-                + _("Abbrechen")
+                + _("Cancel")
                 + "</a>"
                 + "{% elif project %}"
                 + '<a class="btn btn-secondary" href="{% url \'project_list_files\' project.id %}">'
-                + _("Abbrechen")
+                + _("Cancel")
                 + "</a>"
                 + "{% endif %}"
             ),
@@ -419,14 +416,14 @@ class ProjectDeleteFileForm(ModelForm):
         self.helper.form_class = "w-100 m-auto text-center"
         self.helper.layout = Layout(
             HTML(
-                """<p>Wollen Sie die Datei <b>{{ object.file }}</b>
-                wirklich löschen?</p>"""
+                """<p>{% blocktranslate %}Are you really shure to delete the file <b>{{
+                object.file }}</b>?{% endblocktranslate %}</p>"""
             ),
             Submit("submit", _("Bestätigen")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'project_list_files\' '
                 "object.transformation_mapping.project.id "
-                '%}">' + _("Abbrechen") + "</a>"
+                '%}">' + _("Cancel") + "</a>"
             ),
         )
 

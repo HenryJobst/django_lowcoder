@@ -1,6 +1,8 @@
 {% extends "project/base_generic.html" %}
+{% load i18n %}
 
 {% block content %}
-  <p>Ausgeloggt!</p>
-  <a href="{% url 'login'%}">Klicke hier, um dich erneut anzumelden.</a>
+  {% load i18n %}
+  <p>{% translate 'Logged out!' %}</p>
+  <a href="{% url 'login' %}">{% translate 'Click here, to login again.' %}</a>
 {% endblock %}

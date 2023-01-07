@@ -15,7 +15,9 @@ class ModelUserFieldPermissionMixin(UserPassesTestMixin):
         user_holder = self.get_user_holder(model_object)
 
         model_attr = self.get_model_permission_user_field()
-        return current_user == getattr(user_holder, model_attr)
+        return current_user.is_superuser or current_user == getattr(
+            user_holder, model_attr
+        )
 
     # noinspection PyMethodMayBeStatic
     def get_user_holder(self, model_object):

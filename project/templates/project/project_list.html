@@ -1,10 +1,16 @@
 {% extends "project/base_generic.html" %}
+{% load i18n %}
 
 {% block content %}
 {% load project_filters %}
-<h1 class="h2">Projekte ({{ project_list|length }})</h1>
+<h1 class="h2">
+  {% blocktranslate with length=project_list|length %}
+  Projects ({{ length }})
+  {% endblocktranslate %}
+</h1>
 <div>
   <a role="button"
+     title="{% translate 'Create new project' %}"
      href="{% url 'project_create' %}"><i
     class="feather-48" data-feather="folder-plus"></i>
   </a>
@@ -14,13 +20,13 @@
   <table class="table table-striped table-sm">
     <thead>
     <tr>
-      <th scope="col">Name</th>
-      <th scope="col">Beschreibung</th>
-      <th scope="col">Tabellen</th>
-      <th scope="col">Spalten</th>
-      <th scope="col">Erzeugt</th>
-      <th scope="col">Bearbeitet</th>
-      <th scope="col">Aktionen</th>
+      <th scope="col">{% translate 'Name' %}</th>
+      <th scope="col">{% translate 'Description' %}</th>
+      <th scope="col">{% translate 'Tables' %}</th>
+      <th scope="col">{% translate 'Columns' %}</th>
+      <th scope="col">{% translate 'Created at' %}</th>
+      <th scope="col">{% translate 'Updated at' %}</th>
+      <th scope="col">{% translate 'Actions' %}</th>
     </tr>
     </thead>
     <tbody>
@@ -46,7 +52,7 @@
         {{project.updated_at|date:'SHORT_DATETIME_FORMAT'}}
       </td>
       <td>
-        <a title="Auswählen" role="button"
+        <a title="{% translate 'Select' %}" role="button"
            href="{% url 'project_select' project.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           {% if request.session.selected != project.id %}
@@ -56,19 +62,19 @@
           {% endif %}
         >
         </i></a>
-        <a title="Bearbeiten" role="button"
+        <a title="{% translate 'Edit' %}" role="button"
            href="{% url 'project_update' project.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="edit"></i></a>
-        <a title="Tabellen" role="button"
+        <a title="{% translate 'Tables' %}" role="button"
            href="{% url 'project_list_models' project.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="list"></i></a>
-        <a title="Löschen" role="button"
+        <a title="{% translate 'Delete' %}" role="button"
            href="{% url 'project_delete' project.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="trash-2"></i></a>
-        <a title="Generieren und starten" role="button"
+        <a title="{% translate 'Generate' %}" role="button"
            href="{% url 'project_deploy' project.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="upload-cloud"></i></a>
@@ -79,6 +85,6 @@
   </table>
 </div>
 {% else %}
-<p>Es gibt noch keine Projekte.</p>
+<p>{% translate 'No projects present yet.' %}</p>
 {% endif %}
 {% endblock %}

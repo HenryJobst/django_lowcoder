@@ -14,11 +14,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.conf import settings
-from django.conf.urls.static import static
-from django.contrib import admin
-from project.admin import admin_site
 from django.shortcuts import redirect
-from django.urls import path, include
+from django.urls import path, include, re_path
+
+from project.admin import admin_site
 
 from project.views.views_registration import LoginView
 
@@ -30,4 +29,8 @@ urlpatterns = [
     path("dlc-admin/", admin_site.urls),
     path("favicon.ico", lambda request: redirect("project/favicon.ico")),
     path("__debug__/", include("debug_toolbar.urls")),
+    path("i18n/", include("django.conf.urls.i18n")),
 ]
+
+if "rosetta" in settings.INSTALLED_APPS:
+    urlpatterns += [re_path(r"^rosetta/", include("rosetta.urls"))]

@@ -1,8 +1,11 @@
 {% extends "project/base_generic.html" %}
+{% load i18n %}
 
 {% block content %}
-<h1>Zugriff verboten (403)</h1>
+<h1>{% translate 'Access forbidden (Error: 403)' %}</h1>
 
-<p>{% if exception %}{{ exception }}{% else %}Sie sind nicht berechtigt,
-    auf diese Seite zuzugreifen.{% endif %}</p>
+<p>{% if exception %}{{ exception }}
+  {% else %}
+  {% translate 'You are not allowed to request this page.' %}
+  {% endif %}</p>
 {% endblock content %}

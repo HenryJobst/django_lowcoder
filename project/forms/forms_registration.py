@@ -1,10 +1,10 @@
+from crispy_bootstrap5.bootstrap5 import FloatingField  # type: ignore
+from crispy_forms.helper import FormHelper  # type: ignore
+from crispy_forms.layout import Submit, Layout, Fieldset, HTML  # type: ignore
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from crispy_forms.helper import FormHelper  # type: ignore
-from crispy_forms.layout import Submit, Layout, Fieldset, HTML  # type: ignore
-from crispy_bootstrap5.bootstrap5 import FloatingField  # type: ignore
 
 from project.views.views_project import NEXT_URL_PARAM
 
@@ -18,7 +18,7 @@ class RegisterForm(UserCreationForm):
         self.helper.form_class = "form-register"
         self.helper.layout = Layout(
             Fieldset(
-                _("Nutzerdaten"),
+                _("User data"),
                 FloatingField("username"),
                 FloatingField("first_name"),
                 FloatingField("last_name"),
@@ -26,7 +26,7 @@ class RegisterForm(UserCreationForm):
                 FloatingField("password1"),
                 FloatingField("password2"),
             ),
-            Submit("submit", _("Registrieren")),
+            Submit("submit", _("Register")),
         )
 
     class Meta:
@@ -58,22 +58,17 @@ class LoginForm(AuthenticationForm):
             data-feather="log-in"></i>"""
             ),
             Fieldset(
-                _("Anmelden"),
+                _("Login"),
                 FloatingField("username"),
                 FloatingField("password"),
             ),
-            Submit("submit", _("Anmelden")),
+            Submit("submit", _("Login")),
             HTML(
-                """
-            <div class="mt-3">
-            <a href="{% url 'password_reset' %}">
-            {{_('Passwort vergessen?')}}</a>
-            </div>
-            <div class="mt-1">
-            <a href="{% url 'register' %}">
-            {{_('Registrieren')}}</a>
-            </div>
-            """
+                '<div class="mt-3"><a href="{% url \'password_reset\' %}">'
+                + _("Lost password?")
+                + '</a></div><div class="mt-1"><a href="{% url \'register\' %}">'
+                + _("Register")
+                + "</a></div>"
             ),
         )
 

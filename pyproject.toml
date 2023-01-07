@@ -29,6 +29,7 @@ openpyxl = "^3.0.10"
 xlrd = "^2.0.1"
 pandas-stubs = "^1.5.2"
 Werkzeug = "^2.2.2"
+django-rosetta = "^0.9.8"
 
 [tool.poetry.dev-dependencies]
 tox = {version = "^4.0.16"}

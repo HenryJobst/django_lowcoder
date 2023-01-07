@@ -15,6 +15,8 @@ from pathlib import Path
 
 import environ
 
+from django.utils.translation import gettext_lazy as _
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,6 +41,7 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost," "127.0.0.1").split(
 # Application definition
 
 INSTALLED_APPS = [
+    "rosetta",
     "project.apps.ProjectConfig",
     "crispy_forms",
     "crispy_bootstrap5",
@@ -191,3 +194,11 @@ LOGGING = {
         "handlers": ["console", "file"],
     },
 }
+
+ROSETTA_SHOW_AT_ADMIN_PANEL = True
+ROSETTA_ENABLE_TRANSLATION_SUGGESTIONS = True
+
+LANGUAGES = [
+    ("de", _("German")),
+    ("en", _("English")),
+]

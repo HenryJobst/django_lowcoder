@@ -14,6 +14,7 @@ from django.core.validators import (
 from django.db import models
 from django.db.models.signals import post_delete
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext_lazy
 
 MIN_PASSWORD_LENGTH = 6
@@ -24,6 +25,7 @@ MAX_PROJECT_NAME_LENGTH = 100
 MIN_USER_NAME_LENGTH = 4
 MIN_MODEL_NAME_LENGTH = 3
 MIN_FIELD_NAME_LENGTH = 2
+MIN_NAME_COMMON_LENGTH = 4
 
 VALID_SUFFIXES = ["csv", "odf", "xls", "xlsx"]
 VALID_MIMETYPES = [
@@ -65,8 +67,8 @@ def file_cleanup(sender, **kwargs):
 
 
 class TimeStampMixin(models.Model):
-    created_at = models.DateTimeField(auto_now_add=True)  # type: ignore
-    updated_at = models.DateTimeField(auto_now=True)  # type: ignore
+    created_at = models.DateTimeField(_("created at"), auto_now_add=True)  # type: ignore
+    updated_at = models.DateTimeField(_("updated at"), auto_now=True)  # type: ignore
 
     class Meta:
         abstract = True
@@ -74,13 +76,19 @@ class TimeStampMixin(models.Model):
 
 class Project(TimeStampMixin, models.Model):
     def __str__(self) -> str:
-        return f"Projekt: {self.name} - User: {self.user.username}"
+        return _("Project: %(name)s - User: %(username)s") % {
+            "name": self.name,
+            "username": self.user.username,
+        }
 
     user = models.ForeignKey(  # type: ignore
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="+"
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="+",
+        verbose_name=_("user"),
     )
     name = models.CharField(  # type: ignore
-        "Name",
+        _("name"),
         max_length=MAX_PROJECT_NAME_LENGTH,
         unique=True,
         null=False,
@@ -88,13 +96,15 @@ class Project(TimeStampMixin, models.Model):
         validators=[MinLengthValidator(MIN_PROJECT_NAME_LENGTH)],
     )
     description = models.CharField(  # type: ignore
-        "Beschreibung", max_length=1000, null=True, blank=True
+        _("description"), max_length=1000, null=True, blank=True
     )
 
     projectsettings = "ProjectSettings"  # forward decl for mypy
 
     class Meta:
         ordering = ["name"]
+        verbose_name = _("project")
+        verbose_name_plural = _("projects")
 
     def get_absolute_url(self):
         return reverse("project_detail", kwargs={"pk": self.pk})
@@ -126,48 +136,52 @@ class ProjectSettings(models.Model):
         Project,
         on_delete=models.CASCADE,
         primary_key=True,
+        verbose_name=_("project settings"),
     )
     domain_name = models.CharField(  # type: ignore
-        "Domain", max_length=100, null=True, validators=[MinLengthValidator(4)]
+        _("domain"), max_length=100, null=True, validators=[MinLengthValidator(4)]
     )
     admin_name = models.CharField(  # type: ignore
-        "Administrator-Benutzername",
+        _("admin user name"),
         max_length=60,
-        default="admin",
+        # Default admin user name
+        default=_("admin"),
         validators=[MinLengthValidator(MIN_USER_NAME_LENGTH)],
     )
     admin_password = models.CharField(  # type: ignore
-        "Administrator-Passwort",
+        _("admin password"),
         max_length=100,
         default=settings.DEFAULT_ADMIN_PASSWORD,
         validators=[MinLengthValidator(MIN_PASSWORD_LENGTH)],
     )
     demo_user_name = models.CharField(  # type: ignore
-        "Demo-Nutzer-Benutzername",
+        _("demo user name"),
         max_length=60,
         null=True,
         blank=True,
-        default="demo",
+        default=_("demo"),
         validators=[NullOrMinLengthValidator(MIN_USER_NAME_LENGTH)],
     )
     demo_user_password = models.CharField(  # type: ignore
-        "Demo-Nutzer-Passwort",
+        _("demo user password"),
         max_length=100,
         null=True,
         blank=True,
         validators=[NullOrMinLengthValidator(MIN_PASSWORD_LENGTH)],
-        help_text="Kein Passwort setzen, um keinen Demo-User anzulegen!",
+        help_text=_("Set no password to disable creation of a demo user!"),
     )
 
     def get_absolute_url(self):
         return reverse("project_detail", kwargs={"pk": self.project.id})
 
+    class Meta:
+        verbose_name = _("project settings")
+        verbose_name_plural = _("project settings")
+
 
 class TransformationMapping(models.Model):
     project = models.OneToOneField(  # type: ignore
-        Project,
-        on_delete=models.CASCADE,
-        primary_key=True,
+        Project, on_delete=models.CASCADE, primary_key=True, verbose_name=_("project")
     )
 
     files: models.QuerySet["TransformationFile"]  # forward decl for mypy
@@ -180,12 +194,13 @@ class TransformationFile(models.Model):
         on_delete=models.CASCADE,
         null=False,
         related_name="files",
+        verbose_name=_("transformation mapping"),
     )
 
     sheets: models.QuerySet["TransformationSheet"]  # forward decl for mypy
 
     file = models.FileField(
-        "Datei",
+        _("file"),
         max_length=200,
         validators=[FileExtensionValidator(allowed_extensions=VALID_SUFFIXES)],
     )
@@ -193,6 +208,8 @@ class TransformationFile(models.Model):
     class Meta:
         ordering = ["transformation_mapping", "file"]
         unique_together = ["transformation_mapping", "file"]
+        verbose_name = _("file")
+        verbose_name_plural = _("files")
 
 
 post_delete.connect(
@@ -204,7 +221,10 @@ post_delete.connect(
 
 class TransformationSheet(models.Model):
     transformation_file = models.ForeignKey(  # type: ignore
-        TransformationFile, on_delete=models.CASCADE, related_name="sheets"
+        TransformationFile,
+        on_delete=models.CASCADE,
+        related_name="sheets",
+        verbose_name=_("file"),
     )
 
     headlines: models.QuerySet["TransformationHeadline"]  # forward decl for mypy
@@ -219,7 +239,10 @@ class TransformationSheet(models.Model):
 
 class TransformationHeadline(models.Model):
     transformation_sheet = models.ForeignKey(  # type: ignore
-        TransformationSheet, on_delete=models.CASCADE, related_name="headlines"
+        TransformationSheet,
+        on_delete=models.CASCADE,
+        related_name="headlines",
+        verbose_name=_("sheet"),
     )
 
     columns: models.QuerySet["TransformationColumn"]  # forward decl for mypy
@@ -236,7 +259,10 @@ class TransformationHeadline(models.Model):
 class TransformationColumn(models.Model):
     column_index = models.IntegerField()  # type: ignore
     transformation_headline = models.ForeignKey(  # type: ignore
-        TransformationHeadline, on_delete=models.CASCADE, related_name="columns"
+        TransformationHeadline,
+        on_delete=models.CASCADE,
+        related_name="columns",
+        verbose_name=_("headline"),
     )
 
     field: "Field"  # forward decl for mypy
@@ -248,13 +274,20 @@ class TransformationColumn(models.Model):
 
 
 class Model(TimeStampMixin, models.Model):
+    class Meta:
+        ordering = ["index", "transformation_mapping"]
+        unique_together = ["index", "transformation_mapping"]
+        verbose_name = _("model")
+        verbose_name_plural = _("models")
 
     name = models.CharField(  # type: ignore
-        "Name", max_length=100, validators=[MinLengthValidator(MIN_MODEL_NAME_LENGTH)]
+        _("name"),
+        max_length=100,
+        validators=[MinLengthValidator(MIN_MODEL_NAME_LENGTH)],
     )
 
     description = models.TextField(
-        "Beschreibung", max_length=1000, null=True, blank=True  # type: ignore
+        _("description"), max_length=1000, null=True, blank=True  # type: ignore
     )
 
     transformation_headline = models.OneToOneField(  # type: ignore
@@ -262,39 +295,48 @@ class Model(TimeStampMixin, models.Model):
         on_delete=models.SET_NULL,
         null=True,
         related_name="model",
+        verbose_name=_("headline"),
     )
     transformation_mapping = models.ForeignKey(  # type: ignore
         TransformationMapping,
         on_delete=models.CASCADE,
         null=False,
         related_name="models",
+        verbose_name=_("transformation mapping"),
     )
-    is_main_entity = models.BooleanField("Haupt-Tabelle?", default=False)  # type: ignore
+    is_main_entity = models.BooleanField(_("main entry"), default=False)  # type: ignore
     index = models.PositiveSmallIntegerField(  # type: ignore
-        "Reihenfolge", null=True, validators=[MinValueValidator(1)]
+        _("index"), null=True, validators=[MinValueValidator(1)]
     )
-    exclude = models.BooleanField("nicht anlegen", default=False)  # type: ignore
+    exclude = models.BooleanField(
+        _("exclude from creation"), default=False
+    )  # type: ignore
 
     fields: models.QuerySet["Field"]  # forward decl for mypy
-
-    class Meta:
-        ordering = ["index", "transformation_mapping"]
-        unique_together = ["index", "transformation_mapping"]
 
     def unique_error_message(self, model_class, unique_check):
         if model_class == type(self) and unique_check == (
             "index",
             "transformation_mapping",
         ):
-            return "%(model_name)s's %(field_labels)s are not unique."
+            return ngettext_lazy(
+                "%(model_name)'s %(field_labels) are not unique.",
+                "%(model_name)'s %(field_labels)s are not unique.",
+            )
         else:
             return super(Model, self).unique_error_message(model_class, unique_check)
 
     def __str__(self) -> str:
-        return f"Tabelle: {self.name}"
+        return _("Table: %(name)s") % {"name": self.name}
 
 
 class Field(TimeStampMixin, models.Model):
+    class Meta:
+        ordering = ["index", "model"]
+        unique_together = ["index", "model"]
+        verbose_name = _("field")
+        verbose_name_plural = _("fields")
+
     DATATYPES = [
         "Keiner",
         "BigIntegerField",
@@ -342,53 +384,77 @@ class Field(TimeStampMixin, models.Model):
         return requested_size
 
     name = models.CharField(  # type: ignore
-        "Name", max_length=100, validators=[MinLengthValidator(MIN_FIELD_NAME_LENGTH)]
+        _("name"),
+        max_length=100,
+        validators=[MinLengthValidator(MIN_FIELD_NAME_LENGTH)],
     )
 
     description = models.TextField(
-        "Beschreibung", max_length=1000, null=True, blank=True  # type: ignore
+        _("description"), max_length=1000, null=True, blank=True  # type: ignore
     )
 
     transformation_column = models.ForeignKey(  # type: ignore
-        TransformationColumn, on_delete=models.SET_NULL, null=True
+        TransformationColumn,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name=_("transformation column"),
     )
-    model = models.ForeignKey(Model, on_delete=models.CASCADE, related_name="fields")  # type: ignore
+    model = models.ForeignKey(
+        Model,
+        on_delete=models.CASCADE,
+        related_name="fields",
+        verbose_name=_("table"),
+    )  # type:
+    # ignore
     datatype = models.IntegerField(  # type: ignore
-        "Datentyp", choices=DATATYPE_CHOICES, default=DATATYPES[4][0]
+        _("data type"),
+        choices=DATATYPE_CHOICES,
+        default=DATATYPES[4][0],
     )
-    max_length = models.IntegerField("Länge", null=True, blank=True)  # type: ignore
-    max_digits = models.IntegerField("Anzahl der Stellen bei einer Dezimalzahl", null=True, blank=True)  # type: ignore
+    max_length = models.IntegerField(_("field length"), null=True, blank=True)  # type: ignore
+    max_digits = models.IntegerField(
+        _("decimal number length"), null=True, blank=True
+    )  # type:
+    # ignore
     decimal_places = models.IntegerField(
-        "Anzahl der Nachkommastellen bei einer Dezimalzahl", null=True, blank=True
+        _("decimal places"),
+        null=True,
+        blank=True,
     )  # type: ignore
     default_value = models.CharField(  # type: ignore
-        "Standardwert", max_length=100, null=True, blank=True
+        _("default value"), max_length=100, null=True, blank=True
     )
-    choices = models.JSONField("Auswahlwerte", null=True, blank=True)  # type: ignore
-    blank = models.BooleanField("leeres Eingabefeld zulässig?", default=False)  # type: ignore
-    null = models.BooleanField("leerer Spaltenwert zulässig?", default=False)  # type: ignore
+    choices = models.JSONField(
+        _("selection values"), null=True, blank=True
+    )  # type: ignore
+    blank = models.BooleanField(
+        _("allow empty values in form"), default=False
+    )  # type: ignore
+    null = models.BooleanField(
+        _("allow empty values in database"), default=False
+    )  # type: ignore
     foreign_key_entity = models.ForeignKey(  # type: ignore
         Model,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        verbose_name="Fremdschlüssel",
+        verbose_name=_("foreign key"),
     )
-    is_unique = models.BooleanField("Eindeutig?", default=False)  # type: ignore
-    use_index = models.BooleanField("Index?", default=False)  # type: ignore
+    is_unique = models.BooleanField(_("unique"), default=False)  # type: ignore
+    use_index = models.BooleanField(_("create index"), default=False)  # type: ignore
     validation_pattern = models.CharField(  # type: ignore
-        "Prüfmuster", max_length=100, null=True, blank=True
+        _("validation pattern"), max_length=100, null=True, blank=True
     )
-    show_in_list = models.BooleanField("in Liste anzeigen?", default=True)  # type: ignore
-    show_in_detail = models.BooleanField("in Detailansicht anzeigen?", default=True)  # type: ignore
-    exclude = models.BooleanField("nicht anlegen", default=False)  # type: ignore
+    show_in_list = models.BooleanField(_("show in list page"), default=True)  # type: ignore
+    show_in_detail = models.BooleanField(
+        _("show in detail page"), default=True
+    )  # type:
+    # ignore
+    exclude = models.BooleanField(_("exclude from creation"), default=False)  # type: ignore
     index = models.PositiveSmallIntegerField(  # type: ignore
-        "Reihenfolge", null=True, validators=[MinValueValidator(1)]
+        _("index"), null=True, validators=[MinValueValidator(1)]
     )
-
-    class Meta:
-        ordering = ["index", "model"]
-        unique_together = ["index", "model"]
+    internationalizable = models.BooleanField(_("internationalizable"), default=False)  # type: ignore
 
     def unique_error_message(self, model_class, unique_check):
         if model_class == type(self) and unique_check == ("index", "model"):
@@ -397,20 +463,24 @@ class Field(TimeStampMixin, models.Model):
             return super(Field, self).unique_error_message(model_class, unique_check)
 
     def __str__(self) -> str:
-        return f"Spalte: {self.name}"
+        return _("Column: %(name)s") % {"name": self.name}
 
 
 def validate_file_type(file: TransformationFile) -> None:
     path = Path(file.file.name)
     if path.suffix.replace(".", "") not in VALID_SUFFIXES:
         raise ValidationError(
-            f"Der Dateityp {path.suffix} ist ein unzulässiger Dateityp für den Import"
+            ngettext_lazy(
+                "Suffix %(suffix) is not allowed for import",
+                "Suffix %(suffix) is not allowed for import",
+            )
+            % {"suffix": path.suffix}
         )
 
 
 class ProgrammingLanguage(models.Model):
     name = models.CharField(  # type: ignore
-        "Programmiersprache",
+        _("programming language"),
         max_length=60,
         null=False,
         blank=False,
@@ -419,21 +489,38 @@ class ProgrammingLanguage(models.Model):
     )
 
     def __str__(self):
-        return f"Programmiersprache: {self.name}"
+        return _("Programming Language: %(name)s") % {"name": self.name}
 
 
 class CodeTemplate(models.Model):
+    name = models.CharField(  # type: ignore
+        _("name"),
+        max_length=60,
+        null=False,
+        blank=False,
+        validators=[MinLengthValidator(MIN_NAME_COMMON_LENGTH)],
+        unique=True,
+    )
     path = models.CharField(  # type: ignore
-        "URL/Pfad",
+        _("path"),
         max_length=200,
         null=False,
         blank=False,
-        validators=[MinLengthValidator(1)],
+        validators=[MinLengthValidator(MIN_NAME_COMMON_LENGTH)],
         unique=True,
     )
     programming_language = models.ForeignKey(  # type: ignore
-        ProgrammingLanguage, null=False, blank=False, on_delete=models.CASCADE
+        ProgrammingLanguage,
+        null=False,
+        blank=False,
+        on_delete=models.CASCADE,
+        related_name="programming_languages",
+        verbose_name=_("programming language"),
     )
 
     def __str__(self):
-        return f"Code-Template: {self.programming_language.name} - {self.path}"
+        return _("Code Template: %(name)s - %(lang)s - %(path)s") % {
+            "name": self.name,
+            "lang": self.programming_language.name,
+            "path": self.path,
+        }

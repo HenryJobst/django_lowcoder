@@ -1,10 +1,15 @@
 {% extends "project/base_generic.html" %}
+{% load i18n %}
 
 {% block content %}
 {% load project_filters %}
-<h1 class="h2">Dateien ({{ transformationfile_list|length }})</h1>
+<h1 class="h2">
+  {% blocktranslate with length=file_list|length %}
+  Files ({{ length }})
+  {% endblocktranslate %}</h1>
 <div>
   <a role="button"
+     title="{% translate 'Create new file' %}"
      href="{% url 'project_create_file' request.session.selected %}"><i
     class="feather-48" data-feather="folder-plus"></i>
   </a>
@@ -14,11 +19,11 @@
   <table id="file-table" class="table table-striped table-sm">
     <thead>
     <tr>
-      <th scope="col">Name</th>
-      <th scope="col">Blätter</th>
-      <th scope="col">Tabellen</th>
-      <th scope="col">Spalten</th>
-      <th scope="col">Aktionen</th>
+      <th scope="col">{% translate 'Name' %}</th>
+      <th scope="col">{% translate 'Sheets' %}</th>
+      <th scope="col">{% translate 'Tables' %}</th>
+      <th scope="col">{% translate 'Columns' %}</th>
+      <th scope="col">{% translate 'Actions' %}</th>
     </tr>
     </thead>
     <tbody>
@@ -37,15 +42,15 @@
         {{ file|columns_count }}
       </td>
       <td>
-        <a title="Tabellen" role="button"
+        <a title="{% translate 'Tables' %}" role="button"
            href="{% url 'project_list_models' file.transformation_mapping.project.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="list"></i></a>
-        <a title="Import" role="button"
+        <a title="{% translate 'Import' %}" role="button"
            href="{% url 'project_import_file' file.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="fast-forward"></i></a>
-        <a title="Löschen" role="button"
+        <a title="{% translate 'Delete' %}" role="button"
            href="{% url 'project_delete_file' file.id %}?next={{request.path}}"><i
           class="feather-24 align-top me-1"
           data-feather="trash-2"></i></a>
@@ -56,6 +61,6 @@
   </table>
 </div>
 {% else %}
-<p>Es gibt noch keine Dateien.</p>
+<p>{% translate 'No files present yet.' %}</p>
 {% endif %}
 {% endblock %}

@@ -3,10 +3,14 @@
 {% load django_htmx %}
 <html lang="de">
 <head>
-    {% block title %}<title>Django-LowCoder</title>{% endblock %}
+    {% load i18n %}
+    {% block title %}
+    <title>Django-LowCoder</title>
+    {% endblock %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Projektseite">
+    <meta name="description"
+          content="{% translate 'Django-LowCoder: Application generation out of excel or csv tables' %}">
 
      <style>
       .bd-placeholder-img {
@@ -68,6 +72,7 @@
     {% django_htmx_script %}
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+{% load i18n %}
 <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
     <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6" href="#">Django
         - LowCoder</a>
@@ -89,14 +94,14 @@
                  <span data-feather="log-out"
                                   class="align-text-bottom">
                  </span>
-                Abmelden
+                {% translate 'Logout' %}
             </a>
             {% else %}
             {% if request.path != '/accounts/login/' %}
             <a class="nav-link px-3" href="{% url 'login' %}">
                  <span data-feather="log-in"
                                   class="align-text-bottom"></span>
-                Anmelden</a>
+                {% translate 'Login' %}</a>
             {% endif %}
             {% endif %}
         </div>
@@ -128,7 +133,7 @@
                            href="{% url 'index' %}">
                             <span data-feather="home"
                                   class="align-text-bottom"></span>
-                            Projekte
+                            {% translate 'Projects' %}
                         </a>
                     </li>
                     {% if 'selected' in request.session and request.session.selected != 0 %}
@@ -148,7 +153,7 @@
                            href="{% url 'project_update_settings' request.session.selected %}">
                             <span data-feather="more-horizontal"
                                   class="align-text-bottom"></span>
-                        Einstellungen
+                        {% translate 'Settings' %}
                     </a>
                     </li>
                       <li><a class="nav-link {%if request.path == url_project_list_files%}active{%endif%}"
@@ -156,7 +161,7 @@
                              href="{% url 'project_list_files' request.session.selected %}">
                             <span data-feather="list"
                                   class="align-text-bottom"></span>
-                        Dateien
+                        {% translate 'Files' %}
                       </a>
                       </li>
                     <li><a class="nav-link {%if request.path == url_project_list_models%}active{%endif%}"
@@ -164,7 +169,7 @@
                            href="{% url 'project_list_models' request.session.selected %}">
                             <span data-feather="list"
                                   class="align-text-bottom"></span>
-                        Tabellen
+                        {% translate 'Tables' %}
                     </a>
                     </li>
                       {% if 'selected_model' in request.session and request.session.selected_model != 0 %}
@@ -188,7 +193,7 @@
                         <a class="nav-link" href="{% url 'dlc-admin:index' %}">
                             <span data-feather="tool"
                                   class="align-text-bottom"></span>
-                            Admin-Bereich
+                            {% translate 'Administrator site' %}
                         </a>
                     </li>
                     {% endif %}
