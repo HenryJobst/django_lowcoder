@@ -36,23 +36,22 @@ class CookiecutterConfig:
         self.project: Project = project
         self.post_dict: QueryDict = post_dict
         self.code_template: CodeTemplate = CodeTemplate.objects.get(
-            self.post_dict.get("app_type")
+            pk=self.post_dict.get("app_type")
         )
         self.programming_language = self.code_template.programming_language.name
         self.init_cookiecutter_template_config(self.code_template.pk)
-        self.config_json_path: str | None = None
 
     def init_cookiecutter_template_config(self, pk: int):
         if pk == 1:  # Java-Template
-            return self.init_cookiecutter_java_config()
+            self.init_cookiecutter_java_config()
         elif pk == 2:  # Django-Template
-            return self.init_cookiecutter_django_config()
+            self.init_cookiecutter_django_config()
 
         self.config_json_path = (
             f"config/cookiecutter-{self.code_template.pk}/config.json"
         )
 
-        with open(self.get_filename(), "w") as f:
+        with open(self.get_filename(), "w+") as f:
             f.write(json.dumps(self.config, sort_keys=False))
 
     def init_cookiecutter_java_config(self):
@@ -73,7 +72,7 @@ class CookiecutterConfig:
             "timezone": "UTC",
             "windows": "n",
             "use_intellij": "n",
-            "use_docker": "y" if self.post_dict["type"] == "1" else "n",
+            "use_docker": "y" if self.post_dict["deploy_type"] == "2" else "n",
             "exposed_port": "8001",
             "postgresql_version": "14",
             "cloud_provider": "None",
@@ -111,7 +110,7 @@ class CookiecutterConfig:
             "timezone": "UTC",
             "windows": "n",
             "use_pycharm": "n",
-            "use_docker": "y" if self.post_dict["type"] == "1" else "n",
+            "use_docker": "y" if self.post_dict["deploy_type"] == "2" else "n",
             "django_port": "8001",
             "postgresql_version": "14",
             "cloud_provider": "None",

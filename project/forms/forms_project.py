@@ -15,6 +15,7 @@ from django.forms import (
     CharField,
     Textarea,
     ModelChoiceField,
+    HiddenInput,
 )
 from django.template.defaultfilters import slugify
 from django.urls import reverse_lazy
@@ -95,12 +96,17 @@ class ProjectDeleteForm(ModelForm):
         self.helper.form_class = "w-100 m-auto text-center"
         self.helper.layout = Layout(
             HTML(
-                """<p>{%blocktranslate%}Are you really shure do delete the project <b>{{ object.name
-                }}</b>?{% endblocktranslate %}</p>"""
+                "{% load i18n %}"
+                + "<p>"
+                + _("Are you really shure to delete the project <b>%(name)s</b>?")
+                % {"name": self.instance.name}
+                + "</p>"
             ),
             Submit("submit", _("Confirm")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'index\' %}">{% translate "Cancel" %}</a>'
+                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
+                + _("Cancel")
+                + "</a>"
             ),
         )
 
@@ -143,10 +149,16 @@ class ProjectDeployForm(Form):
         self.helper.form_method = "post"
         self.helper.form_class = "w-100 m-auto"
         self.helper.layout = Layout(
-            Fieldset(_("Generate Project"), Field("app_type"), Field("deploy_type")),
+            Fieldset(
+                _("Generate Project"),
+                Field("app_type"),
+                Field("deploy_type"),
+            ),
             Submit("submit", _("Start")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'index\' %}">{% translate "Cancel" %}</a>'
+                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
+                + _("Cancel")
+                + "</a>"
             ),
         )
 
@@ -232,8 +244,8 @@ class ProjectDeleteModelForm(ModelForm):
         self.helper.form_class = "w-100 m-auto text-center"
         self.helper.layout = Layout(
             HTML(
-                """<p>{% blocktranslate %}Are you really shure to delete the table <b>{{
-                object.name }}</b>?</p>{% endblocktranslate %}"""
+                "<p>{% blocktranslate with name=object.name %}Are you really shure to delete the table <b>{{"
+                "name}}</b>?</p>{% endblocktranslate %}"
             ),
             Submit("submit", _("Confirm")),
             HTML(

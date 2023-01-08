@@ -205,8 +205,8 @@ class NextMixin(Generic[ET]):
     # noinspection PyUnresolvedReferences,PyArgumentList
     def get_success_url(self) -> Any:
         next_url: str | None = self.request.GET.get(NEXT_URL_PARAM)
-        if NextMixin[ET].url_or_next_function_with_pk:
-            return NextMixin[ET].url_or_next_function_with_pk(  # type: ignore
+        if type(self).url_or_next_function_with_pk:
+            return type(self).url_or_next_function_with_pk(  # type: ignore
                 next_url, self.kwargs.get("pk", 0)
             )
         elif self.url_or_next_function_with_object:
@@ -215,7 +215,7 @@ class NextMixin(Generic[ET]):
             )
             # type: ignore
         else:
-            return NextMixin[ET].url_or_next_function(next_url)
+            return type(self).url_or_next_function(next_url)
 
 
 class ProjectViewMixin(NextMixin):
@@ -225,6 +225,7 @@ class ProjectViewMixin(NextMixin):
 
 
 class ProjectListMixin(NextMixin):
+
     pass
 
 
