@@ -98,7 +98,7 @@ class ProjectDeleteForm(ModelForm):
                 """<p>{%blocktranslate%}Are you really shure do delete the project <b>{{ object.name
                 }}</b>?{% endblocktranslate %}</p>"""
             ),
-            Submit("submit", _("Bestätigen")),
+            Submit("submit", _("Confirm")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'index\' %}">{% translate "Cancel" %}</a>'
             ),
@@ -112,22 +112,22 @@ class ProjectDeleteForm(ModelForm):
 class ProjectDeployForm(Form):
 
     app_type = ModelChoiceField(
-        label=_("Code-Template"),
+        label=_("Code Template"),
         queryset=CodeTemplate.objects.all(),
         empty_label=_(
-            "Bitte durch einen Administrator ein Template einrichten lassen."
+            "Contact a administrator to register at least one cookiecutter code template."
         ),
         initial="0",
         required=True,
         blank=False,
-        help_text=_("URL oder Pfad zu einem Cookiecutter-Template"),
+        help_text=_("URI or Path to an existing cookiecutter code template."),
     )
 
     deploy_type = TypedChoiceField(
-        label=_("Auslieferungstyp"),
+        label=_("Deployment Type"),
         choices=(
-            (0, _("Lokales Verzeichnis")),
-            (1, _("Git-Repository")),
+            (0, _("Local Directory")),
+            (1, _("Git Repository")),
             (2, _("Docker/Docker-Compose")),
             (3, _("PaaS")),
         ),
@@ -143,7 +143,7 @@ class ProjectDeployForm(Form):
         self.helper.form_method = "post"
         self.helper.form_class = "w-100 m-auto"
         self.helper.layout = Layout(
-            Fieldset(_("Projekt generieren"), Field("app_type"), Field("deploy_type")),
+            Fieldset(_("Generate Project"), Field("app_type"), Field("deploy_type")),
             Submit("submit", _("Start")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'index\' %}">{% translate "Cancel" %}</a>'
@@ -196,11 +196,11 @@ class ProjectEditModelForm(ModelForm):
         self.helper.form_class = "m-auto"
         self.helper.layout = Layout(
             Fieldset(
-                _("Tabelle"),
+                _("Table"),
                 Field("exclude"),
                 FloatingField("name"),
                 FloatingField("description"),
-                Field("is_main_entity", label=_("Haupt-Tabelle")),
+                Field("is_main_entity", label=_("Main Table")),
             ),
             Submit("submit", _("Save")),
             HTML(
@@ -235,7 +235,7 @@ class ProjectDeleteModelForm(ModelForm):
                 """<p>{% blocktranslate %}Are you really shure to delete the table <b>{{
                 object.name }}</b>?</p>{% endblocktranslate %}"""
             ),
-            Submit("submit", _("Bestätigen")),
+            Submit("submit", _("Confirm")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'project_list_models\' '
                 "object.transformation_mapping.project.id "
@@ -266,7 +266,7 @@ class ProjectEditFieldForm(ModelForm):
         self.helper.form_class = "m-auto"
         self.helper.layout = Layout(
             Fieldset(
-                _("Spalte"),
+                _("Column"),
                 Field("exclude"),
                 FloatingField("name"),
                 FloatingField("description"),
@@ -356,12 +356,12 @@ class ProjectDeleteFieldForm(ModelForm):
         self.helper = FormHelper(self)
         self.helper.form_method = "post"
         self.helper.form_class = "w-100 m-auto text-center"
-        self.helper.layout = Layout(
+        self.helper.layouet = Layout(
             HTML(
                 """<p>{% blocktranslate %}Are you really shure to delete the column <b>{{
                 object.name }}</b>?{% endblocktranslate %}</p>"""
             ),
-            Submit("submit", _("Bestätigen")),
+            Submit("submit", _("Confirm")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'project_list_models\' '
                 'model.transformation_mapping.project.id %}">' + _("Cancel") + "</a>"
@@ -375,9 +375,9 @@ class ProjectDeleteFieldForm(ModelForm):
 
 class ProjectEditFileForm(ModelForm):
     file = FileField(
-        label=_("Datei"),
+        label=_("File"),
         localize=True,
-        help_text=_("Wählen sie eine Datei zum Import."),
+        help_text=_("Select a file for import."),
         widget=ClearableFileInput(attrs={"accept": ",".join(VALID_MIMETYPES)}),
     )
 
@@ -419,7 +419,7 @@ class ProjectDeleteFileForm(ModelForm):
                 """<p>{% blocktranslate %}Are you really shure to delete the file <b>{{
                 object.file }}</b>?{% endblocktranslate %}</p>"""
             ),
-            Submit("submit", _("Bestätigen")),
+            Submit("submit", _("Confirm")),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'project_list_files\' '
                 "object.transformation_mapping.project.id "
@@ -485,9 +485,9 @@ class ProjectImportFileForm(Form):
             self.register_fields(sheet, settings)
             tab_holder.fields.append(
                 Tab(
-                    f"{_('Tabelle:')} {sheet}",
+                    f"{_('Table:')} {sheet}",
                     Div(
-                        HTML("<h5>" + _("Importeinstellungen") + "</h5>"),
+                        HTML("<h5>" + _("Import Settings") + "</h5>"),
                         css_class="mt-2",
                     ),
                     Div(
@@ -540,12 +540,12 @@ class ProjectImportFileForm(Form):
                         css_id=var_name(sheet, SETTINGS),
                     ),
                     HTML("<hr>"),
-                    HTML("<h5>" + _("Tabellenausschnitt") + "</h5>"),
+                    HTML("<h5>" + _("Table Section") + "</h5>"),
                     Div(
                         Div(
                             Row(
                                 Column(
-                                    HTML("<h6>" + _("Kopfteil") + "</h6>"),
+                                    HTML("<h6>" + _("Head") + "</h6>"),
                                     css_class="form-group col-md-10 mb-0",
                                 ),
                                 Column(
@@ -578,7 +578,7 @@ class ProjectImportFileForm(Form):
                         Div(
                             Row(
                                 Column(
-                                    HTML("<h6>" + _("Fußteil") + "</h6>"),
+                                    HTML("<h6>" + _("Tail") + "</h6>"),
                                     css_class="form-group col-md-10 mb-0",
                                 ),
                                 Column(
@@ -620,8 +620,8 @@ class ProjectImportFileForm(Form):
         self.register_field(
             var_name(sheet, READ_PARAM_HEADER),
             IntegerField(
-                label=_("Tabellenkopf"),
-                help_text=_("Zeile für den Tabellenkopf (0-basiert)"),
+                label=_("Table Head"),
+                help_text=_("Row for the table header (0-based)"),
                 required=True,
                 initial=settings.get(READ_PARAM_HEADER),
                 min_value=0,
@@ -630,9 +630,9 @@ class ProjectImportFileForm(Form):
         self.register_field(
             var_name(sheet, READ_PARAM_USECOLS),
             CharField(
-                label=_("Tabellenbereich"),
+                label=_("Table Section"),
                 help_text=_(
-                    "Ausschnitt der Tabelle (Form: 'A:E' or 'A,C,E:F' - leer: alle Spalten)"
+                    "Table section (form: 'A:E' or 'A,C,E:F' - empty: all columns)"
                 ),
                 required=False,
                 initial=settings.get(READ_PARAM_USECOLS),
@@ -641,8 +641,8 @@ class ProjectImportFileForm(Form):
         self.register_field(
             var_name(sheet, READ_PARAM_NROWS),
             IntegerField(
-                label=_("Zeilenanzahl"),
-                help_text=_("Anzahl der Zeilen (leer: alle Zeilen)"),
+                label=_("Row Count"),
+                help_text=_("Count of rows (empty: all rows until table end)"),
                 required=False,
                 initial=settings.get(READ_PARAM_NROWS),
                 min_value=0,
@@ -651,9 +651,9 @@ class ProjectImportFileForm(Form):
         self.register_field(
             var_name(sheet, READ_PARAM_SKIPROWS),
             IntegerField(
-                label=_("Übersprungene Zeilen am Anfang"),
+                label=_("Skipped Rows at the Beginning"),
                 help_text=_(
-                    "Anzahl der zu überspringenden Zeilen am Anfang (leer: keine Zeilen)"
+                    "Number of skipped rows at the beginning of the table (empty: skip no rows)"
                 ),
                 required=False,
                 initial=settings.get(READ_PARAM_SKIPROWS),
@@ -663,9 +663,9 @@ class ProjectImportFileForm(Form):
         self.register_field(
             var_name(sheet, READ_PARAM_SKIPFOOTER),
             IntegerField(
-                label=_("Ausgelassene Zeilen am Ende"),
+                label=_("Skipped Rows at the End"),
                 help_text=_(
-                    "Anzahl der ausgelassenen Zeilen am Ende (0: keine Zeilen)"
+                    "Number of skipped rows an the end of the table (0: skip no rows)"
                 ),
                 required=True,
                 initial=settings.get(READ_PARAM_SKIPFOOTER),
@@ -675,7 +675,7 @@ class ProjectImportFileForm(Form):
         self.register_field(
             var_name(sheet, TABLE_PARAM_HEAD_ROWS),
             IntegerField(
-                label=_("Zeilenanzahl"),
+                label=_("Count of Rows"),
                 initial=settings.get(TABLE_PARAM_HEAD_ROWS, DEFAULT_HEAD_TAIL_ROWS),
                 min_value=3,
                 max_value=100,
@@ -685,7 +685,7 @@ class ProjectImportFileForm(Form):
         self.register_field(
             var_name(sheet, TABLE_PARAM_TAIL_ROWS),
             IntegerField(
-                label=_("Zeilenanzahl"),
+                label=_("Count of Rows"),
                 initial=settings.get(TABLE_PARAM_TAIL_ROWS, DEFAULT_HEAD_TAIL_ROWS),
                 min_value=3,
                 max_value=100,

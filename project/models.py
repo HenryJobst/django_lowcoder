@@ -479,6 +479,10 @@ def validate_file_type(file: TransformationFile) -> None:
 
 
 class ProgrammingLanguage(models.Model):
+    class Meta:
+        verbose_name = _("Programming Language")
+        verbose_name_plural = _("Programming Languages")
+
     name = models.CharField(  # type: ignore
         _("programming language"),
         max_length=60,
@@ -493,6 +497,10 @@ class ProgrammingLanguage(models.Model):
 
 
 class CodeTemplate(models.Model):
+    class Meta:
+        verbose_name = _("Code Template")
+        verbose_name_plural = _("Code Templates")
+
     name = models.CharField(  # type: ignore
         _("name"),
         max_length=60,

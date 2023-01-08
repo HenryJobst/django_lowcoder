@@ -3,7 +3,9 @@
 
 {% block content %}
 <h1>{{ object.name }}</h1>
-<p>{% blocktranslate %}Description: {{ object.description }}{% endblocktranslate %}</p>
+<p>{% blocktranslate %}
+  Description: {{ object.description }}
+  {% endblocktranslate %}</p>
 <p>{% blocktranslate with length=object.transformationmapping.models.all|length %}
   Tables: {{ length }}{% endblocktranslate %}</p>
 <p>{% blocktranslate with created=object.created_at|date:'SHORT_DATETIME_FORMAT' %}
@@ -11,13 +13,21 @@
 <p>{% blocktranslate with updated=object.updated_at|date:'SHORT_DATETIME_FORMAT' %}
   Last modified at: {{ updated }}{% endblocktranslate %}</p>
 <hr>
-<p>{% blocktranslate %}Administrator-Benutzername: {{ object.projectsettings.admin_name }}{% endblocktranslate %}</p>
-<p>{% blocktranslate %}Administrator-Passwort: {{ object.projectsettings.admin_password }}{% endblocktranslate %}</p>
-<p>{% blocktranslate %}Demo-Nutzer-Benutzername: {{ object.projectsettings.demo_user_name }}{% endblocktranslate %}</p>
-<p>{% blocktranslate with pw=object.projectsettings.demo_user_password|default_if_none:"-" %}Demo-Nutzer-Passwort: {{
-  pw }}{% endblocktranslate %}</p>
+<p>{% blocktranslate %}
+  Administrator User Name: {{ object.projectsettings.admin_name }}
+  {% endblocktranslate %}</p>
+<p>{% blocktranslate %}
+  Administrator Password: {{ object.projectsettings.admin_password }}
+  {% endblocktranslate %}</p>
+<p>{% blocktranslate %}
+  Demo User Name: {{ object.projectsettings.demo_user_name }}
+  {% endblocktranslate %}</p>
+<p>{% blocktranslate with pw=object.projectsettings.demo_user_password|default_if_none:"-" %}
+  Demo User Password: {{ pw }}
+  {% endblocktranslate %}</p>
 <p>{% blocktranslate with domain=object.projectsettings.domain_name|default_if_none:"-" %}
-  Domain: {{ domain }}{% endblocktranslate %}</p>
+  Domain: {{ domain }}
+  {% endblocktranslate %}</p>
 <a class="btn btn-primary"
    href="{% url 'project_update' object.id %}?next={{request.path}}">{% translate 'Edit' %}</a>
 <a class="btn btn-secondary"

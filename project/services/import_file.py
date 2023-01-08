@@ -27,6 +27,6 @@ def import_file(
                 sheet=sheet, sheet_reader_params=sheet_reader_parameters
             )
         except ValueError as e:
-            df = DataFrame(data={_("Fehler"): [e]})
+            df = DataFrame(data={_("Error"): [e]})
         result.update({sheet: (df, sheet_reader_parameters)})
     return True, result
