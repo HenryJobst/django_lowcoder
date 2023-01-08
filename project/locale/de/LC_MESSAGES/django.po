@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-08 14:19+0000\n"
-"PO-Revision-Date: 2023-01-08 14:35+0000\n"
+"POT-Creation-Date: 2023-01-08 15:02+0000\n"
+"PO-Revision-Date: 2023-01-08 15:05+0000\n"
 "Last-Translator:   <dlc_admin@jobst-berlin.de>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -131,7 +131,7 @@ msgid "Tail"
 msgstr "Fuß"
 
 #: project/forms/forms_project.py:617
-#: project/templates/project/transformationfile_list.html:49
+#: project/templates/project/transformationfile_list.html:47
 msgid "Import"
 msgstr "Import"
 
@@ -491,8 +491,8 @@ msgstr "Dateien"
 #: project/templates/project/base_generic.html:172
 #: project/templates/project/project_list.html:25
 #: project/templates/project/project_list.html:69
-#: project/templates/project/transformationfile_list.html:24
-#: project/templates/project/transformationfile_list.html:45
+#: project/templates/project/transformationfile_list.html:22
+#: project/templates/project/transformationfile_list.html:43
 msgid "Tables"
 msgstr "Tabellen"
 
@@ -514,7 +514,7 @@ msgstr "Neue Spalte anlegen"
 #: project/templates/project/field_list.html:22
 #: project/templates/project/model_list.html:21
 #: project/templates/project/project_list.html:23
-#: project/templates/project/transformationfile_list.html:22
+#: project/templates/project/transformationfile_list.html:20
 msgid "Name"
 msgstr "Name"
 
@@ -537,14 +537,14 @@ msgstr "Standardwert"
 #: project/templates/project/field_list.html:27
 #: project/templates/project/model_list.html:25
 #: project/templates/project/project_list.html:29
-#: project/templates/project/transformationfile_list.html:26
+#: project/templates/project/transformationfile_list.html:24
 msgid "Actions"
 msgstr "Aktionen"
 
 #: project/templates/project/field_list.html:51
 #: project/templates/project/model_detail.html:17
 #: project/templates/project/model_list.html:55
-#: project/templates/project/project_detail.html:32
+#: project/templates/project/project_detail.html:22
 #: project/templates/project/project_list.html:65
 msgid "Edit"
 msgstr "Editieren"
@@ -552,7 +552,7 @@ msgstr "Editieren"
 #: project/templates/project/field_list.html:55
 #: project/templates/project/model_list.html:63
 #: project/templates/project/project_list.html:73
-#: project/templates/project/transformationfile_list.html:53
+#: project/templates/project/transformationfile_list.html:51
 msgid "Delete"
 msgstr "Löschen"
 
@@ -584,8 +584,9 @@ msgstr "Haupttabelle: %(icon)s"
 
 #: project/templates/project/model_detail.html:10
 #, python-format
-msgid "Order: %(object.index)s"
-msgstr "Reihenfolge %(object.index)s"
+#| msgid "Order: %(object.index)s"
+msgid "Order: %(index)s"
+msgstr "Reihenfolge: %(index)s"
 
 #: project/templates/project/model_detail.html:11
 #, python-format
@@ -598,7 +599,7 @@ msgstr ""
 "Erzeugt: %(created)s"
 
 #: project/templates/project/model_detail.html:14
-#: project/templates/project/project_detail.html:13
+#: project/templates/project/project_detail.html:11
 #, python-format
 msgid ""
 "\n"
@@ -625,7 +626,7 @@ msgstr "Neues Model anlegen"
 #: project/templates/project/model_list.html:22
 #: project/templates/project/model_list.html:59
 #: project/templates/project/project_list.html:26
-#: project/templates/project/transformationfile_list.html:25
+#: project/templates/project/transformationfile_list.html:23
 msgid "Columns"
 msgstr "Spalten"
 
@@ -644,16 +645,11 @@ msgstr "Es sind noch keine Tabellen vorhanden."
 
 #: project/templates/project/project_detail.html:6
 #, python-format
-#| msgid "Description: %(object.description)s"
-msgid ""
-"\n"
-"  Description: %(object.description)s\n"
-"  "
-msgstr ""
-"\n"
-"Beschreibung: %(object.description)s"
+#| msgid "Description"
+msgid "Description: %(desc)s"
+msgstr "Beschreibung: %(desc)s"
 
-#: project/templates/project/project_detail.html:9
+#: project/templates/project/project_detail.html:7
 #, python-format
 msgid ""
 "\n"
@@ -662,7 +658,7 @@ msgstr ""
 "\n"
 "Tabellen: %(length)s"
 
-#: project/templates/project/project_detail.html:11
+#: project/templates/project/project_detail.html:9
 #, python-format
 msgid ""
 "\n"
@@ -671,56 +667,40 @@ msgstr ""
 "\n"
 "Erzeugt: %(created)s"
 
+#: project/templates/project/project_detail.html:14
+#, python-format
+#| msgid ""
+#| "Administrator User Name: %(object.projectsettings.admin_name)s"
+msgid "Administrator User Name: %(adminname)s"
+msgstr "Administrator Benutzername: %(adminname)s"
+
+#: project/templates/project/project_detail.html:15
+#, python-format
+#| msgid ""
+#| "Administrator Password: %(object.projectsettings.admin_password)s"
+msgid "Administrator Password: %(adminpw)s"
+msgstr "Administrator Passwort: %(adminpw)s"
+
 #: project/templates/project/project_detail.html:16
+#, python-format
+#| msgid "Demo User Name: %(object.projectsettings.demo_user_name)s"
+msgid "Demo User Name: %(demoname)s"
+msgstr "Demo-Benutzer Benutzername: %(demoname)s"
+
+#: project/templates/project/project_detail.html:17
 #, python-format
 msgid ""
 "\n"
-"  Administrator User Name: %(object.projectsettings.admin_name)s\n"
-"  "
+"  Demo User Password: %(pw)s"
 msgstr ""
 "\n"
-"Administrator Benutzername: %(object.projectsettings.admin_name)s"
+"Demo-Benutzer Passwort: %(pw)s"
 
 #: project/templates/project/project_detail.html:19
 #, python-format
 msgid ""
 "\n"
-"  Administrator Password: %(object.projectsettings.admin_password)s\n"
-"  "
-msgstr ""
-"\n"
-"Administrator Passwort: %(object.projectsettings.admin_password)s"
-
-#: project/templates/project/project_detail.html:22
-#, python-format
-msgid ""
-"\n"
-"  Demo User Name: %(object.projectsettings.demo_user_name)s\n"
-"  "
-msgstr ""
-"\n"
-"Demo-Benutzer Benutzername: %(object.projectsettings.demo_user_name)s"
-
-#: project/templates/project/project_detail.html:25
-#, python-format
-#| msgid "demo user password"
-msgid ""
-"\n"
-"  Demo User Password: %(pw)s\n"
-"  "
-msgstr ""
-"\n"
-"Demo-Benutzer Passwort: %(pw)s"
-
-#: project/templates/project/project_detail.html:28
-#, python-format
-#| msgid ""
-#| "\n"
-#| "  Domain: %(domain)s"
-msgid ""
-"\n"
-"  Domain: %(domain)s\n"
-"  "
+"  Domain: %(domain)s"
 msgstr ""
 "\n"
 "Domäne: %(domain)s"
@@ -761,23 +741,18 @@ msgstr "Es sind noch keine Projekte vorhanden."
 
 #: project/templates/project/transformationfile_list.html:7
 #, python-format
-msgid ""
-"\n"
-"  Files (%(length)s)\n"
-"  "
-msgstr ""
-"\n"
-"Dateien (%(len)s)"
+msgid "Files (%(length)s)"
+msgstr "Dateien (%(length)s)"
 
-#: project/templates/project/transformationfile_list.html:12
+#: project/templates/project/transformationfile_list.html:10
 msgid "Create new file"
 msgstr "Neue Datei hinzufügen"
 
-#: project/templates/project/transformationfile_list.html:23
+#: project/templates/project/transformationfile_list.html:21
 msgid "Sheets"
 msgstr "Arbeitsblätter"
 
-#: project/templates/project/transformationfile_list.html:64
+#: project/templates/project/transformationfile_list.html:62
 msgid "No files present yet."
 msgstr "Es sind noch keine Dateien vorhanden."
 
@@ -826,20 +801,11 @@ msgstr "Passwort zurücksetzen"
 msgid "Django-LowCoder - Register"
 msgstr "Django-LowCoder - Registrieren"
 
-#~ msgid "Bestätigen"
-#~ msgstr "Bestätigen"
-
-#~ msgid "Code-Template"
-#~ msgstr "Code-Template"
-
-#~ msgid "Bitte durch einen Administrator ein Template einrichten lassen."
-#~ msgstr "Bitte durch einen Administrator ein Template einrichten lassen."
-
-#~ msgid "Speichern"
-#~ msgstr "Speichern"
-
-#~ msgid "Abbrechen"
-#~ msgstr "Abbrechen"
-
-#~ msgid "Django-LowCoder - Login"
-#~ msgstr "Django-LowCoder - Anmelden"
+#, python-format
+#~ msgid ""
+#~ "\n"
+#~ "  Description: %(object.description)s\n"
+#~ "  "
+#~ msgstr ""
+#~ "\n"
+#~ "Beschreibung: %(object.description)s"

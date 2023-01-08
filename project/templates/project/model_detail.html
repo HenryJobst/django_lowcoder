@@ -7,7 +7,7 @@
 <p>{% blocktranslate with length=object.fields.all|length %}Columns: {{ length }}
   {% endblocktranslate %}</p>
 <p>{% blocktranslate with icon=object.is_main_entity|iconbool %}Main Table: {{ icon }} {% endblocktranslate %}</p>
-<p>{% blocktranslate %}Order: {{ object.index }}{% endblocktranslate %}</p>
+<p>{% blocktranslate with index=object.index %}Order: {{ index }}{% endblocktranslate %}</p>
 <p>{% blocktranslate with created=object.created_at|date:'SHORT_DATETIME_FORMAT' %}
   Created at: {{ created }}
   {% endblocktranslate %}</p>

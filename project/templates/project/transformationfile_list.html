@@ -4,9 +4,7 @@
 {% block content %}
 {% load project_filters %}
 <h1 class="h2">
-  {% blocktranslate with length=file_list|length %}
-  Files ({{ length }})
-  {% endblocktranslate %}</h1>
+  {% blocktranslate with length=file_list|length %}Files ({{ length }}){% endblocktranslate %}</h1>
 <div>
   <a role="button"
      title="{% translate 'Create new file' %}"
