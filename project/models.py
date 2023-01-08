@@ -16,6 +16,7 @@ from django.db.models.signals import post_delete
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import ngettext_lazy
+from slugify import slugify
 
 MIN_PASSWORD_LENGTH = 6
 
@@ -76,9 +77,9 @@ class TimeStampMixin(models.Model):
 
 class Project(TimeStampMixin, models.Model):
     def __str__(self) -> str:
-        return _("Project: %(name)s - User: %(username)s") % {
-            "name": self.name,
-            "username": self.user.username,
+        return _("Project: %(user)s - %(project)s") % {
+            "user": self.user.username,
+            "project": self.name,
         }
 
     user = models.ForeignKey(  # type: ignore
@@ -108,6 +109,9 @@ class Project(TimeStampMixin, models.Model):
 
     def get_absolute_url(self):
         return reverse("project_detail", kwargs={"pk": self.pk})
+
+    def slug(self):
+        return slugify(self.name)
 
 
 def generate_random_admin_password():
@@ -169,6 +173,13 @@ class ProjectSettings(models.Model):
         blank=True,
         validators=[NullOrMinLengthValidator(MIN_PASSWORD_LENGTH)],
         help_text=_("Set no password to disable creation of a demo user!"),
+    )
+
+    docker_root = models.CharField(  # type: ignore
+        _("docker root"),
+        max_length=100,
+        null=True,
+        blank=True,
     )
 
     def get_absolute_url(self):
@@ -327,7 +338,11 @@ class Model(TimeStampMixin, models.Model):
             return super(Model, self).unique_error_message(model_class, unique_check)
 
     def __str__(self) -> str:
-        return _("Table: %(name)s") % {"name": self.name}
+        return _("Table: %(user)s - %(project)s - %(model)s") % {
+            "user": self.transformation_mapping.project.user.username,
+            "project": self.transformation_mapping.project.name,
+            "model": self.name,
+        }
 
 
 class Field(TimeStampMixin, models.Model):
@@ -463,7 +478,12 @@ class Field(TimeStampMixin, models.Model):
             return super(Field, self).unique_error_message(model_class, unique_check)
 
     def __str__(self) -> str:
-        return _("Column: %(name)s") % {"name": self.name}
+        return _("Column: %(user)s - %(project)s - %(model)s - %(column)s") % {
+            "user": self.model.transformation_mapping.project.user.username,
+            "project": self.model.transformation_mapping.project.name,
+            "model": self.model.name,
+            "column": self.name,
+        }
 
 
 def validate_file_type(file: TransformationFile) -> None:
@@ -523,12 +543,52 @@ class CodeTemplate(models.Model):
         blank=False,
         on_delete=models.CASCADE,
         related_name="programming_languages",
-        verbose_name=_("programming language"),
+        verbose_name=_("Programming Language"),
     )
+
+    parameters: models.QuerySet["CodeTemplateParameter"]  # forward decl for mypy
 
     def __str__(self):
         return _("Code Template: %(name)s - %(lang)s - %(path)s") % {
             "name": self.name,
             "lang": self.programming_language.name,
             "path": self.path,
+        }
+
+
+class CodeTemplateParameter(models.Model):
+    class Meta:
+        verbose_name = _("Code Template Parameter")
+        verbose_name_plural = _("Code Template Parameters")
+
+    code_template = models.ForeignKey(  # type: ignore
+        CodeTemplate,
+        null=False,
+        blank=False,
+        on_delete=models.CASCADE,
+        related_name="parameters",
+        verbose_name=_("Code Template"),
+    )
+
+    name = models.CharField(  # type: ignore
+        _("name"),
+        max_length=60,
+        null=False,
+        blank=False,
+        validators=[MinLengthValidator(MIN_NAME_COMMON_LENGTH)],
+        unique=True,
+    )
+
+    value = models.CharField(
+        _("value"),
+        max_length=200,
+        null=True,
+        blank=True,
+    )
+
+    def __str__(self):
+        return _("Code Template Parameter: %(ct)s - %(name)s - %(value)s") % {
+            "ct": self.code_template.name,
+            "name": self.name,
+            "value": self.value,
         }

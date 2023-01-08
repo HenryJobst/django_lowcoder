@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
-from django.http import HttpResponseRedirect, QueryDict
+from django.http import HttpResponseRedirect, QueryDict, HttpRequest
 from django.test import RequestFactory, TestCase, Client
 
 from project.models import Project
@@ -98,6 +98,7 @@ class TestProjectViews(TestCase):
         )
 
         assert response.status_code == 302
+        # noinspection PyUnresolvedReferences
         assert response.url == f"/project/{self.a_project.pk}"
 
     @skipIf(True, "Translation not available yet.")
@@ -119,10 +120,11 @@ class TestProjectViews(TestCase):
 
     @staticmethod
     def mocked_deploy_project(
-        user: Any, project: Project, post_dict: QueryDict
+        request: HttpRequest, user: Any, project: Project, post_dict: QueryDict
     ) -> None:
         pass
 
+    # noinspection PyUnusedLocal
     @patch(
         "project.services.edit_project.deploy_project",
         side_effect=mocked_deploy_project,

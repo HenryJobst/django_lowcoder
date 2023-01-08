@@ -2,20 +2,21 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from typing import Any, Final
+from pathlib import Path
+from typing import Any
 
 import slugify
 from cookiecutter.main import cookiecutter  # type: ignore
 from django.contrib.auth.models import User
-from django.http import QueryDict
+from django.http import QueryDict, HttpRequest
 
-from project.models import Project, CodeTemplate
-
-COOKIECUTTER_REPLAY_ = "cookiecutter_replay/"
-
-COOKIECUTTERS_ = "cookiecutters/"
-
-OUTPUT_DIR: Final[str] = "output/"
+from project.models import Project, CodeTemplate, CodeTemplateParameter
+from project.services.code_template_mapper import (
+    CodeTemplateMapper,
+    OUTPUT_DIR,
+    COOKIECUTTERS,
+    COOKIECUTTER_REPLAY,
+)
 
 # from fs.memoryfs import MemoryFS
 
@@ -31,28 +32,33 @@ class CookiecutterConfig:
     config = None
     extra_context = None
 
-    def __init__(self, user: User, project: Project, post_dict: QueryDict):
+    def __init__(
+        self, request: HttpRequest, user: User, project: Project, post_dict: QueryDict
+    ):
+        self.request: HttpRequest = request
         self.user: User = user
         self.project: Project = project
         self.post_dict: QueryDict = post_dict
         self.code_template: CodeTemplate = CodeTemplate.objects.get(
             pk=self.post_dict.get("app_type")
         )
-        self.programming_language = self.code_template.programming_language.name
-        self.init_cookiecutter_template_config(self.code_template.pk)
-
-    def init_cookiecutter_template_config(self, pk: int):
-        if pk == 1:  # Java-Template
-            self.init_cookiecutter_java_config()
-        elif pk == 2:  # Django-Template
-            self.init_cookiecutter_django_config()
-
         self.config_json_path = (
             f"config/cookiecutter-{self.code_template.pk}/config.json"
         )
+        self.programming_language = self.code_template.programming_language.name
+        self.init_cookiecutter_template_config()
 
-        with open(self.get_filename(), "w+") as f:
-            f.write(json.dumps(self.config, sort_keys=False))
+    def init_cookiecutter_template_config(self):
+        if self.code_template.pk == 1:  # Java-Template
+            self.init_cookiecutter_java_config()
+        elif self.code_template.pk == 2:  # Django-Template
+            self.init_cookiecutter_django_config()
+        else:  # Unknown template
+            self.init_cookiecutter_config()
+
+        config_file = Path(self.get_filename())
+        config_file.parent.mkdir(exist_ok=True, parents=True)
+        config_file.write_text(json.dumps(self.config, sort_keys=False))
 
     def init_cookiecutter_java_config(self):
         # TODO: move the cookiecutter template parameters to the code template table entry
@@ -85,10 +91,10 @@ class CookiecutterConfig:
             "_template": self.code_template.path,
             "_output_dir": os.path.join(os.getcwd(), OUTPUT_DIR),
             "cookiecutters_dir": os.path.join(
-                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTERS_)
+                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTERS)
             ),
             "replay_dir": os.path.join(
-                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTER_REPLAY_)
+                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTER_REPLAY)
             ),
         }
 
@@ -129,12 +135,22 @@ class CookiecutterConfig:
             "_template": "gh:cookiecutter/cookiecutter-django",
             "_output_dir": os.path.join(os.getcwd(), OUTPUT_DIR),
             "cookiecutters_dir": os.path.join(
-                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTERS_)
+                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTERS)
             ),
             "replay_dir": os.path.join(
-                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTER_REPLAY_)
+                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTER_REPLAY)
             ),
         }
+
+    def init_cookiecutter_config(self):
+        project: Project = self.project  # type: ignore
+        code_template: CodeTemplate = self.code_template
+        code_template_mapper: CodeTemplateMapper = CodeTemplateMapper(
+            self.request, project, code_template
+        )
+        param: CodeTemplateParameter
+        for param in code_template.parameters.all():
+            self.config = {param.name: code_template_mapper.expand(param)}
 
 
 @dataclass
@@ -163,7 +179,10 @@ class ExpanderParameters:
 
 
 class CookieCutterTemplateExpander:
-    def __init__(self, user: User, project: Project, post_dict: QueryDict):
+    def __init__(
+        self, request: HttpRequest, user: User, project: Project, post_dict: QueryDict
+    ):
+        self.request = request
         self.user = user
         self.project = project
         self.post_dict = post_dict
@@ -205,4 +224,4 @@ class CookieCutterTemplateExpander:
         )
 
     def create_config(self) -> CookiecutterConfig:
-        return CookiecutterConfig(self.user, self.project, self.post_dict)
+        return CookiecutterConfig(self.request, self.user, self.project, self.post_dict)

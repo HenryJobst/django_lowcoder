@@ -8,6 +8,7 @@ from project.models import (
     Field,
     ProgrammingLanguage,
     CodeTemplate,
+    CodeTemplateParameter,
 )
 
 
@@ -35,9 +36,14 @@ class CodeTemplateAdmin(admin.ModelAdmin):
     pass
 
 
+class CodeTemplateParameterAdmin(admin.ModelAdmin):
+    pass
+
+
 admin_site.register(Project, ProjectAdmin)
 admin_site.register(ProjectSettings, ProjectSettingsAdmin)
 admin_site.register(Model, ModelAdmin)
 admin_site.register(Field, FieldAdmin)
 admin_site.register(ProgrammingLanguage, ProgrammingLanguageAdmin)
 admin_site.register(CodeTemplate, CodeTemplateAdmin)
+admin_site.register(CodeTemplateParameter, CodeTemplateParameterAdmin)

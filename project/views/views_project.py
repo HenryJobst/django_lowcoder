@@ -312,7 +312,7 @@ class ProjectDeployView(
 
     def form_valid(self, form):
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore
-        deploy_project(self.request.user, project, self.request.POST)
+        deploy_project(self.request, self.request.user, project, self.request.POST)
         return super().form_valid(form)
 
     def get_object(self):
