@@ -4,7 +4,6 @@ from typing import Final
 
 from django.contrib import messages
 from django.contrib.auth.models import User
-from django.db.models.functions import Concat
 from django.http import HttpRequest
 from django.utils.translation import gettext_lazy as _
 
@@ -29,7 +28,7 @@ class Directories:
 
 class CodeTemplateMapper:
     def __init__(
-        self, request: HttpRequest, project: Project, code_template: CodeTemplate
+        self, request: HttpRequest | None, project: Project, code_template: CodeTemplate
     ):
         self.request = request
         self.project: Project = project

@@ -44,14 +44,15 @@ class TestCodeTemplateMapper(TestCase):
         assert self.code_template_mapper.expand(param) == a_string
 
     def test_expand_invalid(self):
-        invalid_token = "{{}"
+        invalid_token = "{{}}"
         param = CodeTemplateParameter(
             code_template=self.code_template,
             name="a_invalid",
-            value="{{invalid}}",
-            )
+            value=invalid_token,
+        )
 
-        assert self.code_template_mapper.expand(param) == self.a_project.name
+        assert self.code_template_mapper.expand(param) == invalid_token
+
     def test_expand_project_name(self):
         param = CodeTemplateParameter(
             code_template=self.code_template,
