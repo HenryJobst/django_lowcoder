@@ -149,8 +149,9 @@ class CookiecutterConfig:
             self.request, project, code_template
         )
         param: CodeTemplateParameter
+        self.config = {}
         for param in code_template.parameters.all():
-            self.config = {param.name: code_template_mapper.expand(param)}
+            self.config.update({param.name: code_template_mapper.expand(param)})
 
 
 @dataclass

@@ -69,7 +69,7 @@ class CodeTemplateMapper:
         postfix = ""
         value = param.value
 
-        match = re.search(r"(.*)({{.+?}})(.*)", param.value)
+        match = re.search(r"(.*)({{.+?}})(.*)", param.value) if param.value else False
         if match:
             prefix = match.group(1)
             value = match.group(2)
@@ -99,7 +99,7 @@ class CodeTemplateMapper:
             if callable(attr):
                 return prefix + attr() + postfix
             else:
-                return prefix + attr + postfix
+                return prefix + attr + postfix if attr else None
 
         elif match:
             messages.add_message(

@@ -53,6 +53,16 @@ class TestCodeTemplateMapper(TestCase):
 
         assert self.code_template_mapper.expand(param) == invalid_token
 
+    def test_expand_none(self):
+        none_value: str | None = None
+        param = CodeTemplateParameter(
+            code_template=self.code_template,
+            name="none_value",
+            value=None,
+        )
+
+        assert self.code_template_mapper.expand(param) == none_value
+
     def test_expand_project_name(self):
         param = CodeTemplateParameter(
             code_template=self.code_template,
