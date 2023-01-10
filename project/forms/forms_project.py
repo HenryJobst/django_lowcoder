@@ -180,6 +180,7 @@ class ProjectEditSettingsForm(ModelForm):
                 FloatingField("demo_user_name"),
                 FloatingField("demo_user_password"),
                 FloatingField("domain_name"),
+                FloatingField("code_template"),
             ),
             Submit("submit", _("Save")),
             HTML(
@@ -197,6 +198,7 @@ class ProjectEditSettingsForm(ModelForm):
             "demo_user_name",
             "demo_user_password",
             "domain_name",
+            "code_template",
         ]
 
 

@@ -306,6 +306,14 @@ class ProjectDeployView(
     ProjectSelectionMixin,
     FormView,
 ):
+    def get_initial(self) -> dict[str, Any]:
+        initial = super().get_initial()
+        project: Project = self.get_object()
+        project_settings: ProjectSettings = project.projectsettings
+        if project_settings and project_settings.code_template:
+            initial["app_type"] = project_settings.code_template
+        return initial
+
     template_name = "project/project_deploy.html"
     form_class = ProjectDeployForm
     model = Project

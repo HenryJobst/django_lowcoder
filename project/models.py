@@ -75,6 +75,102 @@ class TimeStampMixin(models.Model):
         abstract = True
 
 
+class ProgrammingLanguage(models.Model):
+    class Meta:
+        verbose_name = _("Programming Language")
+        verbose_name_plural = _("Programming Languages")
+
+    name = models.CharField(  # type: ignore
+        _("programming language"),
+        max_length=60,
+        null=False,
+        blank=False,
+        validators=[MinLengthValidator(1)],
+        unique=True,
+    )
+
+    def __str__(self):
+        return _("Programming Language: %(name)s") % {"name": self.name}
+
+
+class CodeTemplate(models.Model):
+    class Meta:
+        verbose_name = _("Code Template")
+        verbose_name_plural = _("Code Templates")
+
+    name = models.CharField(  # type: ignore
+        _("name"),
+        max_length=60,
+        null=False,
+        blank=False,
+        validators=[MinLengthValidator(MIN_NAME_COMMON_LENGTH)],
+        unique=True,
+    )
+    path = models.CharField(  # type: ignore
+        _("path"),
+        max_length=200,
+        null=False,
+        blank=False,
+        validators=[MinLengthValidator(MIN_NAME_COMMON_LENGTH)],
+        unique=True,
+    )
+    programming_language = models.ForeignKey(  # type: ignore
+        ProgrammingLanguage,
+        null=False,
+        blank=False,
+        on_delete=models.CASCADE,
+        related_name="programming_languages",
+        verbose_name=_("Programming Language"),
+    )
+
+    parameters: models.QuerySet["CodeTemplateParameter"]  # forward decl for mypy
+
+    def __str__(self):
+        return _("Code Template: %(name)s - %(lang)s - %(path)s") % {
+            "name": self.name,
+            "lang": self.programming_language.name,
+            "path": self.path,
+        }
+
+
+class CodeTemplateParameter(models.Model):
+    class Meta:
+        verbose_name = _("Code Template Parameter")
+        verbose_name_plural = _("Code Template Parameters")
+
+    code_template = models.ForeignKey(  # type: ignore
+        CodeTemplate,
+        null=False,
+        blank=False,
+        on_delete=models.CASCADE,
+        related_name="parameters",
+        verbose_name=_("Code Template"),
+    )
+
+    name = models.CharField(  # type: ignore
+        _("name"),
+        max_length=60,
+        null=False,
+        blank=False,
+        validators=[MinLengthValidator(MIN_NAME_COMMON_LENGTH)],
+        unique=True,
+    )
+
+    value = models.CharField(
+        _("value"),
+        max_length=200,
+        null=True,
+        blank=True,
+    )
+
+    def __str__(self):
+        return _("Code Template Parameter: %(ct)s - %(name)s - %(value)s") % {
+            "ct": self.code_template.name,
+            "name": self.name,
+            "value": self.value,
+        }
+
+
 class Project(TimeStampMixin, models.Model):
     def __str__(self) -> str:
         return _("Project: %(user)s - %(project)s") % {
@@ -180,6 +276,15 @@ class ProjectSettings(models.Model):
         max_length=100,
         null=True,
         blank=True,
+    )
+
+    code_template = models.ForeignKey(
+        CodeTemplate,
+        on_delete=models.SET_NULL,
+        related_name="projectsettings",
+        null=True,
+        blank=True,
+        verbose_name=_("Code Template"),
     )
 
     def get_absolute_url(self):
@@ -496,99 +601,3 @@ def validate_file_type(file: TransformationFile) -> None:
             )
             % {"suffix": path.suffix}
         )
-
-
-class ProgrammingLanguage(models.Model):
-    class Meta:
-        verbose_name = _("Programming Language")
-        verbose_name_plural = _("Programming Languages")
-
-    name = models.CharField(  # type: ignore
-        _("programming language"),
-        max_length=60,
-        null=False,
-        blank=False,
-        validators=[MinLengthValidator(1)],
-        unique=True,
-    )
-
-    def __str__(self):
-        return _("Programming Language: %(name)s") % {"name": self.name}
-
-
-class CodeTemplate(models.Model):
-    class Meta:
-        verbose_name = _("Code Template")
-        verbose_name_plural = _("Code Templates")
-
-    name = models.CharField(  # type: ignore
-        _("name"),
-        max_length=60,
-        null=False,
-        blank=False,
-        validators=[MinLengthValidator(MIN_NAME_COMMON_LENGTH)],
-        unique=True,
-    )
-    path = models.CharField(  # type: ignore
-        _("path"),
-        max_length=200,
-        null=False,
-        blank=False,
-        validators=[MinLengthValidator(MIN_NAME_COMMON_LENGTH)],
-        unique=True,
-    )
-    programming_language = models.ForeignKey(  # type: ignore
-        ProgrammingLanguage,
-        null=False,
-        blank=False,
-        on_delete=models.CASCADE,
-        related_name="programming_languages",
-        verbose_name=_("Programming Language"),
-    )
-
-    parameters: models.QuerySet["CodeTemplateParameter"]  # forward decl for mypy
-
-    def __str__(self):
-        return _("Code Template: %(name)s - %(lang)s - %(path)s") % {
-            "name": self.name,
-            "lang": self.programming_language.name,
-            "path": self.path,
-        }
-
-
-class CodeTemplateParameter(models.Model):
-    class Meta:
-        verbose_name = _("Code Template Parameter")
-        verbose_name_plural = _("Code Template Parameters")
-
-    code_template = models.ForeignKey(  # type: ignore
-        CodeTemplate,
-        null=False,
-        blank=False,
-        on_delete=models.CASCADE,
-        related_name="parameters",
-        verbose_name=_("Code Template"),
-    )
-
-    name = models.CharField(  # type: ignore
-        _("name"),
-        max_length=60,
-        null=False,
-        blank=False,
-        validators=[MinLengthValidator(MIN_NAME_COMMON_LENGTH)],
-        unique=True,
-    )
-
-    value = models.CharField(
-        _("value"),
-        max_length=200,
-        null=True,
-        blank=True,
-    )
-
-    def __str__(self):
-        return _("Code Template Parameter: %(ct)s - %(name)s - %(value)s") % {
-            "ct": self.code_template.name,
-            "name": self.name,
-            "value": self.value,
-        }
