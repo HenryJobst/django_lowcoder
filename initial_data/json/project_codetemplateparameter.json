@@ -1,0 +1,75 @@
+﻿{
+"project_codetemplateparameter": [
+	{
+		"id" : 1,
+		"name" : "project_name",
+		"value" : "{{project_name}}",
+		"code_template_id" : 3
+	},
+	{
+		"id" : 2,
+		"name" : "description",
+		"value" : "{{project_description}}",
+		"code_template_id" : 3
+	},
+	{
+		"id" : 3,
+		"name" : "app_name",
+		"value" : "{{project_name}}",
+		"code_template_id" : 3
+	},
+	{
+		"id" : 4,
+		"name" : "maintainer",
+		"value" : "{{author_name}}",
+		"code_template_id" : 3
+	},
+	{
+		"id" : 5,
+		"name" : "app_name_cap",
+		"value" : "{{project_name}}",
+		"code_template_id" : 3
+	},
+	{
+		"id" : 6,
+		"name" : "app_name_cam",
+		"value" : "{{project_name}}",
+		"code_template_id" : 3
+	},
+	{
+		"id" : 7,
+		"name" : "app_version",
+		"value" : "0.0.0",
+		"code_template_id" : 3
+	},
+	{
+		"id" : 8,
+		"name" : "port",
+		"value" : "8080",
+		"code_template_id" : 3
+	},
+	{
+		"id" : 9,
+		"name" : "db_username",
+		"value" : "postgres",
+		"code_template_id" : 3
+	},
+	{
+		"id" : 10,
+		"name" : "db_password",
+		"value" : "postgres",
+		"code_template_id" : 3
+	},
+	{
+		"id" : 11,
+		"name" : "docker_root",
+		"value" : "{{project_docker_root}}",
+		"code_template_id" : 3
+	},
+	{
+		"id" : 12,
+		"name" : "host_name",
+		"value" : "{{project_domain_name}}",
+		"code_template_id" : 3
+	}
+]}

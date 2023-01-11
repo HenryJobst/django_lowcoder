@@ -1,0 +1,21 @@
+﻿{
+"project_codetemplate": [
+	{
+		"id" : 1,
+		"path" : "https:\/\/github.com\/HenryJobst\/cookiecutter-java-springboot.git",
+		"programming_language_id" : 1,
+		"name" : "cookiecutter-java-springboot"
+	},
+	{
+		"id" : 2,
+		"path" : "https:\/\/github.com\/HenryJobst\/cookiecutter-django.git",
+		"programming_language_id" : 2,
+		"name" : "cookiecutter-django"
+	},
+	{
+		"id" : 3,
+		"path" : "https:\/\/github.com\/danielbrackin\/cookiecutter-spring-boot-master.git",
+		"programming_language_id" : 1,
+		"name" : "cookiecutter-spring-boot"
+	}
+]}
