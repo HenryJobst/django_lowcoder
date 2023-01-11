@@ -26,6 +26,7 @@ from project.views.views_project import (
     ProjectCreateFileView,
     ProjectDeleteFileView,
     ProjectImportFileView,
+    ProjectDeploySummaryView,
 )
 
 from project.views.views_registration import RegisterView
@@ -40,6 +41,11 @@ urlpatterns = [
     path("<int:pk>/edit", ProjectUpdateView.as_view(), name="project_update"),
     path("<int:pk>/delete", ProjectDeleteView.as_view(), name="project_delete"),
     path("<int:pk>/deploy", ProjectDeployView.as_view(), name="project_deploy"),
+    # path(
+    #     "<int:pk>/deploy_summary/<str:cte>",
+    #     ProjectDeploySummaryView.as_view(),
+    #     name="project_deploy_summary",
+    # ),
     path("accounts/register", RegisterView.as_view(), name="register"),
     path(
         "settings/<int:pk>/edit",

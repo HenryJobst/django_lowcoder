@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -183,6 +184,7 @@ class CookieCutterTemplateExpander:
     def __init__(
         self, request: HttpRequest, user: User, project: Project, post_dict: QueryDict
     ):
+        self.id = uuid.uuid4()
         self.request = request
         self.user = user
         self.project = project
@@ -190,19 +192,20 @@ class CookieCutterTemplateExpander:
         # self.mem_fs = MemoryFS()
         # self.home_fs = self.mem_fs.makedir("~", recreate=True)
 
+        self.config: CookiecutterConfig = self.create_config()
+        self.expand_parameter = ExpanderParameters(
+            template=self.config.code_template.path,
+            config_file=self.config.get_filename(),
+            overwrite_if_exists=True,
+            extra_context=self.config.config,
+        )
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
         # self.mem_fs.close()
 
     def expand(self):
-        config = self.create_config()
-        expand_parameter = ExpanderParameters(
-            template=config.code_template.path,
-            config_file=config.get_filename(),
-            overwrite_if_exists=True,
-            extra_context=config.config,
-        )
-        CookieCutterTemplateExpander._expand(expand_parameter)
+        CookieCutterTemplateExpander._expand(self.expand_parameter)
 
     @staticmethod
     def _expand(params: ExpanderParameters):

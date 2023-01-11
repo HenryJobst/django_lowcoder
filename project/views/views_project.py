@@ -40,6 +40,7 @@ from project.forms.forms_project import (
     ProjectDeleteFileForm,
     ProjectImportFileForm,
     var_name,
+    ProjectDeploySummaryForm,
 )
 from project.models import (
     TransformationMapping,
@@ -58,9 +59,8 @@ from project.services.edit_model import (
     field_up,
     field_down,
 )
-from project.services.edit_project import (
-    deploy_project,
-)
+from project.services.edit_project import prepare_deploy_project
+from project.services.cookiecutter_template_expander import CookieCutterTemplateExpander
 from project.services.import_file import import_file
 from project.services.importer import (
     Importer,
@@ -78,6 +78,8 @@ from project.services.importer import (
 )
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
+
+from django.utils.translation import gettext_lazy as _
 
 SHEET_PARAMS = "sheet_params"
 NEXT_URL_PARAM = "next"
@@ -306,6 +308,10 @@ class ProjectDeployView(
     ProjectSelectionMixin,
     FormView,
 ):
+    template_name = "project/project_deploy.html"
+    form_class = ProjectDeployForm
+    model = Project
+
     def get_initial(self) -> dict[str, Any]:
         initial = super().get_initial()
         project: Project = self.get_object()
@@ -314,13 +320,51 @@ class ProjectDeployView(
             initial["app_type"] = project_settings.code_template
         return initial
 
-    template_name = "project/project_deploy.html"
-    form_class = ProjectDeployForm
-    model = Project
-
     def form_valid(self, form):
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore
-        deploy_project(self.request, self.request.user, project, self.request.POST)
+        cte: CookieCutterTemplateExpander = prepare_deploy_project(
+            self.request, self.request.user, project, self.request.POST
+        )
+        cte.expand()
+        # self.request.session[str(cte.id)] = cte
+        # return HttpResponseRedirect(
+        #     reverse_lazy(
+        #         "project_deploy_summary", kwargs={"pk": project.pk, "cte": str(cte.id)}
+        #     )
+        # )
+        return super().form_valid(self, form)
+
+    def get_object(self):
+        project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore
+        set_selection(self.request, project.pk)
+        return project
+
+
+class ProjectDeploySummaryView(
+    LoginRequiredMixin,
+    ProjectListMixin,
+    ModelUserFieldPermissionMixin,
+    ProjectSelectionMixin,
+    FormView,
+):
+
+    template_name = "project/project_deploy.html"
+    form_class = ProjectDeploySummaryForm
+    model = Project
+
+    def get_initial(self) -> dict[str, Any]:
+        initial = super().get_initial()
+        if "cte" not in self.kwargs:
+            raise ValueError(_("Invalid navigation"))
+        cte = self.request.session[self.kwargs["cte"]]
+        if not cte:
+            raise ValueError(_("Invalid session"))
+        initial["cte"] = cte
+        return initial
+
+    def form_valid(self, form):
+        cte: CookieCutterTemplateExpander = self.request.session[self.kwargs["cte"]]
+        cte.expand()
         return super().form_valid(form)
 
     def get_object(self):
@@ -473,6 +517,7 @@ class ProjectUpdateModelView(
         unset_main_entity(self.object)
         return super().form_valid(form)
 
+    # noinspection PyUnusedLocal
     def get_object(self, **kwargs):
         model: Model = get_object_or_404(Model, *self.args, **self.kwargs)  # type: ignore
         set_model_selection(self.request, model.pk)
@@ -572,6 +617,7 @@ class ProjectListFieldsView(LoginRequiredMixin, ListView):
         else:
             return QuerySet(Field).none()
 
+    # noinspection PyUnusedLocal
     def get_object(self, **kwargs):
         model: Model = get_object_or_404(Model, *self.args, **self.kwargs)  # type: ignore
         set_model_selection(self.request, model.pk)

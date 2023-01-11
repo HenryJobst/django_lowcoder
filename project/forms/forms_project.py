@@ -163,7 +163,31 @@ class ProjectDeployForm(Form):
         )
 
     class Meta:
-        fields = ["type"]
+        fields = ["app_type", "deploy_type"]
+
+
+class ProjectDeploySummaryForm(Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_method = "post"
+        self.helper.form_class = "w-100 m-auto"
+        self.helper.layout = Layout(
+            Fieldset(
+                _("Generate Project"),
+                HTML(_("Summary")),
+                HTML(""" ... """),
+            ),
+            Submit("submit", _("Start")),
+            HTML(
+                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
+                + _("Cancel")
+                + "</a>"
+            ),
+        )
+
+    class Meta:
+        fields = []
 
 
 class ProjectEditSettingsForm(ModelForm):
