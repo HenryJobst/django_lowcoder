@@ -33,6 +33,7 @@ django-rosetta = "^0.9.8"
 dj-database-url = "^1.2.0"
 whitenoise = "^6.3.0"
 gunicorn = "^20.1.0"
+types-dj-database-url = "^1.2.0"
 
 [tool.poetry.dev-dependencies]
 tox = {version = "^4.0.16"}
