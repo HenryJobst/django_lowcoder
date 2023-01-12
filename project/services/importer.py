@@ -18,6 +18,8 @@ from project.models import (
 )
 from project.services.import_field import ImportField
 
+from django.utils.translation import gettext_lazy as _
+
 DEFAULT_SHEET_NAME_FOR_CSV_FILE = "sheet0"
 
 READ_PARAM_HEADER = "header"
@@ -156,7 +158,7 @@ def create_models(
             defaults = {
                 "name": col,
                 "transformation_column": tc,
-                "datatype": Field.DATATYPE_ID_BY_DATATYPE[import_field.field_type]
+                "datatype": import_field.field_type
                 if import_field.field_type
                 else None,
                 "is_unique": not import_field.has_duplicate_values,
@@ -177,9 +179,13 @@ def create_models(
             )
 
             if created:
-                messages.info(request, f"Die Spalte: {field.name} wurde angelegt.")
+                messages.info(
+                    request, _("Column %(name)s was created.") % {"name": field.name}
+                )
             else:
-                messages.info(request, f"Die Spalte: {field.name} wurde aktualisiert.")
+                messages.info(
+                    request, _("Column %(name)s was updated.") % {"name": field.name}
+                )
 
 
 class Importer:
@@ -206,6 +212,18 @@ class Importer:
                 engine="python",
                 sep=None,  # automatic detection
                 encoding_errors="replace",
+                header=sheet_reader_params.get(READ_PARAM_HEADER),
+                usecols=sheet_reader_params.get(READ_PARAM_USECOLS),
+                index_col=sheet_reader_params.get(READ_PARAM_INDEX_COL),
+                skiprows=sheet_reader_params.get(READ_PARAM_SKIPROWS),
+                nrows=sheet_reader_params.get(READ_PARAM_NROWS),
+                skipfooter=convert_param(
+                    READ_PARAM_SKIPFOOTER,
+                    sheet_reader_params.get(READ_PARAM_SKIPFOOTER),
+                ),  # type: ignore
+                decimal=",",
+                # use "," as decimal point
+                on_bad_lines="warn",
             )
         else:
             df = pd.read_excel(  # type: ignore

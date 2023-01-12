@@ -36,7 +36,7 @@ class ImportField:
         return (len(self.duplicates) * 100) / len(self.series_without_nulls)
 
     def get_field_type_and_kwargs(self):
-        field_type = ""
+        field_type: Field.Datatype = Field.Datatype.NONE
         kwargs = {}
 
         if self.dtype == "object":
@@ -44,7 +44,7 @@ class ImportField:
                 self.has_duplicate_values
                 and self.get_duplicate_compress_ratio() < DUPLICATES_AS_ENTITY_MIN_RATIO
             ):
-                field_type = "IntegerField"
+                field_type = Field.Datatype.INTEGER_FIELD
                 self.choices = {
                     i: value
                     for (i, value) in enumerate(self.duplicates.values, start=1)
@@ -57,7 +57,7 @@ class ImportField:
                 )
 
             else:
-                field_type = "CharField"
+                field_type = Field.Datatype.CHAR_FIELD
                 kwargs[self.MAX_LENGTH] = Field.find_next_step(
                     max(
                         [
@@ -69,13 +69,13 @@ class ImportField:
                 )
 
         elif self.dtype == "bool":
-            field_type = "BooleanField"
+            field_type = Field.Datatype.BOOLEAN_FIELD
 
         elif self.dtype == "int64":
-            field_type = "IntegerField"
+            field_type = Field.Datatype.INTEGER_FIELD
 
         elif self.dtype == "float64":
-            field_type = "DecimalField"
+            field_type = Field.Datatype.DECIMAL_FIELD
 
             def num_digits_and_precision(value: str) -> tuple:
                 total_digits = len(value.replace(".", ""))
@@ -96,7 +96,7 @@ class ImportField:
             kwargs[self.DECIMAL_PLACES] = decimal_places
 
         elif self.dtype == "datetime64[ns]":
-            field_type = "DateTimeField"
+            field_type = Field.Datatype.DATE_TIME_FIELD
 
         if self.is_nullable:
             kwargs[self.NULL] = True

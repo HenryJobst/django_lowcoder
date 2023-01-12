@@ -59,7 +59,7 @@ from project.services.edit_model import (
     field_up,
     field_down,
 )
-from project.services.edit_project import prepare_deploy_project
+from project.services.edit_project import prepare_deploy_project, deploy_project
 from project.services.cookiecutter_template_expander import CookieCutterTemplateExpander
 from project.services.import_file import import_file
 from project.services.importer import (
@@ -325,14 +325,14 @@ class ProjectDeployView(
         cte: CookieCutterTemplateExpander = prepare_deploy_project(
             self.request, self.request.user, project, self.request.POST
         )
-        cte.expand()
+        deploy_project(cte)
         # self.request.session[str(cte.id)] = cte
         # return HttpResponseRedirect(
         #     reverse_lazy(
         #         "project_deploy_summary", kwargs={"pk": project.pk, "cte": str(cte.id)}
         #     )
         # )
-        return super().form_valid(self, form)
+        return super().form_valid(form)
 
     def get_object(self):
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore

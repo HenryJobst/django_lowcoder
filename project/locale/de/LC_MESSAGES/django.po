@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-10 20:57+0000\n"
+"POT-Creation-Date: 2023-01-11 23:14+0000\n"
 "PO-Revision-Date: 2023-01-10 22:18+0000\n"
 "Last-Translator:   <dlc_admin@jobst-berlin.de>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,18 +27,19 @@ msgstr "Projekteinstellungen"
 msgid "Import File"
 msgstr "Datei importieren"
 
-#: project/forms/forms_project.py:74 project/forms/forms_project.py:185
-#: project/forms/forms_project.py:219 project/forms/forms_project.py:331
-#: project/forms/forms_project.py:405
+#: project/forms/forms_project.py:74 project/forms/forms_project.py:209
+#: project/forms/forms_project.py:243 project/forms/forms_project.py:357
+#: project/forms/forms_project.py:433
 msgid "Save"
 msgstr "Speichern"
 
 #: project/forms/forms_project.py:77 project/forms/forms_project.py:108
-#: project/forms/forms_project.py:160 project/forms/forms_project.py:188
-#: project/forms/forms_project.py:223 project/forms/forms_project.py:227
-#: project/forms/forms_project.py:256 project/forms/forms_project.py:335
-#: project/forms/forms_project.py:381 project/forms/forms_project.py:410
-#: project/forms/forms_project.py:414 project/forms/forms_project.py:440
+#: project/forms/forms_project.py:160 project/forms/forms_project.py:184
+#: project/forms/forms_project.py:212 project/forms/forms_project.py:247
+#: project/forms/forms_project.py:251 project/forms/forms_project.py:282
+#: project/forms/forms_project.py:361 project/forms/forms_project.py:409
+#: project/forms/forms_project.py:438 project/forms/forms_project.py:442
+#: project/forms/forms_project.py:470
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -47,13 +48,13 @@ msgstr "Abbrechen"
 msgid "Are you really shure to delete the project <b>%(name)s</b>?"
 msgstr "Sind Sie sicher, das Sie das Projekt <b>%(name)s</b> löschen wollen?"
 
-#: project/forms/forms_project.py:105 project/forms/forms_project.py:252
-#: project/forms/forms_project.py:378 project/forms/forms_project.py:436
+#: project/forms/forms_project.py:105 project/forms/forms_project.py:278
+#: project/forms/forms_project.py:406 project/forms/forms_project.py:466
 msgid "Confirm"
 msgstr "Bestätigen"
 
 #: project/forms/forms_project.py:121 project/models.py:98
-#: project/models.py:147 project/models.py:287
+#: project/models.py:165 project/models.py:305
 msgid "Code Template"
 msgstr "Code-Template"
 
@@ -88,102 +89,124 @@ msgstr "Docker/Docker-Compose"
 msgid "PaaS"
 msgstr "PaaS"
 
-#: project/forms/forms_project.py:153
+#: project/forms/forms_project.py:153 project/forms/forms_project.py:177
 msgid "Generate Project"
 msgstr "Projekt generieren"
 
-#: project/forms/forms_project.py:157
+#: project/forms/forms_project.py:157 project/forms/forms_project.py:181
 msgid "Start"
 msgstr "Start"
 
-#: project/forms/forms_project.py:177
+#: project/forms/forms_project.py:178
+msgid "Summary"
+msgstr ""
+
+#: project/forms/forms_project.py:201
 msgid "Project settings"
 msgstr "Projekteinstellungen"
 
-#: project/forms/forms_project.py:213
+#: project/forms/forms_project.py:237
 msgid "Table"
 msgstr "Tabelle"
 
-#: project/forms/forms_project.py:217
+#: project/forms/forms_project.py:241
 #: project/templates/project/model_list.html:23
 msgid "Main Table"
 msgstr "Haupttabelle"
 
-#: project/forms/forms_project.py:283
+#: project/forms/forms_project.py:274
+#, fuzzy, python-format
+#| msgid "Are you really shure to delete the project <b>%(name)s</b>?"
+msgid "Are you really shure to delete the table <b>%(name)s</b>?)"
+msgstr "Sind Sie sicher, das Sie das Projekt <b>%(name)s</b> löschen wollen?"
+
+#: project/forms/forms_project.py:309
 msgid "Column"
 msgstr "Spalte"
 
-#: project/forms/forms_project.py:392
+#: project/forms/forms_project.py:402
+#, fuzzy, python-format
+#| msgid "Are you really shure to delete the project <b>%(name)s</b>?"
+msgid "Are you really shure to delete the column <b>%(name)s</b>?"
+msgstr "Sind Sie sicher, das Sie das Projekt <b>%(name)s</b> löschen wollen?"
+
+#: project/forms/forms_project.py:420
 msgid "File"
 msgstr "Datei"
 
-#: project/forms/forms_project.py:394
+#: project/forms/forms_project.py:422
 msgid "Select a file for import."
 msgstr "Wählen Sie eine Datei für den Import"
 
-#: project/forms/forms_project.py:504
+#: project/forms/forms_project.py:462
+#, fuzzy, python-format
+#| msgid "Are you really shure to delete the project <b>%(name)s</b>?"
+msgid "Are you really shure to delete the file <b>%(name)s</b>?"
+msgstr "Sind Sie sicher, das Sie das Projekt <b>%(name)s</b> löschen wollen?"
+
+#: project/forms/forms_project.py:534
 msgid "Import Settings"
 msgstr "Importeinstellungen"
 
-#: project/forms/forms_project.py:557 project/forms/forms_project.py:647
+#: project/forms/forms_project.py:587 project/forms/forms_project.py:677
 msgid "Table Section"
 msgstr "Auswahlbereich"
 
-#: project/forms/forms_project.py:562
+#: project/forms/forms_project.py:592
 msgid "Head"
 msgstr "Kopf"
 
-#: project/forms/forms_project.py:595
+#: project/forms/forms_project.py:625
 msgid "Tail"
 msgstr "Fuß"
 
-#: project/forms/forms_project.py:631
+#: project/forms/forms_project.py:661
 #: project/templates/project/transformationfile_list.html:47
 msgid "Import"
 msgstr "Import"
 
-#: project/forms/forms_project.py:637
+#: project/forms/forms_project.py:667
 msgid "Table Head"
 msgstr "Tabellenkopf"
 
-#: project/forms/forms_project.py:638
+#: project/forms/forms_project.py:668
 msgid "Row for the table header (0-based)"
 msgstr "Zeile für den Tabellenkopf"
 
-#: project/forms/forms_project.py:649
+#: project/forms/forms_project.py:679
 msgid "Table section (form: 'A:E' or 'A,C,E:F' - empty: all columns)"
 msgstr "Tabellenbereich (Form: 'A:E' oder 'A,C,E:F' - leer: alle Spalten)"
 
-#: project/forms/forms_project.py:658
+#: project/forms/forms_project.py:688
 msgid "Row Count"
 msgstr "Zeilenanzahl"
 
-#: project/forms/forms_project.py:659
+#: project/forms/forms_project.py:689
 msgid "Count of rows (empty: all rows until table end)"
 msgstr "Anzahl der Zeilen (leer: alle Zeilen bis zum Ende der Tabelle)"
 
-#: project/forms/forms_project.py:668
+#: project/forms/forms_project.py:698
 msgid "Skipped Rows at the Beginning"
 msgstr "Übersprungene Zeilen am Beginn der Tabelle"
 
-#: project/forms/forms_project.py:670
+#: project/forms/forms_project.py:700
 msgid ""
 "Number of skipped rows at the beginning of the table (empty: skip no rows)"
 msgstr ""
 "Anzahl der übersprungenen Zeilen am Beginn der Tabelle (leer: keine Zeilen "
 "überspringen)"
 
-#: project/forms/forms_project.py:680
+#: project/forms/forms_project.py:710
 msgid "Skipped Rows at the End"
 msgstr "Übersprungene Zeilen am Ende"
 
-#: project/forms/forms_project.py:682
+#: project/forms/forms_project.py:712
 msgid "Number of skipped rows an the end of the table (0: skip no rows)"
 msgstr ""
 "Anzahl der übersprungenen Zeilen am Ende der Tabelle (0: keine Zeilen "
 "überspringen)"
 
-#: project/forms/forms_project.py:692 project/forms/forms_project.py:702
+#: project/forms/forms_project.py:722 project/forms/forms_project.py:732
 msgid "Count of Rows"
 msgstr "Anzahl der Zeilen"
 
@@ -235,8 +258,8 @@ msgstr "Programmiersprache: %(name)s"
 msgid "Code Templates"
 msgstr "Code-Templates"
 
-#: project/models.py:102 project/models.py:151 project/models.py:188
-#: project/models.py:400 project/models.py:507
+#: project/models.py:102 project/models.py:169 project/models.py:206
+#: project/models.py:418 project/models.py:620
 msgid "name"
 msgstr "Name"
 
@@ -245,49 +268,61 @@ msgid "path"
 msgstr "Pfad"
 
 #: project/models.py:129
+msgid "Java JPA Entities"
+msgstr ""
+
+#: project/models.py:133
+msgid "Python Django Models"
+msgstr ""
+
+#: project/models.py:137
+msgid "model exporter type"
+msgstr ""
+
+#: project/models.py:147
 #, python-format
 msgid "Code Template: %(name)s - %(lang)s - %(path)s"
 msgstr "Code Template: %(name)s - %(lang)s - %(path)s"
 
-#: project/models.py:138
+#: project/models.py:156
 msgid "Code Template Parameter"
 msgstr "Code-Template-Parameter"
 
-#: project/models.py:139
+#: project/models.py:157
 msgid "Code Template Parameters"
 msgstr "Code-Template-Parameter"
 
-#: project/models.py:160
+#: project/models.py:178
 msgid "value"
 msgstr "Wert"
 
-#: project/models.py:167
+#: project/models.py:185
 #, python-format
 msgid "Code Template Parameter: %(ct)s - %(name)s - %(value)s"
 msgstr "Code-Template-Parameter: %(ct)s - %(name)s - %(value)s"
 
-#: project/models.py:176
+#: project/models.py:194
 #, python-format
 msgid "Project: %(user)s - %(project)s"
 msgstr "Benutzer: %(user)s - Projekt: %(project)s"
 
-#: project/models.py:185
+#: project/models.py:203
 msgid "user"
 msgstr "Benutzer"
 
-#: project/models.py:196 project/models.py:406 project/models.py:513
+#: project/models.py:214 project/models.py:424 project/models.py:626
 msgid "description"
 msgstr "Beschreibung"
 
-#: project/models.py:203 project/models.py:300
+#: project/models.py:221 project/models.py:318
 msgid "project"
 msgstr "Projekt"
 
-#: project/models.py:204
+#: project/models.py:222
 msgid "projects"
 msgstr "Projekte"
 
-#: project/models.py:219
+#: project/models.py:237
 #, python-format
 msgid ""
 "Ensure this value has at least %(limit_value)d character (it has "
@@ -302,88 +337,87 @@ msgstr[1] ""
 "Stellen sie sicher,  das der eingebene Wert mindestens %(limit_value)d "
 "Zeichen hat (momentan %(show_value)d Zeichen)."
 
-#: project/models.py:239 project/models.py:294 project/models.py:295
+#: project/models.py:257 project/models.py:312 project/models.py:313
 msgid "project settings"
 msgstr "Projekteinstellungen"
 
-#: project/models.py:242
+#: project/models.py:260
 msgid "domain"
 msgstr "Domäne"
 
-#: project/models.py:245
+#: project/models.py:263
 msgid "admin user name"
 msgstr "Administrator Benutzername"
 
-#: project/models.py:248
+#: project/models.py:266
 msgid "admin"
 msgstr "admin"
 
-#: project/models.py:252
+#: project/models.py:270
 msgid "admin password"
 msgstr "Administrator Passwort"
 
-#: project/models.py:258
+#: project/models.py:276
 msgid "demo user name"
 msgstr "Demo-Benutzer Benutzername"
 
-#: project/models.py:262
+#: project/models.py:280
 msgid "demo"
 msgstr "demo"
 
-#: project/models.py:266
+#: project/models.py:284
 msgid "demo user password"
 msgstr "Demo-Benutzer Passwort"
 
-#: project/models.py:271
+#: project/models.py:289
 msgid "Set no password to disable creation of a demo user!"
-msgstr ""
-"Kein Passwort setzen um die Erzeugung eines Benutzers zu deaktivieren!"
+msgstr "Kein Passwort setzen um die Erzeugung eines Benutzers zu deaktivieren!"
 
-#: project/models.py:275
+#: project/models.py:293
 msgid "docker root"
 msgstr "Docker Name"
 
-#: project/models.py:313 project/models.py:421
+#: project/models.py:331 project/models.py:439
 msgid "transformation mapping"
 msgstr "Transformationszuordnung"
 
-#: project/models.py:319 project/models.py:327 project/models.py:343
+#: project/models.py:337 project/models.py:345 project/models.py:361
 msgid "file"
 msgstr "Datei"
 
-#: project/models.py:328
+#: project/models.py:346
 msgid "files"
 msgstr "Dateien"
 
-#: project/models.py:361
+#: project/models.py:379
 msgid "sheet"
 msgstr "Arbeitsblatt"
 
-#: project/models.py:381 project/models.py:414
+#: project/models.py:399 project/models.py:432
 msgid "headline"
 msgstr "Kopfzeile"
 
-#: project/models.py:396
+#: project/models.py:414
 msgid "model"
 msgstr "Tabelle"
 
-#: project/models.py:397
+#: project/models.py:415
 msgid "models"
 msgstr "Tabellen"
 
-#: project/models.py:423
+#: project/models.py:441
 msgid "main entry"
 msgstr "Haupt-Tabelle"
 
-#: project/models.py:425 project/models.py:575
+#: project/models.py:443 project/models.py:688
 msgid "index"
 msgstr "Reihenfolge"
 
-#: project/models.py:428 project/models.py:573
+#: project/models.py:446 project/models.py:686
 msgid "exclude from creation"
 msgstr "von der Erzeugung ausschließen"
 
-#: project/models.py:439
+#: project/models.py:457
 msgid "%(model_name)'s %(field_labels) are not unique."
 msgid_plural "%(model_name)'s %(field_labels)s are not unique."
 msgstr[0] ""
@@ -391,93 +425,101 @@ msgstr[0] ""
 msgstr[1] ""
 "Die Kombination aus %(model_name) und %(field_labels) muss eindeutig sein."
 
-#: project/models.py:446
+#: project/models.py:464
 #, python-format
 msgid "Table: %(user)s - %(project)s - %(model)s"
 msgstr "Tablelle: %(user)s - %(project)s - %(model)s"
 
-#: project/models.py:457
+#: project/models.py:475
 msgid "field"
 msgstr "Spalte"
 
-#: project/models.py:458
+#: project/models.py:476
 msgid "fields"
 msgstr "Spalte"
 
-#: project/models.py:520
+#: project/models.py:481
+msgid "None"
+msgstr ""
+
+#: project/models.py:608
+msgid "(Unknown)"
+msgstr ""
+
+#: project/models.py:633
 msgid "transformation column"
 msgstr "Tranformationsspalte"
 
-#: project/models.py:526
+#: project/models.py:639
 msgid "table"
 msgstr "Tabelle"
 
-#: project/models.py:530
+#: project/models.py:643
 msgid "data type"
 msgstr "Datentyp"
 
-#: project/models.py:534
+#: project/models.py:647
 msgid "field length"
 msgstr "Feldlänge"
 
-#: project/models.py:536
+#: project/models.py:649
 msgid "decimal number length"
 msgstr "Anzahl der Gesamtstellen einer Dezimalzahl"
 
-#: project/models.py:540
+#: project/models.py:653
 msgid "decimal places"
 msgstr "Anzahl der Nachkommastellen einer Dezimalzahl"
 
-#: project/models.py:545
+#: project/models.py:658
 msgid "default value"
 msgstr "Standardwert"
 
-#: project/models.py:548
+#: project/models.py:661
 msgid "selection values"
 msgstr "Auswahlwerte"
 
-#: project/models.py:551
+#: project/models.py:664
 msgid "allow empty values in form"
 msgstr "Leereintrag im Formular zulässig"
 
-#: project/models.py:554
+#: project/models.py:667
 msgid "allow empty values in database"
 msgstr "Leereintrag in der Datenbank zulässig"
 
-#: project/models.py:561
+#: project/models.py:674
 msgid "foreign key"
 msgstr "Fremdschlüssel"
 
-#: project/models.py:563
+#: project/models.py:676
 msgid "unique"
 msgstr "Eindeutig"
 
-#: project/models.py:564
+#: project/models.py:677
 msgid "create index"
 msgstr "Indizieren"
 
-#: project/models.py:566
+#: project/models.py:679
 msgid "validation pattern"
 msgstr "Prüfmuster"
 
-#: project/models.py:568
+#: project/models.py:681
 msgid "show in list page"
 msgstr "in Listenansicht anzeigen"
 
-#: project/models.py:570
+#: project/models.py:683
 msgid "show in detail page"
 msgstr "in Detailansicht anzeigen"
 
-#: project/models.py:577
+#: project/models.py:690
 msgid "internationalizable"
 msgstr "internationalisierbar"
 
-#: project/models.py:586
+#: project/models.py:699
 #, python-format
 msgid "Column: %(user)s - %(project)s - %(model)s - %(column)s"
 msgstr "Spalte: %(user)s - %(project)s - %(model)s - %(column)s"
 
-#: project/models.py:599
+#: project/models.py:712
 #, python-format
 msgid "Suffix %(suffix) is not allowed for import"
 msgid_plural "Suffix %(suffix) is not allowed for import"
@@ -490,21 +532,39 @@ msgid ""
 "Invalid mapping for Code Template: %(ct)s, Parameter: %(param_name)s Value: "
 "%(param_value)s"
 msgstr ""
-"Ungültiges Mapping im Code-Template: %(ct)s, Parameter: %(param_name)s Wert:"
-" %(param_value)s"
+"Ungültiges Mapping im Code-Template: %(ct)s, Parameter: %(param_name)s Wert: "
+"%(param_value)s"
 
 #: project/services/code_template_mapper.py:109
 #, python-format
 msgid ""
-"No mapping found for Code Template: %(ct)s, Parameter: %(param_name)s Value:"
-" %(param_value)s"
+"No mapping found for Code Template: %(ct)s, Parameter: %(param_name)s Value: "
+"%(param_value)s"
 msgstr ""
 "Kein passendes Mapping zum Parameterwert gefunden im Code-Template: %(ct)s, "
 "Parameter: %(param_name)s Wert: %(param_value)s"
 
+#: project/services/edit_project.py:39
+msgid ""
+"No ModelExpander class for the given programming language available! Contact "
+"support for further help."
+msgstr ""
+
 #: project/services/import_file.py:30
 msgid "Error"
 msgstr "Fehler"
+
+#: project/services/importer.py:183
+#, fuzzy, python-format
+#| msgid "Column: %(name)s"
+msgid "Column %(name)s was created."
+msgstr "Spalte: %(name)s"
+
+#: project/services/importer.py:187
+#, fuzzy, python-format
+#| msgid "Column: %(name)s"
+msgid "Column %(name)s was updated."
+msgstr "Spalte: %(name)s"
 
 #: project/templates/403.html:5
 msgid "Access forbidden (Error: 403)"
@@ -746,7 +806,6 @@ msgstr ""
 
 #: project/templates/project/project_detail.html:21
 #, python-format
-#| msgid "Code Templates"
 msgid ""
 "\n"
 "  Code Template: %(ct)s"
@@ -850,13 +909,17 @@ msgstr "Passwort zurücksetzen"
 msgid "Django-LowCoder - Register"
 msgstr "Django-LowCoder - Registrieren"
 
+#: project/views/views_project.py:358
+msgid "Invalid navigation"
+msgstr ""
+
+#: project/views/views_project.py:361
+msgid "Invalid session"
+msgstr ""
+
 #, python-format
 #~ msgid "Table: %(name)s"
 #~ msgstr "Tabelle: %(name)s"
-
-#, python-format
-#~ msgid "Column: %(name)s"
-#~ msgstr "Spalte: %(name)s"
 
 #, python-format
 #~ msgid ""

@@ -123,6 +123,24 @@ class CodeTemplate(models.Model):
         verbose_name=_("Programming Language"),
     )
 
+    class ModelExporterClass(models.IntegerChoices):
+        JPA = (
+            1,
+            _("Java JPA Entities"),
+        )
+        DJANGO = (
+            2,
+            _("Python Django Models"),
+        )
+
+    model_exporter = models.IntegerField(  # type: ignore
+        _("model exporter type"),
+        null=False,
+        blank=False,
+        # Model export types
+        choices=ModelExporterClass.choices,
+    )
+
     parameters: models.QuerySet["CodeTemplateParameter"]  # forward decl for mypy
 
     def __str__(self):
@@ -457,43 +475,139 @@ class Field(TimeStampMixin, models.Model):
         verbose_name = _("field")
         verbose_name_plural = _("fields")
 
-    DATATYPES = [
-        "Keiner",
-        "BigIntegerField",
-        "BinaryField",
-        "BooleanField",
-        "CharField",
-        "CommaSeparatedIntegerField",
-        "DateField",
-        "DateTimeField",
-        "DecimalField",
-        "DurationField",
-        "EmailField",
-        "Field",
-        "FilePathField",
-        "FloatField",
-        "GenericIPAddressField",
-        "IPAddressField",
-        "IntegerField",
-        "NullBooleanField",
-        "PositiveBigIntegerField",
-        "PositiveIntegerField",
-        "PositiveSmallIntegerField",
-        "SlugField",
-        "SmallAutoField",
-        "SmallIntegerField",
-        "TextField",
-        "TimeField",
-        "URLField",
-        "UUIDField",
-        "AutoField",
-        "BigAutoField",
-        "FileField",
-        "JSONField",
-    ]
-    DATATYPE_CHOICES = [(k, v) for k, v in enumerate(DATATYPES)]
-    DATATYPE_ID_BY_DATATYPE = {v: k for k, v in enumerate(DATATYPES)}
+    class Datatype(models.IntegerChoices):
+        NONE = (
+            0,
+            _("None"),
+        )
+        BIG_INTEGER_FIELD = (
+            1,
+            "BigIntegerField",
+        )
+        BINARY_FIELD = (
+            2,
+            "BinaryField",
+        )
+        BOOLEAN_FIELD = (
+            3,
+            "BooleanField",
+        )
+        CHAR_FIELD = (
+            4,
+            "CharField",
+        )
+        COMMA_SEPARATED_INTEGER_FIELD = (
+            5,
+            "CommaSeparatedIntegerField",
+        )
+        DATE_FIELD = (
+            6,
+            "DateField",
+        )
+        DATE_TIME_FIELD = (
+            7,
+            "DateTimeField",
+        )
+        DECIMAL_FIELD = (
+            8,
+            "DecimalField",
+        )
+        DURATION_FIELD = (
+            9,
+            "DurationField",
+        )
+        EMAIL_FIELD = (
+            10,
+            "EmailField",
+        )
+        FIELD = (
+            11,
+            "Field",
+        )
+        FILE_PATH_FIELD = (
+            12,
+            "FilePathField",
+        )
+        FLOAT_FIELD = (
+            13,
+            "FloatField",
+        )
+        GENERIC_IPADDRESS_FIELD = (
+            14,
+            "GenericIPAddressField",
+        )
+        IPADDRESS_FIELD = (
+            15,
+            "IPAddressField",
+        )
+        INTEGER_FIELD = (
+            16,
+            "IntegerField",
+        )
+        NULL_BOOLEAN_FIELD = (
+            17,
+            "NullBooleanField",
+        )
+        POSITIVE_BIG_INTEGER_FIELD = (
+            18,
+            "PositiveBigIntegerField",
+        )
+        POSITIVE_INTEGER_FIELD = (
+            19,
+            "PositiveIntegerField",
+        )
+        POSITIVE_SMALL_INTEGER_FIELD = (
+            20,
+            "PositiveSmallIntegerField",
+        )
+        SLUG_FIELD = (
+            21,
+            "SlugField",
+        )
+        SMALL_AUTO_FIELD = (
+            22,
+            "SmallAutoField",
+        )
+        SMALL_INTEGER_FIELD = (
+            23,
+            "SmallIntegerField",
+        )
+        TEXT_FIELD = (
+            24,
+            "TextField",
+        )
+        TIME_FIELD = (
+            25,
+            "TimeField",
+        )
+        URLFIELD = (
+            26,
+            "URLField",
+        )
+        UUIDFIELD = (
+            27,
+            "UUIDField",
+        )
+        AUTO_FIELD = (
+            28,
+            "AutoField",
+        )
+        BIG_AUTO_FIELD = (
+            29,
+            "BigAutoField",
+        )
+        FILE_FIELD = (
+            30,
+            "FileField",
+        )
+        JSONFIELD = (
+            31,
+            "JSONField",
+        )
 
+        __empty__ = _("(Unknown)")
+
+    DATATYPE_LABEL_BY_VALUE = {k: v for k, v in Datatype.choices}
     CHAR_MAX_LENGTH_STEPS: List[int] = [10, 30, 60, 100, 200, 1000, 2000]
 
     @staticmethod
@@ -528,8 +642,8 @@ class Field(TimeStampMixin, models.Model):
     # ignore
     datatype = models.IntegerField(  # type: ignore
         _("data type"),
-        choices=DATATYPE_CHOICES,
-        default=DATATYPES[4][0],
+        choices=Datatype.choices,
+        default=Datatype.CHAR_FIELD,
     )
     max_length = models.IntegerField(_("field length"), null=True, blank=True)  # type: ignore
     max_digits = models.IntegerField(

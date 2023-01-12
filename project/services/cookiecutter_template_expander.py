@@ -47,9 +47,17 @@ class CookiecutterConfig:
             f"config/cookiecutter-{self.code_template.pk}/config.json"
         )
         self.programming_language = self.code_template.programming_language.name
+        self.output_dir = os.path.join(os.getcwd(), OUTPUT_DIR)
+        self.cookiecutters_dir = os.path.join(
+            os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTERS)
+        )
+        self.replay_dir = os.path.join(
+            os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTER_REPLAY)
+        )
         self.init_cookiecutter_template_config()
 
     def init_cookiecutter_template_config(self):
+
         if self.code_template.pk == 1:  # Java-Template
             self.init_cookiecutter_java_config()
         elif self.code_template.pk == 2:  # Django-Template
@@ -90,13 +98,9 @@ class CookiecutterConfig:
             "keep_local_envs_in_vcs": "y",
             "debug": "n",
             "_template": self.code_template.path,
-            "_output_dir": os.path.join(os.getcwd(), OUTPUT_DIR),
-            "cookiecutters_dir": os.path.join(
-                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTERS)
-            ),
-            "replay_dir": os.path.join(
-                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTER_REPLAY)
-            ),
+            "_output_dir": self.output_dir,
+            "cookiecutters_dir": self.cookiecutters_dir,
+            "replay_dir": self.replay_dir,
         }
 
     def init_cookiecutter_django_config(self) -> None:
@@ -134,13 +138,9 @@ class CookiecutterConfig:
             "keep_local_envs_in_vcs": "y",
             "debug": "n",
             "_template": "gh:cookiecutter/cookiecutter-django",
-            "_output_dir": os.path.join(os.getcwd(), OUTPUT_DIR),
-            "cookiecutters_dir": os.path.join(
-                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTERS)
-            ),
-            "replay_dir": os.path.join(
-                os.getcwd(), os.path.join(OUTPUT_DIR, COOKIECUTTER_REPLAY)
-            ),
+            "_output_dir": self.output_dir,
+            "cookiecutters_dir": self.cookiecutters_dir,
+            "replay_dir": self.replay_dir,
         }
 
     def init_cookiecutter_config(self):
@@ -154,6 +154,14 @@ class CookiecutterConfig:
         for param in code_template.parameters.all():
             self.config.update({param.name: code_template_mapper.expand(param)})
 
+        self.config.update(
+            {
+                "_output_dir": self.output_dir,
+                "cookiecutters_dir": self.cookiecutters_dir,
+                "replay_dir": self.replay_dir,
+            }
+        )
+
 
 @dataclass
 class ExpanderParameters:
@@ -165,7 +173,7 @@ class ExpanderParameters:
     extra_context: dict[Any, Any] | None = None
     replay: bool = False
     overwrite_if_exists: bool = True
-    output_dir: str = "output/"
+    output_dir: str = OUTPUT_DIR
     config_file: str | None = None
     default_config: bool = False
     password: str | None = None

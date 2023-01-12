@@ -270,8 +270,10 @@ class ProjectDeleteModelForm(ModelForm):
         self.helper.form_class = "w-100 m-auto text-center"
         self.helper.layout = Layout(
             HTML(
-                "<p>{% blocktranslate with name=object.name %}Are you really shure to delete the table <b>{{"
-                "name}}</b>?</p>{% endblocktranslate %}"
+                "<p>"
+                + _("Are you really shure to delete the table <b>%(name)s</b>?")
+                % {"name": self.instance.name}
+                + "</p>"
             ),
             Submit("submit", _("Confirm")),
             HTML(
@@ -396,8 +398,10 @@ class ProjectDeleteFieldForm(ModelForm):
         self.helper.form_class = "w-100 m-auto text-center"
         self.helper.layouet = Layout(
             HTML(
-                """<p>{% blocktranslate %}Are you really shure to delete the column <b>{{
-                object.name }}</b>?{% endblocktranslate %}</p>"""
+                "<p>"
+                + _("Are you really shure to delete the column <b>%(name)s</b>?")
+                % {"name": self.instance.name}
+                + "</p>"
             ),
             Submit("submit", _("Confirm")),
             HTML(
@@ -454,8 +458,10 @@ class ProjectDeleteFileForm(ModelForm):
         self.helper.form_class = "w-100 m-auto text-center"
         self.helper.layout = Layout(
             HTML(
-                """<p>{% blocktranslate %}Are you really shure to delete the file <b>{{
-                object.file }}</b>?{% endblocktranslate %}</p>"""
+                "<p>"
+                + _("Are you really shure to delete the file <b>%(name)s</b>?")
+                % {"name": self.instance.file.name}
+                + "</p>"
             ),
             Submit("submit", _("Confirm")),
             HTML(
