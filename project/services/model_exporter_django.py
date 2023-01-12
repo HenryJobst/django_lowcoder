@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 
 from django.db.models import QuerySet
+from django.utils.text import slugify
 
 from project.models import Model, Field
 from project.services.model_exporter import ModelExporter
@@ -14,11 +15,13 @@ class FieldTransform:
         self.field: Field = field
 
     def to_model_dot_py(self):
-        return f"{self.field.name} = {self.field_type_and_kwargs}"
+        return f"\r\t{slugify(self.field.name).replace('-', '_')} = {self.field_type_and_kwargs()}"
 
-    def field_type_and_kwargs(self):
+    def field_type_and_kwargs(self) -> str:
         kwargs = {}
-        field_type = f"models.{self.field.datatype}({{}})"
+        field_type = (
+            f"models.{Field.DATATYPE_LABEL_BY_VALUE[self.field.datatype]}({{}})"
+        )
         if self.field.max_length:
             kwargs["max_length"] = self.field.max_length
         if self.field.max_digits:
@@ -36,7 +39,8 @@ class FieldTransform:
         if self.field.choices and len(self.field.choices) > 1:
             kwargs["choices"] = self.field.choices
 
-        field_type.format(", ".join(f"{k}={v}" for k, v in kwargs.items()))
+        kwargs_expanded = ", ".join(f"{k}={v}" for k, v in kwargs.items())
+        return field_type.format(kwargs_expanded)
 
 
 class ModelTransform:
@@ -44,12 +48,12 @@ class ModelTransform:
         self.model: Model = model
 
     def to_model_dot_py(self) -> str:
-        s = f"class {self.model.name}(models.Model):\r\t"
+        s = f"class {slugify(self.model.name).replace('-', '')}(models.Model):\r\t"
         field: Field
-        for field in self.model.fields:
+        for field in self.model.fields.all():
             if field.exclude:
                 continue
-            s += "\r\t".join(FieldTransform(field).to_model_dot_py())
+            s += FieldTransform(field).to_model_dot_py()
 
         s += "\r\r\t"
         s += "__str__ = __repr__ = lambda self: f'{self.id}'"

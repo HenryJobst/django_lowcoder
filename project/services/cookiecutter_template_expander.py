@@ -213,7 +213,10 @@ class CookieCutterTemplateExpander:
         # self.mem_fs.close()
 
     def expand(self):
-        CookieCutterTemplateExpander._expand(self.expand_parameter)
+        try:
+            CookieCutterTemplateExpander._expand(self.expand_parameter)
+        except:  # ignore error
+            ...
 
     @staticmethod
     def _expand(params: ExpanderParameters):
