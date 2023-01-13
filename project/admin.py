@@ -1,15 +1,7 @@
 from django.contrib import admin
 
 from django_lowcoder.admin import admin_site
-from project.models import (
-    Project,
-    ProjectSettings,
-    Model,
-    Field,
-    ProgrammingLanguage,
-    CodeTemplate,
-    CodeTemplateParameter,
-)
+from project.models import *
 
 
 class ProjectAdmin(admin.ModelAdmin):

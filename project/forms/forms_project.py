@@ -15,7 +15,6 @@ from django.forms import (
     CharField,
     Textarea,
     ModelChoiceField,
-    HiddenInput,
 )
 from django.template.defaultfilters import slugify
 from django.urls import reverse_lazy

@@ -2,15 +2,12 @@ from http import HTTPStatus
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
-from django.http import HttpResponse, HttpRequest, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
-from django.views.decorators.http import require_GET, require_POST
+from django.http import HttpResponse, HttpRequest
+from django.views.decorators.http import require_GET
 from django.views.generic import ListView
 from django_htmx.middleware import HtmxDetails
 
-import project.services.import_file
-from project.models import Project, TransformationFile
+from project.models import Project
 
 
 # Typing pattern recommended by django-stubs:

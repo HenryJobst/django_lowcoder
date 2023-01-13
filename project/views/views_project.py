@@ -1,22 +1,14 @@
-from pathlib import Path
 from typing import (
-    Any,
-    Callable,
     ClassVar,
-    Dict,
     Generic,
     TypeVar,
-    Optional,
-    List,
-    Tuple,
-)
+    )
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404, redirect
-from django.template.defaultfilters import slugify
-from django.urls import reverse_lazy
+from django.shortcuts import redirect
+from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, ListView
 from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import (
@@ -24,62 +16,17 @@ from django.views.generic.edit import (
     DeleteView,
     UpdateView,
     FormView,
-)
-from pandas import DataFrame
+    )
 
-from project.forms.forms_project import (
-    ProjectEditForm,
-    ProjectDeleteForm,
-    ProjectDeployForm,
-    ProjectEditSettingsForm,
-    ProjectEditModelForm,
-    ProjectDeleteModelForm,
-    ProjectEditFieldForm,
-    ProjectDeleteFieldForm,
-    ProjectEditFileForm,
-    ProjectDeleteFileForm,
-    ProjectImportFileForm,
-    var_name,
-    ProjectDeploySummaryForm,
-)
-from project.models import (
-    TransformationMapping,
-    ProjectSettings,
-    generate_random_admin_password,
-    Field,
-    TransformationFile,
-)
-from project.services.edit_model import (
-    model_up,
-    model_down,
-    init_main_entity,
-    init_index,
-    unset_main_entity,
-    set_new_main_entity,
-    field_up,
-    field_down,
-)
-from project.services.edit_project import prepare_deploy_project, deploy_project
+from project.forms.forms_project import *
+from project.models import *
 from project.services.cookiecutter_template_expander import CookieCutterTemplateExpander
+from project.services.edit_model import *
+from project.services.edit_project import prepare_deploy_project, deploy_project
 from project.services.import_file import import_file
-from project.services.importer import (
-    Importer,
-    SheetReaderParams,
-    READ_PARAM_HEADER,
-    READ_PARAM_USECOLS,
-    READ_PARAM_INDEX_COL,
-    READ_PARAM_NROWS,
-    READ_PARAM_SKIPROWS,
-    READ_PARAM_SKIPFOOTER,
-    TABLE_PARAM_HEAD_ROWS,
-    TABLE_PARAM_TAIL_ROWS,
-    convert_param,
-    create_models,
-)
+from project.services.importer import *
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
-
-from django.utils.translation import gettext_lazy as _
 
 SHEET_PARAMS = "sheet_params"
 NEXT_URL_PARAM = "next"
