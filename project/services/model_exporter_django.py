@@ -52,7 +52,7 @@ class FieldTransform:
 
     def field_type_and_kwargs(self) -> str:
         kwargs = {}
-        field_type = f"models.{Field.DATATYPE_LABEL_BY_VALUE[self.field.datatype]}('{self.field.name}', {{}})"
+        field_type = f"models.{Field.DATATYPE_LABEL_BY_VALUE[self.field.datatype]}(_('{self.field.name}'), {{}})"
         if self.field.max_length:
             kwargs["max_length"] = self.field.max_length
         if self.field.max_digits:
@@ -68,13 +68,10 @@ class FieldTransform:
         if self.field.is_unique:
             kwargs["unique"] = self.field.is_unique
         if self.field.choices and len(self.field.choices) > 1:
-            kwargs["choices"] = [
-                (
-                    k,
-                    v,
-                )
-                for k, v in self.field.choices.items()
-            ]
+            choices = ", ".join(
+                f"({k}, _('{v}'))" for k, v in self.field.choices.items()
+            )
+            kwargs["choices"] = f"[{choices}]"
         if self.field.description:
             kwargs["help_text"] = self.field.description
         if self.field.default_value:
@@ -129,6 +126,7 @@ class ModelExporterDjango(ModelExporter):
 
         output = f"# Created by Django LowCoder at {datetime.now()}\r\r"
         output += "from django.db import models\r"
+        output += "from django.utils.translation import gettext_lazy as _\r"
 
         # noinspection PyUnresolvedReferences
         models: QuerySet[
