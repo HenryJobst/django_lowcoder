@@ -75,7 +75,7 @@ class CookiecutterConfig:
         project: Project = self.project  # type: ignore
         self.config = {
             "project_name": project.name,
-            "project_slug": slugify.slugify(project.name),
+            "project_slug": project.slug(),
             "description": project.description,
             "author_name": self.user.first_name + " " + self.user.last_name,
             "domain_name": project.project_settings.domain_name
@@ -109,7 +109,7 @@ class CookiecutterConfig:
         project: Project = self.project
         self.config = {
             "project_name": project.name,
-            "project_slug": slugify.slugify(project.name),
+            "project_slug": project.slug(),
             "description": project.description,
             "author_name": self.user.first_name + " " + self.user.last_name,
             "domain_name": project.project_settings.domain_name
@@ -207,6 +207,9 @@ class CookieCutterTemplateExpander:
             overwrite_if_exists=True,
             extra_context=self.config.config,
         )
+
+    def project_name_as_dirname(self):
+        return self.project.slug()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass

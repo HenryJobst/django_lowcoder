@@ -476,7 +476,7 @@ class ProjectDeleteFileForm(ModelForm):
 
 
 def var_name(sheet_name: str, v_name: str) -> str:
-    return slugify(sheet_name.lower() + "_" + v_name)
+    return slugify(sheet_name.lower() + "_" + v_name).replace("-", "_")
 
 
 def var_name_id(sheet_name: str, v_name: str) -> str:

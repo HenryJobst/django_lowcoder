@@ -25,12 +25,17 @@ class TestCodeTemplateMapper(TestCase):
         self.prog_lang = ProgrammingLanguage(name="Python")
         self.prog_lang.save()
         self.code_template = CodeTemplate(
-            name="Dummy", path="Dummy", programming_language=self.prog_lang
+            name="Dummy",
+            path="Dummy",
+            programming_language=self.prog_lang,
+            model_exporter=CodeTemplate.ModelExporterClass.DJANGO,
         )
         self.code_template.save()
 
         self.code_template_mapper: CodeTemplateMapper = CodeTemplateMapper(
-            None, self.a_project, self.code_template
+            None,
+            self.a_project,
+            self.code_template,
         )
 
     def test_expand_string(self):
@@ -88,7 +93,9 @@ class TestCodeTemplateMapper(TestCase):
             value="{{project_slug}}",
         )
 
-        assert self.code_template_mapper.expand(param) == slugify(self.a_project.name)
+        assert self.code_template_mapper.expand(param) == slugify(
+            self.a_project.name
+        ).replace("-", "_")
 
     def test_expand_project_description(self):
         param = CodeTemplateParameter(

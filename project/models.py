@@ -225,7 +225,7 @@ class Project(TimeStampMixin, models.Model):
         return reverse("project_detail", kwargs={"pk": self.pk})
 
     def slug(self):
-        return slugify(self.name)
+        return slugify(self.name).replace("-", "_")
 
 
 def generate_random_admin_password():

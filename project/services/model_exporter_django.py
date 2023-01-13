@@ -110,7 +110,7 @@ class ModelTransform:
 
     def to_admin_dot_py_register(self) -> str:
         model_class_name = to_classname(self.model.name)
-        return f"admin.site.register({model_class_name}, {model_class_name}Admin)\r    "
+        return f"admin.site.register({model_class_name}, {model_class_name}Admin)"
 
 
 class ModelExporterDjango(ModelExporter):
@@ -119,10 +119,13 @@ class ModelExporterDjango(ModelExporter):
         self.create_model_py(app_dir)
         self.create_admin_py(app_dir)
         self.create_views_py()
+        self.patch_settings(app_dir)
 
     def create_app_dir(self) -> Path:
         app_dir = Path(
-            self.cookieCutterTemplateExpander.expand_parameter.output_dir, APP_NAME
+            self.cookieCutterTemplateExpander.expand_parameter.output_dir,
+            self.cookieCutterTemplateExpander.project_name_as_dirname(),
+            APP_NAME,
         )
         app_dir.mkdir(exist_ok=True, parents=True)
         return app_dir
@@ -195,3 +198,10 @@ class ModelExporterDjango(ModelExporter):
 
     def create_views_py(self):
         ...
+
+    def patch_settings(self, app_dir: Path):
+        # add app to INSTALLED_APPS or for cookiecutter-django LOCAL_APPS
+        # output = f"INSTALLED_APPS += ['{self.cookieCutterTemplateExpander.project_name_as_dirname()}']"
+
+        base_py = app_dir.parent.joinpath("config", "settings", "base.py")
+        # open and find LOCAL_APPS and replace '# Your stuff: custom apps go here'
