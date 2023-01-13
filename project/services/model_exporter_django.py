@@ -105,12 +105,19 @@ class ModelTransform:
 
         return s
 
+    def to_admin_dot_py_class(self) -> str:
+        return f"class {to_classname(self.model.name)}Admin(admin.ModelAdmin):\r    ...\r\r"
+
+    def to_admin_dot_py_register(self) -> str:
+        model_class_name = to_classname(self.model.name)
+        return f"admin.site.register({model_class_name}, {model_class_name}Admin)\r    "
+
 
 class ModelExporterDjango(ModelExporter):
     def export(self):
         app_dir: Path = self.create_app_dir()
         self.create_model_py(app_dir)
-        self.create_admin_py()
+        self.create_admin_py(app_dir)
         self.create_views_py()
 
     def create_app_dir(self) -> Path:
@@ -150,8 +157,41 @@ class ModelExporterDjango(ModelExporter):
             ),
         )
 
-    def create_admin_py(self):
-        pass
+    def create_admin_py(self, app_dir):
+
+        admin_py = app_dir.joinpath("admin.py")
+
+        output = f"# Created by Django LowCoder at {datetime.now()}\r\r"
+        output += "from django.contrib import admin\r"
+        output += "from django.utils.translation import gettext_lazy as _\r"
+        output += f"from {APP_NAME}.models import *\r\r"
+
+        # noinspection PyUnresolvedReferences
+        models: QuerySet[
+            Model
+        ] = self.cookieCutterTemplateExpander.project.transformationmapping.models
+        model: Model
+        for model in models.all():
+            if model.exclude:
+                continue
+            output += "\r" + ModelTransform(model).to_admin_dot_py_class()
+
+        for model in models.all():
+            if model.exclude:
+                continue
+            output += "\r" + ModelTransform(model).to_admin_dot_py_register()
+
+        admin_py.write_text(output)
+        format_file_in_place(
+            admin_py,
+            fast=False,
+            write_back=WriteBack.YES,
+            mode=Mode(
+                target_versions={TargetVersion.PY311},
+                line_length=80,
+                experimental_string_processing=True,
+            ),
+        )
 
     def create_views_py(self):
-        pass
+        ...
