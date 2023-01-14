@@ -1,5 +1,3 @@
-from typing import List
-
 from crispy_bootstrap5.bootstrap5 import FloatingField  # type: ignore
 from crispy_forms.bootstrap import TabHolder, Tab  # type: ignore
 from crispy_forms.helper import FormHelper  # type: ignore
@@ -16,31 +14,17 @@ from django.forms import (
     Textarea,
     ModelChoiceField,
 )
-from django.template.defaultfilters import slugify
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from pandas import DataFrame
 
 from project.models import (
     Project,
     ProjectSettings,
-    Model,
     Field as ModelField,
-    TransformationFile,
     VALID_MIMETYPES,
     CodeTemplate,
 )
-from project.services.importer import (
-    SheetReaderParams,
-    READ_PARAM_HEADER,
-    READ_PARAM_USECOLS,
-    READ_PARAM_NROWS,
-    READ_PARAM_SKIPROWS,
-    READ_PARAM_SKIPFOOTER,
-    TABLE_PARAM_HEAD_ROWS,
-    TABLE_PARAM_TAIL_ROWS,
-    DEFAULT_HEAD_TAIL_ROWS,
-)
+from project.services.importer import *
 
 TABLE_FULL = "table-full"
 TABLE_HEAD = "table-head"

@@ -1,33 +1,6 @@
 from django.urls import path
 
-from project.views.views_project import (
-    ProjectDetailView,
-    ProjectCreateView,
-    ProjectUpdateView,
-    ProjectDeleteView,
-    ProjectDeployView,
-    ProjectSelectView,
-    ProjectUpdateSettingsView,
-    ProjectCreateModelView,
-    ProjectUpdateModelView,
-    ProjectListModelsView,
-    ProjectSelectModelView,
-    ProjectModelUpView,
-    ProjectModelDownView,
-    ProjectDeleteModelView,
-    ProjectListFieldsView,
-    ProjectCreateFieldView,
-    ProjectUpdateFieldView,
-    ProjectDeleteFieldView,
-    ProjectFieldUpView,
-    ProjectFieldDownView,
-    ProjectDetailModelView,
-    ProjectListFilesView,
-    ProjectCreateFileView,
-    ProjectDeleteFileView,
-    ProjectImportFileView,
-    ProjectDeploySummaryView,
-)
+from project.views.views_project import *
 
 from project.views.views_registration import RegisterView
 from project.views.views import IndexView, favicon
