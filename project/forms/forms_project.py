@@ -1,7 +1,7 @@
 from crispy_bootstrap5.bootstrap5 import FloatingField  # type: ignore
 from crispy_forms.bootstrap import TabHolder, Tab  # type: ignore
 from crispy_forms.helper import FormHelper  # type: ignore
-from crispy_forms.layout import Submit, Layout, Fieldset, HTML, Field, Row, Column, Div  # type: ignore
+from crispy_forms.layout import Submit, Layout, Fieldset, HTML, Field as LayoutField, Row, Column, Div  # type: ignore
 from django.forms import (
     ModelForm,
     TypedChoiceField,
@@ -290,7 +290,7 @@ class ProjectEditFieldForm(ModelForm):
         self.helper.layout = Layout(
             Fieldset(
                 _("Column"),
-                Field("exclude"),
+                LayoutField("exclude"),
                 FloatingField("name"),
                 FloatingField("description"),
                 Row(
@@ -316,24 +316,24 @@ class ProjectEditFieldForm(ModelForm):
                 FloatingField("foreign_key_entity"),
                 Row(
                     Column(
-                        Field("blank"),
+                        LayoutField("blank"),
                     ),
-                    Column(Field("null")),
+                    Column(LayoutField("null")),
                 ),
                 Row(
                     Column(
-                        Field("is_unique"),
+                        LayoutField("is_unique"),
                     ),
                     Column(
-                        Field("use_index"),
+                        LayoutField("use_index"),
                     ),
                 ),
                 Row(
                     Column(
-                        Field("show_in_list"),
+                        LayoutField("show_in_list"),
                     ),
                     Column(
-                        Field("show_in_detail"),
+                        LayoutField("show_in_detail"),
                     ),
                 ),
             ),

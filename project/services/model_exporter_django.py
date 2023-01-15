@@ -198,6 +198,8 @@ class ModelExporterDjango(ModelExporter):
 
     def create_views_py(self):
         ...
+        # create standard some standard list & crud views via generic views
+        # mix special of cookiecutter template (... -> core) + programmatic code
 
     def patch_settings(self, app_dir: Path):
         # add app to INSTALLED_APPS or for cookiecutter-django LOCAL_APPS
@@ -205,3 +207,19 @@ class ModelExporterDjango(ModelExporter):
 
         base_py = app_dir.parent.joinpath("config", "settings", "base.py")
         # open and find LOCAL_APPS and replace '# Your stuff: custom apps go here'
+
+    def patch_urls_and_menu(self):
+        ...
+
+    def start_local(self):
+        """
+        # add sqlite database entry to settings file, delete migration file with sequence
+        python3.11 -m venv venv
+        source venv/bin/activate
+        pip3.11 install -r requirements/local.txt
+        # pip3.11 install --upgrade pip
+        python3.11 manage.py makemigrations --settings config.settings.local
+        python3.11 manage.py migrate --settings config.settings.local
+        python3.11 manage.py createsuperuser --settings config.settings.local
+        python3.11 manage.py runserver --settings config.settings.local
+        """

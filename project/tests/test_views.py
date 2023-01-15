@@ -8,8 +8,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseRedirect, QueryDict, HttpRequest
 from django.test import RequestFactory, TestCase, Client
 
-from project.models import Project
-from project.tests.factories import UserFactory
+from project.tests.factories import *
 from project.views.views import IndexView
 
 pytestmark = pytest.mark.django_db
@@ -137,3 +136,9 @@ class TestProjectViews(TestCase):
         )
 
         self.assertRedirects(response, "/project/")
+
+    def test_get_field_detail(self):
+        field = FieldFactory()
+        self.client.force_login(field.model.transformation_mapping.project.user)
+        response = self.client.get(f"/project/field/{field.pk}/edit")
+        assert response.status_code == 200

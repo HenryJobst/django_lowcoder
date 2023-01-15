@@ -638,8 +638,7 @@ class Field(TimeStampMixin, models.Model):
         on_delete=models.CASCADE,
         related_name="fields",
         verbose_name=_("table"),
-    )  # type:
-    # ignore
+    )  # type ignore
     datatype = models.IntegerField(  # type: ignore
         _("data type"),
         choices=Datatype.choices,
@@ -697,6 +696,8 @@ class Field(TimeStampMixin, models.Model):
             return super(Field, self).unique_error_message(model_class, unique_check)
 
     def __str__(self) -> str:
+        if not hasattr(self, "model"):
+            return "-"
         return _("Column: %(user)s - %(project)s - %(model)s - %(column)s") % {
             "user": self.model.transformation_mapping.project.user.username,
             "project": self.model.transformation_mapping.project.name,
