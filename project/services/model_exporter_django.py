@@ -8,6 +8,9 @@ from django.utils.text import slugify
 
 from project.models import Model, Field
 from project.services.model_exporter import ModelExporter
+from django.conf import settings
+
+MAX_DROPDOWN_SIZE = 20
 
 APP_NAME = "core"
 
@@ -78,6 +81,14 @@ class FieldTransform:
             return None
         return f"'{to_varname(self.field.name)}'"
 
+    def to_admin_dot_py_autocomplete_fields(self) -> str | None:
+        if (
+            not self.field.foreign_key_entity
+            or self.field.foreign_key_entity.fields.count() > MAX_DROPDOWN_SIZE
+        ):
+            return None
+        return f"'{to_varname(self.field.name)}'"
+
     def field_type_and_kwargs(self) -> str:
         kwargs = {}
         field_type = f"models.{Field.DATATYPE_LABEL_BY_VALUE[self.field.datatype]}(_('{self.field.name}'), {{}})"
@@ -138,26 +149,36 @@ class ModelTransform:
         search_fields = []
         list_display = []
         list_filter = []
+        autocomplete_fields = []
         date_hierarchy = None
         field: Field
         for field in self.model.fields.all():
             if field.exclude:
                 continue
+
             entry = FieldTransform(field).to_admin_dot_py_fields()
             if entry:
                 fields.append(entry)
+
             entry = FieldTransform(field).to_admin_dot_py_search_fields()
             if entry:
                 search_fields.append(entry)
+
             entry = FieldTransform(field).to_admin_dot_py_list_display()
             if entry:
                 list_display.append(entry)
+
             entry = FieldTransform(field).to_admin_dot_py_list_filter()
             if entry:
                 list_filter.append(entry)
+
             entry = FieldTransform(field).to_admin_dot_py_date_hierarchy()
             if not date_hierarchy and entry:
                 date_hierarchy = entry
+
+            entry = FieldTransform(field).to_admin_dot_py_autocomplete_fields()
+            if entry:
+                autocomplete_fields.append(entry)
 
         return (
             f"@admin.register({to_classname(self.model.name)})\r"
@@ -167,6 +188,7 @@ class ModelTransform:
             f"    date_hierarchy={date_hierarchy}\r"
             f"    fields=[{', '.join(fields)}]\r"
             f"    search_fields=[{', '.join(search_fields)}]\r"
+            f"    list_per_page=20\r"
             f"    \r"
         )
 
@@ -233,15 +255,26 @@ class ModelExporterDjango(ModelExporter):
 
         admin_py = app_dir.joinpath("admin.py")
 
+        models: QuerySet[
+            Model
+        ] = self.cookieCutterTemplateExpander.project.transformationmapping.models
+
         output = f"# Created by Django LowCoder at {datetime.now()}\r\r"
         output += "from django.contrib import admin\r"
         output += "from django.utils.translation import gettext_lazy as _\r"
         output += f"from {APP_NAME}.models import *\r\r"
 
+        main_url = Path(
+            "/admin/",
+            APP_NAME,
+            to_varname(models.filter(is_main_entity=True).first().name),
+        )
+
+        output += f"admin.site.site_header = '{self.cookieCutterTemplateExpander.project.name}'\r"
+        output += f"admin.site.site_title = '{self.cookieCutterTemplateExpander.project.name}'\r"
+        output += f"admin.site.site_url = '{main_url}'\r"
+
         # noinspection PyUnresolvedReferences
-        models: QuerySet[
-            Model
-        ] = self.cookieCutterTemplateExpander.project.transformationmapping.models
         model: Model
         for model in models.all():
             if model.exclude:
