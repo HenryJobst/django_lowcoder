@@ -13,10 +13,10 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 from pathlib import Path
 
-import dj_database_url
+# import dj_database_url
 
 # noinspection PyPackageRequirements
-import environ
+import environ  # type: ignore
 from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -118,10 +118,11 @@ DATABASES = {
 
 
 if DATABASE_URL:
-    DATABASES["default"] = dj_database_url.config(
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
+    DATABASES = {"default": env.db("DATABASE_URL")}
+    # DATABASES["default"] = dj_database_url.config(
+    #     conn_max_age=600,
+    #     conn_health_checks=True,
+    # )
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -206,14 +207,10 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
-        "file": {
-            "class": "logging.FileHandler",
-            "filename": "django_lowcoder.log",
-        },
     },
     "root": {
         "level": "DEBUG",
-        "handlers": ["console", "file"],
+        "handlers": ["console"],
     },
 }
 

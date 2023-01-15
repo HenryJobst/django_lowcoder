@@ -134,8 +134,8 @@ class ProjectDeployForm(Form):
         self.helper.layout = Layout(
             Fieldset(
                 _("Generate Project"),
-                Field("app_type"),
-                Field("deploy_type"),
+                LayoutField("app_type"),
+                LayoutField("deploy_type"),
             ),
             Submit("submit", _("Start")),
             HTML(
@@ -218,10 +218,10 @@ class ProjectEditModelForm(ModelForm):
         self.helper.layout = Layout(
             Fieldset(
                 _("Table"),
-                Field("exclude"),
+                LayoutField("exclude"),
                 FloatingField("name"),
                 FloatingField("description"),
-                Field("is_main_entity", label=_("Main Table")),
+                LayoutField("is_main_entity", label=_("Main Table")),
             ),
             Submit("submit", _("Save")),
             HTML(
@@ -412,7 +412,7 @@ class ProjectEditFileForm(ModelForm):
         self.helper.form_method = "post"
         self.helper.form_class = "m-auto"
         self.helper.layout = Layout(
-            Field("file"),
+            LayoutField("file"),
             Submit("submit", _("Save")),
             HTML(
                 "{% if object.id %}"
