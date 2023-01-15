@@ -50,6 +50,34 @@ class FieldTransform:
     def to_model_dot_py(self):
         return f"\r    {to_varname(self.field.name)} = {self.field_type_and_kwargs()}"
 
+    def to_admin_dot_py_fields(self) -> str | None:
+        if not self.field.show_in_detail:
+            return None
+        return f"'{to_varname(self.field.name)}'"
+
+    def to_admin_dot_py_search_fields(self) -> str | None:
+        if not self.field.use_index:
+            return None
+        return f"'{to_varname(self.field.name)}'"
+
+    def to_admin_dot_py_list_display(self) -> str | None:
+        if not self.field.show_in_list:
+            return None
+        return f"'{to_varname(self.field.name)}'"
+
+    def to_admin_dot_py_list_filter(self) -> str | None:
+        if self.field.is_unique:
+            return None
+        return f"'{to_varname(self.field.name)}'"
+
+    def to_admin_dot_py_date_hierarchy(self) -> str | None:
+        if (
+            self.field.datatype != Field.Datatype.DATE_FIELD
+            and self.field.datatype != Field.Datatype.DATE_TIME_FIELD
+        ):
+            return None
+        return f"'{to_varname(self.field.name)}'"
+
     def field_type_and_kwargs(self) -> str:
         kwargs = {}
         field_type = f"models.{Field.DATATYPE_LABEL_BY_VALUE[self.field.datatype]}(_('{self.field.name}'), {{}})"
@@ -106,20 +134,70 @@ class ModelTransform:
         return s
 
     def to_admin_dot_py_class(self) -> str:
-        return f"class {to_classname(self.model.name)}Admin(admin.ModelAdmin):\r    ...\r\r"
+        fields = []
+        search_fields = []
+        list_display = []
+        list_filter = []
+        date_hierarchy = None
+        field: Field
+        for field in self.model.fields.all():
+            if field.exclude:
+                continue
+            entry = FieldTransform(field).to_admin_dot_py_fields()
+            if entry:
+                fields.append(entry)
+            entry = FieldTransform(field).to_admin_dot_py_search_fields()
+            if entry:
+                search_fields.append(entry)
+            entry = FieldTransform(field).to_admin_dot_py_list_display()
+            if entry:
+                list_display.append(entry)
+            entry = FieldTransform(field).to_admin_dot_py_list_filter()
+            if entry:
+                list_filter.append(entry)
+            entry = FieldTransform(field).to_admin_dot_py_date_hierarchy()
+            if not date_hierarchy and entry:
+                date_hierarchy = entry
 
-    def to_admin_dot_py_register(self) -> str:
-        model_class_name = to_classname(self.model.name)
-        return f"admin.site.register({model_class_name}, {model_class_name}Admin)"
+        return (
+            f"@admin.register({to_classname(self.model.name)})\r"
+            f"class {to_classname(self.model.name)}Admin(admin.ModelAdmin):\r"
+            f"    list_display=[{', '.join(list_display)}]\r"
+            f"    list_filter=[{', '.join(list_filter)}]\r"
+            f"    date_hierarchy={date_hierarchy}\r"
+            f"    fields=[{', '.join(fields)}]\r"
+            f"    search_fields=[{', '.join(search_fields)}]\r"
+            f"    \r"
+        )
+
+    # def to_admin_dot_py_register(self) -> str:
+    #     model_class_name = to_classname(self.model.name)
+    #     return f"admin.site.register({model_class_name}, {model_class_name}Admin)"
+
+
+def format_file(file: Path) -> None:
+    format_file_in_place(
+        file,
+        fast=False,
+        write_back=WriteBack.YES,
+        mode=Mode(
+            target_versions={TargetVersion.PY311},
+            line_length=80,
+            experimental_string_processing=True,
+        ),
+    )
 
 
 class ModelExporterDjango(ModelExporter):
     def export(self):
         app_dir: Path = self.create_app_dir()
-        self.create_model_py(app_dir)
-        self.create_admin_py(app_dir)
+        model_py = self.create_model_py(app_dir)
+        admin_py = self.create_admin_py(app_dir)
         self.create_views_py()
         self.patch_settings(app_dir)
+
+        format_file(model_py)
+        format_file(admin_py)
 
     def create_app_dir(self) -> Path:
         app_dir = Path(
@@ -130,7 +208,7 @@ class ModelExporterDjango(ModelExporter):
         app_dir.mkdir(exist_ok=True, parents=True)
         return app_dir
 
-    def create_model_py(self, app_dir: Path):
+    def create_model_py(self, app_dir: Path) -> Path:
 
         models_py = app_dir.joinpath("models.py")
 
@@ -149,18 +227,9 @@ class ModelExporterDjango(ModelExporter):
             output += "\r\r" + ModelTransform(model).to_model_dot_py()
 
         models_py.write_text(output)
-        format_file_in_place(
-            models_py,
-            fast=False,
-            write_back=WriteBack.YES,
-            mode=Mode(
-                target_versions={TargetVersion.PY311},
-                line_length=80,
-                experimental_string_processing=True,
-            ),
-        )
+        return models_py
 
-    def create_admin_py(self, app_dir):
+    def create_admin_py(self, app_dir) -> Path:
 
         admin_py = app_dir.joinpath("admin.py")
 
@@ -179,22 +248,8 @@ class ModelExporterDjango(ModelExporter):
                 continue
             output += "\r" + ModelTransform(model).to_admin_dot_py_class()
 
-        for model in models.all():
-            if model.exclude:
-                continue
-            output += "\r" + ModelTransform(model).to_admin_dot_py_register()
-
         admin_py.write_text(output)
-        format_file_in_place(
-            admin_py,
-            fast=False,
-            write_back=WriteBack.YES,
-            mode=Mode(
-                target_versions={TargetVersion.PY311},
-                line_length=80,
-                experimental_string_processing=True,
-            ),
-        )
+        return admin_py
 
     def create_views_py(self):
         ...
@@ -205,8 +260,11 @@ class ModelExporterDjango(ModelExporter):
         # add app to INSTALLED_APPS or for cookiecutter-django LOCAL_APPS
         # output = f"INSTALLED_APPS += ['{self.cookieCutterTemplateExpander.project_name_as_dirname()}']"
 
-        base_py = app_dir.parent.joinpath("config", "settings", "base.py")
+        # base_py = app_dir.parent.joinpath("config", "settings", "base.py")
         # open and find LOCAL_APPS and replace '# Your stuff: custom apps go here'
+
+        # solved via pathed cookiecutter template
+        ...
 
     def patch_urls_and_menu(self):
         ...
