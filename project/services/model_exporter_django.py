@@ -1,6 +1,8 @@
+import json
 import string
 from datetime import datetime
 from pathlib import Path
+from typing import List
 
 from black import Mode, TargetVersion, format_file_in_place, WriteBack
 from django.db.models import QuerySet
@@ -8,7 +10,6 @@ from django.utils.text import slugify
 
 from project.models import Model, Field
 from project.services.model_exporter import ModelExporter
-from django.conf import settings
 
 MAX_DROPDOWN_SIZE = 20
 
@@ -213,10 +214,13 @@ def format_file(file: Path) -> None:
 class ModelExporterDjango(ModelExporter):
     def export(self):
         app_dir: Path = self.create_app_dir()
+        app_dir.mkdir(parents=True, exist_ok=True)
+
         model_py = self.create_model_py(app_dir)
         admin_py = self.create_admin_py(app_dir)
         self.create_views_py()
         self.patch_settings(app_dir)
+        self.create_initial_data(app_dir)
 
         format_file(model_py)
         format_file(admin_py)
@@ -250,6 +254,33 @@ class ModelExporterDjango(ModelExporter):
 
         models_py.write_text(output)
         return models_py
+
+    def reorder_data(self, model: Model, data):
+        return data
+
+    def create_initial_data(self, app_dir: Path) -> List[Path]:
+
+        initial_data_dir = app_dir.joinpath("initial_data")
+        initial_data_dir.mkdir(parents=True, exist_ok=True)
+
+        fixtures: List[Path] = []
+        models: QuerySet[
+            Model
+        ] = self.cookieCutterTemplateExpander.project.transformationmapping.models
+        model: Model
+        for model in models.all():
+            if model.exclude:
+                continue
+            data = model.transformation_headline.content
+            data = self.reorder_data(model, data)
+            if data:
+                model_data_json = initial_data_dir.joinpath(
+                    f"{to_varname(model.name)}.json"
+                )
+                model_data_json.write_text(json.dumps(data))
+                fixtures.append(model_data_json)
+
+        return fixtures
 
     def create_admin_py(self, app_dir) -> Path:
 

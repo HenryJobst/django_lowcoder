@@ -1,4 +1,3 @@
-import json
 from pathlib import Path
 from typing import Sequence, Callable, Any, Optional, List, Tuple, Dict, Final
 
@@ -6,6 +5,7 @@ import pandas as pd
 from django.contrib import messages
 from django.http import HttpRequest
 from django.template.defaultfilters import slugify
+from django.utils.translation import gettext_lazy as _
 from pandas import ExcelFile, DataFrame
 
 from project.models import (
@@ -18,8 +18,6 @@ from project.models import (
     Field,
 )
 from project.services.import_field import ImportField
-
-from django.utils.translation import gettext_lazy as _
 
 DEFAULT_SHEET_NAME_FOR_CSV_FILE = "sheet0"
 
@@ -139,17 +137,17 @@ def create_models(
         df: DataFrame = df_tuple[0]
         settings: SheetReaderParams = df_tuple[1]
 
-        content = fixture(sheet, df)
         ts, created = TransformationSheet.objects.get_or_create(
-            transformation_file=file, index=index + 1, content=content
+            transformation_file=file, index=index + 1
         )
 
         header_offset: int = settings.get(READ_PARAM_HEADER, 0)
         skiprows: int = settings.get(READ_PARAM_SKIPROWS, 0)
         skiprows = skiprows if skiprows else 0
 
+        content = fixture(sheet, df)
         th, created = TransformationHeadline.objects.get_or_create(
-            transformation_sheet=ts, row_index=header_offset + skiprows
+            transformation_sheet=ts, row_index=header_offset + skiprows, content=content
         )
 
         # Model.objects.filter(transformation_mapping=tm, index=index).delete()

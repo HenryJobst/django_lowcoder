@@ -215,6 +215,7 @@ class Project(TimeStampMixin, models.Model):
     )
 
     projectsettings = "ProjectSettings"  # forward decl for mypy
+    transformationmapping = "TransformationMapping"  # forward decl for mypy
 
     class Meta:
         ordering = ["name"]
@@ -366,8 +367,6 @@ class TransformationSheet(models.Model):
     index = models.IntegerField()  # type: ignore
     exclude = models.BooleanField(default=False)  # type: ignore
 
-    content = models.JSONField(null=True, blank=True)
-
     class Meta:
         ordering = ["transformation_file", "index"]
         unique_together = ["transformation_file", "index"]
@@ -386,6 +385,8 @@ class TransformationHeadline(models.Model):
 
     row_index = models.IntegerField()  # type: ignore
     exclude = models.BooleanField(default=False)  # type: ignore
+
+    content = models.JSONField(null=True, blank=True)
 
     class Meta:
         ordering = ["transformation_sheet", "row_index"]
