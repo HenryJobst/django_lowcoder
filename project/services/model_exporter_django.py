@@ -263,7 +263,6 @@ class ModelExporterDjango(ModelExporter):
         initial_data_dir = app_dir.joinpath("initial_data")
         initial_data_dir.mkdir(parents=True, exist_ok=True)
 
-        fixtures: List[Path] = []
         models: QuerySet[
             Model
         ] = self.cookieCutterTemplateExpander.project.transformationmapping.models
@@ -278,9 +277,6 @@ class ModelExporterDjango(ModelExporter):
                     f"{to_varname(model.name)}.json"
                 )
                 model_data_json.write_text(json.dumps(data))
-                fixtures.append(model_data_json)
-
-        return fixtures
 
     def create_admin_py(self, app_dir) -> Path:
 
