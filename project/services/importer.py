@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from typing import Sequence, Callable, Any, Optional, List, Tuple, Dict, Final
 
@@ -83,6 +84,25 @@ class SheetReaderParams(dict):
         )
 
 
+def fixture(model_name: str, df: DataFrame):
+    df_as_dict = df.to_dict(orient="records")
+    for record in df_as_dict:
+        for key, value in record.items():
+            if str(value).lower() == "nan":
+                record[key] = None
+
+    return [
+        {
+            "model": f"{model_name}",
+            "pk": i,
+            "fields": {
+                k: None if str(v).lower() == "nan" else v for k, v in fields.items()
+            },
+        }
+        for i, fields in enumerate(df_as_dict, start=1)
+    ]
+
+
 def create_models(
     request: HttpRequest,
     file: TransformationFile,
@@ -119,8 +139,9 @@ def create_models(
         df: DataFrame = df_tuple[0]
         settings: SheetReaderParams = df_tuple[1]
 
+        content = fixture(sheet, df)
         ts, created = TransformationSheet.objects.get_or_create(
-            transformation_file=file, index=index + 1
+            transformation_file=file, index=index + 1, content=content
         )
 
         header_offset: int = settings.get(READ_PARAM_HEADER, 0)

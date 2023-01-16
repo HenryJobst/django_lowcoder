@@ -40,10 +40,8 @@ class ImportField:
         kwargs = {}
 
         if self.dtype == "object":
-            if (
-                self.has_duplicate_values
-                and self.get_duplicate_compress_ratio() < DUPLICATES_AS_ENTITY_MIN_RATIO
-            ):
+            ratio = self.get_duplicate_compress_ratio()
+            if self.has_duplicate_values and ratio < DUPLICATES_AS_ENTITY_MIN_RATIO:
                 field_type = Field.Datatype.INTEGER_FIELD
                 self.choices = {
                     i: value

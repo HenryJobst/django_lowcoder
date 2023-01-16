@@ -366,6 +366,8 @@ class TransformationSheet(models.Model):
     index = models.IntegerField()  # type: ignore
     exclude = models.BooleanField(default=False)  # type: ignore
 
+    content = models.JSONField(null=True, blank=True)
+
     class Meta:
         ordering = ["transformation_file", "index"]
         unique_together = ["transformation_file", "index"]
