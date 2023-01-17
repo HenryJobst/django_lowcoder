@@ -181,6 +181,7 @@ def create_models(
                 if import_field.field_type
                 else None,
                 "is_unique": not import_field.has_duplicate_values,
+                "default_value": None,
             }
 
             defaults.update(

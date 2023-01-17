@@ -8,12 +8,13 @@ DUPLICATES_AS_ENTITY_MIN_RATIO: Final[int] = 25
 
 
 class ImportField:
+    NULL: Final[str] = "null"
     BLANK: Final[str] = "blank"
     CHOICES: Final[str] = "choices"
     DECIMAL_PLACES: Final[str] = "decimal_places"
     MAX_DIGITS: Final[str] = "max_digits"
     MAX_LENGTH: Final[str] = "max_length"
-    NULL: Final[str] = "null"
+    DEFAULT_VALUE: Final[str] = "default_value"
 
     def __init__(self, series: Series):
         self.field_name = series.name
@@ -37,7 +38,15 @@ class ImportField:
 
     def get_field_type_and_kwargs(self):
         field_type: Field.Datatype = Field.Datatype.NONE
-        kwargs = {}
+        kwargs = {
+            self.CHOICES: None,
+            self.MAX_DIGITS: None,
+            self.MAX_LENGTH: None,
+            self.DECIMAL_PLACES: None,
+            self.NULL: False,
+            self.BLANK: False,
+            self.DEFAULT_VALUE: None,
+        }
 
         if self.dtype == "object":
             ratio = self.get_duplicate_compress_ratio()
