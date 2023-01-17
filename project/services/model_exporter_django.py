@@ -2,18 +2,16 @@ import json
 import string
 from datetime import datetime
 from pathlib import Path
-from typing import List
 
 from black import Mode, TargetVersion, format_file_in_place, WriteBack
 from django.db.models import QuerySet
 from django.utils.text import slugify
 
 from project.models import Model, Field
+from project.services.cookiecutter_template_expander import CookieCutterTemplateExpander
 from project.services.model_exporter import ModelExporter
 
 MAX_DROPDOWN_SIZE = 20
-
-APP_NAME = "core"
 
 
 def to_classname(name):
@@ -212,6 +210,10 @@ def format_file(file: Path) -> None:
 
 
 class ModelExporterDjango(ModelExporter):
+    def __init__(self, cte: CookieCutterTemplateExpander):
+        super().__init__(cte)
+        self.app_dir = cte.config.config.get("custom_app_name")
+
     def export(self):
         app_dir: Path = self.create_app_dir()
         app_dir.mkdir(parents=True, exist_ok=True)
@@ -229,7 +231,7 @@ class ModelExporterDjango(ModelExporter):
         app_dir = Path(
             self.cookieCutterTemplateExpander.expand_parameter.output_dir,
             self.cookieCutterTemplateExpander.project_name_as_dirname(),
-            APP_NAME,
+            self.app_dir,
         )
         app_dir.mkdir(exist_ok=True, parents=True)
         return app_dir
@@ -256,9 +258,16 @@ class ModelExporterDjango(ModelExporter):
         return models_py
 
     def reorder_data(self, model: Model, data):
-        return data
+        reordered_data = []
+        for row in data:
+            reordered_dict = {}
+            for k, v in row.items():
+                expanded_key = f"{self.app_dir}.{k}"
+                reordered_dict[expanded_key] = v
+            reordered_data.append(reordered_dict)
+        return reordered_data
 
-    def create_initial_data(self, app_dir: Path) -> List[Path]:
+    def create_initial_data(self, app_dir: Path) -> None:
 
         initial_data_dir = app_dir.joinpath("initial_data")
         initial_data_dir.mkdir(parents=True, exist_ok=True)
@@ -289,11 +298,11 @@ class ModelExporterDjango(ModelExporter):
         output = f"# Created by Django LowCoder at {datetime.now()}\r\r"
         output += "from django.contrib import admin\r"
         output += "from django.utils.translation import gettext_lazy as _\r"
-        output += f"from {APP_NAME}.models import *\r\r"
+        output += f"from {self.app_dir}.models import *\r\r"
 
         main_url = Path(
             "/admin/",
-            APP_NAME,
+            self.app_dir,
             to_varname(models.filter(is_main_entity=True).first().name),
         )
 

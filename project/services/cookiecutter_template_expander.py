@@ -137,7 +137,9 @@ class CookiecutterConfig:
             "ci_tool": "Gitlab",
             "keep_local_envs_in_vcs": "y",
             "debug": "n",
-            "_template": "gh:cookiecutter/cookiecutter-django",
+            "include_custom_app": "y",
+            "custom_app_name": "core",
+            "_template": "gh:HenryJobst/cookiecutter-django",
             "_output_dir": self.output_dir,
             "cookiecutters_dir": self.cookiecutters_dir,
             "replay_dir": self.replay_dir,
@@ -218,8 +220,8 @@ class CookieCutterTemplateExpander:
     def expand(self):
         try:
             CookieCutterTemplateExpander._expand(self.expand_parameter)
-        except:  # ignore error
-            ...
+        except RuntimeError as e:  # ignore error
+            print(e)
 
     @staticmethod
     def _expand(params: ExpanderParameters):

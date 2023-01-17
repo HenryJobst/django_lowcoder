@@ -12,3 +12,4 @@ output
 /django_lowcoder.log
 /staticfiles/
 /project/tests/django_lowcoder.log
+/output/cookiecutters/cookiecutter-django/
