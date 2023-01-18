@@ -24,6 +24,7 @@ from project.models import (
     VALID_MIMETYPES,
     CodeTemplate,
 )
+from project.services.deploytype import Deploytype
 from project.services.importer import *
 
 TABLE_FULL = "table-full"
@@ -114,12 +115,7 @@ class ProjectDeployForm(Form):
 
     deploy_type = TypedChoiceField(
         label=_("Deployment Type"),
-        choices=(
-            (0, _("Local Directory")),
-            (1, _("Git Repository")),
-            (2, _("Docker/Docker-Compose")),
-            (3, _("PaaS")),
-        ),
+        choices=Deploytype.choices,
         coerce=lambda x: bool(int(x)),
         widget=RadioSelect,
         initial="0",

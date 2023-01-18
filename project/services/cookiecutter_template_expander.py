@@ -18,6 +18,7 @@ from project.services.code_template_mapper import (
     COOKIECUTTERS,
     COOKIECUTTER_REPLAY,
 )
+from project.services.deploytype import Deploytype
 
 # from fs.memoryfs import MemoryFS
 
@@ -87,7 +88,9 @@ class CookiecutterConfig:
             "timezone": "UTC",
             "windows": "n",
             "use_intellij": "n",
-            "use_docker": "y" if self.post_dict["deploy_type"] == "2" else "n",
+            "use_docker": "y"
+            if self.post_dict["deploy_type"] == str(Deploytype.DOCKER.value)
+            else "n",
             "exposed_port": "8001",
             "postgresql_version": "14",
             "cloud_provider": "None",
@@ -121,7 +124,9 @@ class CookiecutterConfig:
             "timezone": "UTC",
             "windows": "n",
             "use_pycharm": "n",
-            "use_docker": "y" if self.post_dict["deploy_type"] == "2" else "n",
+            "use_docker": "y"
+            if self.post_dict["deploy_type"] == str(Deploytype.DOCKER.value)
+            else "n",
             "django_port": "8001",
             "postgresql_version": "14",
             "cloud_provider": "None",

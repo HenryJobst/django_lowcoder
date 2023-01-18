@@ -9,6 +9,7 @@ from django.utils.text import slugify
 
 from project.models import Model, Field
 from project.services.cookiecutter_template_expander import CookieCutterTemplateExpander
+from project.services.deploytype import Deploytype
 from project.services.model_exporter import ModelExporter
 
 MAX_DROPDOWN_SIZE = 20
@@ -212,7 +213,12 @@ def format_file(file: Path) -> None:
 class ModelExporterDjango(ModelExporter):
     def __init__(self, cte: CookieCutterTemplateExpander):
         super().__init__(cte)
+        self.project_dir = Path(
+            self.cookieCutterTemplateExpander.expand_parameter.output_dir,
+            self.cookieCutterTemplateExpander.project_name_as_dirname(),
+        )
         self.app_dir = cte.config.config.get("custom_app_name")
+        self.preamble = f"# Created by Django LowCoder at {datetime.now()}\r\r"
 
     def export(self):
         app_dir: Path = self.create_app_dir()
@@ -227,20 +233,25 @@ class ModelExporterDjango(ModelExporter):
         format_file(model_py)
         format_file(admin_py)
 
+        self.start_local()
+
     def create_app_dir(self) -> Path:
-        app_dir = Path(
-            self.cookieCutterTemplateExpander.expand_parameter.output_dir,
-            self.cookieCutterTemplateExpander.project_name_as_dirname(),
-            self.app_dir,
-        )
+        app_dir = self.project_dir.joinpath(self.app_dir)
         app_dir.mkdir(exist_ok=True, parents=True)
+        app_dir_init_py = app_dir.joinpath("__init__.py")
+        app_dir_init_py.write_text(self.preamble)
+
         return app_dir
 
     def create_model_py(self, app_dir: Path) -> Path:
 
-        models_py = app_dir.joinpath("models.py")
+        migrations = app_dir.joinpath("migrations")
+        migrations.mkdir(parents=True, exist_ok=True)
+        migrations_init_py = migrations.joinpath("__init__.py")
+        migrations_init_py.write_text(self.preamble)
 
-        output = f"# Created by Django LowCoder at {datetime.now()}\r\r"
+        models_py = app_dir.joinpath("models.py")
+        output = self.preamble
         output += "from django.db import models\r"
         output += "from django.utils.translation import gettext_lazy as _\r"
 
@@ -260,18 +271,26 @@ class ModelExporterDjango(ModelExporter):
     def reorder_data(self, model: Model, data):
         reordered_data = []
         for row in data:
-            reordered_dict = {}
+            patched_dict = {}
             for k, v in row.items():
-                expanded_key = f"{self.app_dir}.{k}"
-                reordered_dict[expanded_key] = v
-            reordered_data.append(reordered_dict)
+                patched_value = v
+                if k == "model":
+                    patched_value = f"{self.app_dir}.{v}"
+                elif k == "fields":
+                    patched_value = {}
+                    for fk, fv in v.items():
+                        patched_fkey = to_varname(fk)
+                        patched_value[patched_fkey] = fv
+                patched_dict[k] = patched_value
+            reordered_data.append(patched_dict)
         return reordered_data
 
     def create_initial_data(self, app_dir: Path) -> None:
 
-        initial_data_dir = app_dir.joinpath("initial_data")
+        initial_data_dir = app_dir.joinpath("fixtures")
         initial_data_dir.mkdir(parents=True, exist_ok=True)
-
+        initial_data_json = initial_data_dir.joinpath("initial_data.json")
+        initial_data = []
         models: QuerySet[
             Model
         ] = self.cookieCutterTemplateExpander.project.transformationmapping.models
@@ -282,10 +301,9 @@ class ModelExporterDjango(ModelExporter):
             data = model.transformation_headline.content
             data = self.reorder_data(model, data)
             if data:
-                model_data_json = initial_data_dir.joinpath(
-                    f"{to_varname(model.name)}.json"
-                )
-                model_data_json.write_text(json.dumps(data))
+                initial_data.append(data)
+
+        initial_data_json.write_text(json.dumps(data))
 
     def create_admin_py(self, app_dir) -> Path:
 
@@ -339,6 +357,17 @@ class ModelExporterDjango(ModelExporter):
         ...
 
     def start_local(self):
+        if self.cookieCutterTemplateExpander.post_dict["deploy_type"] == str(
+            Deploytype.DOCKER.value
+        ):
+            start_local_sh = self.project_dir.joinpath("start_local.sh")
+            output = f"#!/bin/sh\n\n"
+            output += f"{self.preamble}\n"
+            output += f"docker-compose -f local.yml build\n"
+            output += f"docker-compose -f local.yml up -d\n"
+            start_local_sh.write_text(output)
+            start_local_sh.chmod(0o774)
+
         """
         # add sqlite database entry to settings file, delete migration file with sequence
         python3.11 -m venv venv
