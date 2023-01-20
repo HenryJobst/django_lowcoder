@@ -1,0 +1,111 @@
+﻿[
+  {
+    "model": "project.codetemplateparameter",
+    "pk": 1,
+    "fields": {
+      "name": "project_name",
+      "value": "{{project_name}}",
+      "code_template_id": 3
+    }
+  },
+  {
+    "model": "project.codetemplateparameter",
+    "pk": 2,
+    "fields": {
+      "name": "description",
+      "value": "{{project_description}}",
+      "code_template_id": 3
+    }
+  },
+  {
+    "model": "project.codetemplateparameter",
+    "pk": 3,
+    "fields": {
+      "name": "app_name",
+      "value": "{{project_name}}",
+      "code_template_id": 3
+    }
+  },
+  {
+    "model": "project.codetemplateparameter",
+    "pk": 4,
+    "fields": {
+      "name": "maintainer",
+      "value": "{{author_name}}",
+      "code_template_id": 3
+    }
+  },
+  {
+    "model": "project.codetemplateparameter",
+    "pk": 5,
+    "fields": {
+      "name": "app_name_cap",
+      "value": "{{project_name}}",
+      "code_template_id": 3
+    }
+  },
+  {
+    "model": "project.codetemplateparameter",
+    "pk": 6,
+    "fields": {
+      "name": "app_name_cam",
+      "value": "{{project_name}}",
+      "code_template_id": 3
+    }
+  },
+  {
+    "model": "project.codetemplateparameter",
+    "pk": 7,
+    "fields": {
+      "name": "app_version",
+      "value": "0.0.0",
+      "code_template_id": 3
+    }
+  },
+  {
+    "model": "project.codetemplateparameter",
+    "pk": 8,
+    "fields": {
+      "name": "port",
+      "value": "8080",
+      "code_template_id": 3
+    }
+  },
+  {
+    "model": "project.codetemplateparameter",
+    "pk": 9,
+    "fields": {
+      "name": "db_username",
+      "value": "postgres",
+      "code_template_id": 3
+    }
+  },
+  {
+    "model": "project.codetemplateparameter",
+    "pk": 10,
+    "fields": {
+      "name": "db_password",
+      "value": "postgres",
+      "code_template_id": 3
+    }
+  },
+  {
+    "model": "project.codetemplateparameter",
+    "pk": 11,
+    "fields": {
+      "name": "docker_root",
+      "value": "{{project_docker_root}}",
+      "code_template_id": 3
+    }
+  },
+  {
+    "model": "project.codetemplateparameter",
+    "pk": 12,
+    "fields": {
+      "name": "host_name",
+      "value": "{{project_domain_name}}",
+      "code_template_id": 3
+    }
+  }
+  }
+]

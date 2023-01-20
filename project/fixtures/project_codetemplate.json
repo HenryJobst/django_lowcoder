@@ -1,0 +1,32 @@
+﻿[
+  {
+    "model": "project.codetemplate",
+    "pk": 1,
+    "fields": {
+      "path": "https:\/\/github.com\/HenryJobst\/cookiecutter-java-springboot.git",
+      "programming_language_id": 1,
+      "name": "cookiecutter-java-springboot",
+      "model_exporter": 1
+    }
+  },
+  {
+    "model": "project.codetemplate",
+    "pk": 2,
+    "fields": {
+      "path": "https:\/\/github.com\/HenryJobst\/cookiecutter-django-for-djlc.git",
+      "programming_language_id": 2,
+      "name": "cookiecutter-django-for-djlc",
+      "model_exporter": 2
+    }
+  },
+  {
+    "model": "project.codetemplate",
+    "pk": 3,
+    "fields": {
+      "path": "https:\/\/github.com\/danielbrackin\/cookiecutter-spring-boot-master.git",
+      "programming_language_id": 1,
+      "name": "cookiecutter-spring-boot",
+      "model_exporter": 1
+    }
+  }
+]

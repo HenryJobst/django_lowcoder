@@ -1,4 +1,0 @@
-"id", "name", "path", "programming_language","model_exporter"
-1, cookiecutter-java-sprngboot, https://github.com/HenryJobst/cookiecutter-java-springboot.git,1,1
-2, cookiecutter-django, https://github.com/HenryJobst/cookiecutter-django-for-djlc.git,2,2
-3, cookiecutter-spring-boot, https://github.com/danielbrackin/cookiecutter-spring-boot-master.git,1,1
