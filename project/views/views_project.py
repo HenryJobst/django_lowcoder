@@ -2,11 +2,11 @@ from typing import (
     ClassVar,
     Generic,
     TypeVar,
-    )
+)
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import QuerySet
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, FileResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import DetailView, ListView
@@ -16,7 +16,7 @@ from django.views.generic.edit import (
     DeleteView,
     UpdateView,
     FormView,
-    )
+)
 
 from project.forms.forms_project import *
 from project.models import *
@@ -272,13 +272,13 @@ class ProjectDeployView(
         cte: CookieCutterTemplateExpander = prepare_deploy_project(
             self.request, self.request.user, project, self.request.POST
         )
-        deploy_project(cte)
-        # self.request.session[str(cte.id)] = cte
-        # return HttpResponseRedirect(
-        #     reverse_lazy(
-        #         "project_deploy_summary", kwargs={"pk": project.pk, "cte": str(cte.id)}
-        #     )
-        # )
+        result: str = deploy_project(cte)
+        if result and Path(result).exists():
+            return FileResponse(
+                Path(result).open(mode="rb"),
+                as_attachment=True,
+                filename=f"{project.slug()}.zip",
+            )
         return super().form_valid(form)
 
     def get_object(self):

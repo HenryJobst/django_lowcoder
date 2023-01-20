@@ -1,8 +1,11 @@
+from pathlib import Path
+from shutil import make_archive
 from typing import Any
 
 from django.contrib import messages
 from django.http import QueryDict, HttpRequest
 from django.utils.translation import gettext_lazy as _
+from slugify import slugify
 
 from project.models import Project, CodeTemplate
 from project.services.cookiecutter_template_expander import CookieCutterTemplateExpander
@@ -17,10 +20,12 @@ def prepare_deploy_project(
     return CookieCutterTemplateExpander(request, user, project, post_dict)
 
 
-def deploy_project(cookiecutter_template_expander: CookieCutterTemplateExpander):
+def deploy_project(
+    cookiecutter_template_expander: CookieCutterTemplateExpander,
+) -> Path:
     cookiecutter_template_expander.expand()
 
-    model_exporter: ModelExporter = None
+    model_exporter: ModelExporter | None = None
     if (
         cookiecutter_template_expander.config.code_template.model_exporter
         == CodeTemplate.ModelExporterClass.JPA
@@ -42,4 +47,12 @@ def deploy_project(cookiecutter_template_expander: CookieCutterTemplateExpander)
         )
 
     if model_exporter:
-        model_exporter.export()
+        project_path = model_exporter.export()
+        project_zip_file = Path(
+            cookiecutter_template_expander.expand_parameter.output_dir
+        ).joinpath(
+            str(slugify(str(cookiecutter_template_expander.user.username)))
+            + "_"
+            + cookiecutter_template_expander.config.project.slug()
+        )
+        return make_archive(project_zip_file, "zip", project_path)

@@ -220,7 +220,7 @@ class ModelExporterDjango(ModelExporter):
         self.app_dir = cte.config.config.get("custom_app_name")
         self.preamble = f"# Created by Django LowCoder at {datetime.now()}\r\r"
 
-    def export(self):
+    def export(self) -> Path | None:
         app_dir: Path = self.create_app_dir()
         app_dir.mkdir(parents=True, exist_ok=True)
 
@@ -233,7 +233,9 @@ class ModelExporterDjango(ModelExporter):
         format_file(model_py)
         format_file(admin_py)
 
-        self.start_local()
+        self.create_start_local()
+
+        return self.project_dir
 
     def create_app_dir(self) -> Path:
         app_dir = self.project_dir.joinpath(self.app_dir)
@@ -356,7 +358,7 @@ class ModelExporterDjango(ModelExporter):
     def patch_urls_and_menu(self):
         ...
 
-    def start_local(self):
+    def create_start_local(self):
         if self.cookieCutterTemplateExpander.post_dict["deploy_type"] == str(
             Deploytype.DOCKER.value
         ):
