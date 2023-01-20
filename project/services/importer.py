@@ -198,15 +198,6 @@ def create_models(
                 defaults=defaults,
             )
 
-            if created:
-                messages.info(
-                    request, _("Column %(name)s was created.") % {"name": field.name}
-                )
-            else:
-                messages.info(
-                    request, _("Column %(name)s was updated.") % {"name": field.name}
-                )
-
 
 class Importer:
     def __init__(self, filepath: Path):

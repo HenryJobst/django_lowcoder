@@ -133,7 +133,7 @@ class ProjectDeployForm(Form):
                 LayoutField("app_type"),
                 LayoutField("deploy_type"),
             ),
-            Submit("submit", _("Start")),
+            Submit("submit", _("Start"), css_class="spinner-btn"),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'index\' %}">'
                 + _("Cancel")

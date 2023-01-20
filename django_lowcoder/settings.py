@@ -13,10 +13,9 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 import os
 from pathlib import Path
 
-# import dj_database_url
-
 # noinspection PyPackageRequirements
 import environ  # type: ignore
+from django.contrib.messages import constants as message_constants
 from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -221,3 +220,11 @@ LANGUAGES = [
     ("de", _("German")),
     ("en", _("English")),
 ]
+
+MESSAGE_TAGS = {
+    message_constants.DEBUG: "debug",
+    message_constants.INFO: "info",
+    message_constants.SUCCESS: "success",
+    message_constants.WARNING: "warning",
+    message_constants.ERROR: "danger",
+}

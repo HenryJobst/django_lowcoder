@@ -278,6 +278,7 @@ class ProjectDeployView(
                 Path(result).open(mode="rb"),
                 as_attachment=True,
                 filename=f"{project.slug()}.zip",
+                content_type="application/zip",
             )
         return super().form_valid(form)
 
