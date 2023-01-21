@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import slugify
 from cookiecutter.main import cookiecutter  # type: ignore
 from django.contrib.auth.models import User
 from django.http import QueryDict, HttpRequest

@@ -406,6 +406,13 @@ class TransformationColumn(models.Model):
     )
 
     field: "Field"  # forward decl for mypy
+
+    name = models.CharField(  # type: ignore
+        _("name"),
+        max_length=100,
+        validators=[MinLengthValidator(MIN_FIELD_NAME_LENGTH)],
+    )
+
     exclude = models.BooleanField(default=False)  # type: ignore
 
     class Meta:

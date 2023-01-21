@@ -138,10 +138,6 @@ class ModelTransform:
         s += "\r\r    "
         s += "__str__ = __repr__ = lambda self: f'{self.id}'"
 
-        # s += f"\r\r    "
-        # s += "def __str__(self):"
-        # s += "\r        return f'{self.id}'"
-
         return s
 
     def to_admin_dot_py_class(self) -> str:
@@ -270,6 +266,15 @@ class ModelExporterDjango(ModelExporter):
         models_py.write_text(output)
         return models_py
 
+    def reverse_dict_value(self, value, choices):
+        for k, v in choices.items():
+            if v == value:
+                return k
+        return None
+
+    def reverse_fk_value(self, value, fk):
+        return fk.get_object(value)
+
     def reorder_data(self, model: Model, data):
         reordered_data = []
         for row in data:
@@ -280,9 +285,25 @@ class ModelExporterDjango(ModelExporter):
                     patched_value = f"{self.app_dir}.{v}"
                 elif k == "fields":
                     patched_value = {}
-                    for fk, fv in v.items():
-                        patched_fkey = to_varname(fk)
-                        patched_value[patched_fkey] = fv
+                    for field in model.fields.all():
+                        if field.exclude:
+                            continue
+                        original_value = v.get(field.transformation_column.name, None)
+                        if field.choices:
+                            reverse_dict_value = self.reverse_dict_value(
+                                original_value, field.choices
+                            )
+                            if field.datatype == Field.Datatype.INTEGER_FIELD.value:
+                                reverse_dict_value = int(reverse_dict_value)
+                            patched_value[to_varname(field.name)] = reverse_dict_value
+                        elif field.foreign_key_entity:
+                            patched_value[
+                                to_varname(field.name)
+                            ] = self.reverse_fk_value(
+                                original_value, field.foreign_key_entity
+                            )
+                        else:
+                            patched_value[to_varname(field.name)] = original_value
                 patched_dict[k] = patched_value
             reordered_data.append(patched_dict)
         return reordered_data

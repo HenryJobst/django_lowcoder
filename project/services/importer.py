@@ -171,7 +171,9 @@ def create_models(
             import_field = ImportField(df[col])
 
             tc, created = TransformationColumn.objects.get_or_create(
-                transformation_headline=th, column_index=col_index
+                transformation_headline=th,
+                column_index=col_index,
+                name=import_field.field_name,
             )
 
             defaults = {
