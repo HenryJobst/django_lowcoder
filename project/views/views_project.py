@@ -9,6 +9,7 @@ from django.db.models import QuerySet
 from django.http import HttpResponse, HttpResponseRedirect, FileResponse
 from django.shortcuts import redirect
 from django.utils.translation import gettext_lazy as _
+from django.views import View
 from django.views.generic import DetailView, ListView
 from django.views.generic.detail import BaseDetailView
 from django.views.generic.edit import (
@@ -27,6 +28,8 @@ from project.services.import_file import import_file
 from project.services.importer import *
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
+
+DOWNLOAD = "download"
 
 SHEET_PARAMS = "sheet_params"
 NEXT_URL_PARAM = "next"
@@ -274,11 +277,15 @@ class ProjectDeployView(
         )
         result: str = deploy_project(cte)
         if result and Path(result).exists():
-            return FileResponse(
-                Path(result).open(mode="rb"),
-                as_attachment=True,
-                filename=f"{project.slug()}.zip",
-                content_type="application/zip",
+            self.request.session[DOWNLOAD] = result
+            url = reverse_lazy(
+                "project_deploy_result",
+                kwargs={"pk": project.pk},
+            )
+            messages.success(
+                self.request,
+                _("Your generated project is here: %(link)s")
+                % {"link": f"<a href='{url}'>{project.deploy_filename()}</a>"},
             )
         return super().form_valid(form)
 
@@ -288,37 +295,25 @@ class ProjectDeployView(
         return project
 
 
-class ProjectDeploySummaryView(
-    LoginRequiredMixin,
-    ProjectListMixin,
-    ModelUserFieldPermissionMixin,
-    ProjectSelectionMixin,
-    FormView,
+class ProjectDeployResultView(
+    LoginRequiredMixin, ProjectViewMixin, ModelUserFieldPermissionMixin, View
 ):
-
-    template_name = "project/project_deploy.html"
-    form_class = ProjectDeploySummaryForm
     model = Project
 
-    def get_initial(self) -> dict[str, Any]:
-        initial = super().get_initial()
-        if "cte" not in self.kwargs:
-            raise ValueError(_("Invalid navigation"))
-        cte = self.request.session[self.kwargs["cte"]]
-        if not cte:
-            raise ValueError(_("Invalid session"))
-        initial["cte"] = cte
-        return initial
-
-    def form_valid(self, form):
-        cte: CookieCutterTemplateExpander = self.request.session[self.kwargs["cte"]]
-        cte.expand()
-        return super().form_valid(form)
-
     def get_object(self):
+        return get_object_or_404(Project, *self.args, **self.kwargs)
+
+    # noinspection PyUnusedLocal
+    def get(self, request, *args, **kwargs):
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore
-        set_selection(self.request, project.pk)
-        return project
+        if DOWNLOAD in self.request.session:
+            file = self.request.session[DOWNLOAD]
+            return FileResponse(
+                Path(file).open(mode="rb"),
+                as_attachment=True,
+                filename=project.deploy_filename(),
+                content_type="application/zip",
+            )
 
 
 class ProjectSelectView(

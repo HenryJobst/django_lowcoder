@@ -228,6 +228,9 @@ class Project(TimeStampMixin, models.Model):
     def slug(self):
         return slugify(self.name).replace("-", "_")
 
+    def deploy_filename(self):
+        return f"{self.slug()}.zip"
+
 
 def generate_random_admin_password():
     return uuid4().hex[0:24]

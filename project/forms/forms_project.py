@@ -133,7 +133,11 @@ class ProjectDeployForm(Form):
                 LayoutField("app_type"),
                 LayoutField("deploy_type"),
             ),
-            Submit("submit", _("Start"), css_class="spinner-btn"),
+            Submit(
+                "submit",
+                _("Start"),
+                css_class="spinner-btn",
+            ),
             HTML(
                 '<a class="btn btn-secondary" href="{% url \'index\' %}">'
                 + _("Cancel")
@@ -143,30 +147,6 @@ class ProjectDeployForm(Form):
 
     class Meta:
         fields = ["app_type", "deploy_type"]
-
-
-class ProjectDeploySummaryForm(Form):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper(self)
-        self.helper.form_method = "post"
-        self.helper.form_class = "w-100 m-auto"
-        self.helper.layout = Layout(
-            Fieldset(
-                _("Generate Project"),
-                HTML(_("Summary")),
-                HTML(""" ... """),
-            ),
-            Submit("submit", _("Start")),
-            HTML(
-                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
-                + _("Cancel")
-                + "</a>"
-            ),
-        )
-
-    class Meta:
-        fields = []
 
 
 class ProjectEditSettingsForm(ModelForm):
@@ -646,7 +626,7 @@ class ProjectImportFileForm(Form):
                 label=_("Table Head"),
                 help_text=_("Row for the table header (0-based)"),
                 required=True,
-                initial=settings.get(READ_PARAM_HEADER),
+                initial=settings.get(READ_PARAM_HEADER, 0),
                 min_value=0,
             ),
         )
@@ -691,7 +671,7 @@ class ProjectImportFileForm(Form):
                     "Number of skipped rows an the end of the table (0: skip no rows)"
                 ),
                 required=True,
-                initial=settings.get(READ_PARAM_SKIPFOOTER),
+                initial=settings.get(READ_PARAM_SKIPFOOTER, 0),
                 min_value=0,
             ),
         )

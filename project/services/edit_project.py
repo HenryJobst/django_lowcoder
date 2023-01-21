@@ -22,7 +22,7 @@ def prepare_deploy_project(
 
 def deploy_project(
     cookiecutter_template_expander: CookieCutterTemplateExpander,
-) -> Path:
+) -> str:
     cookiecutter_template_expander.expand()
 
     model_exporter: ModelExporter | None = None
@@ -55,4 +55,4 @@ def deploy_project(
             + "_"
             + cookiecutter_template_expander.config.project.slug()
         )
-        return make_archive(project_zip_file, "zip", project_path)
+        return make_archive(str(project_zip_file), "zip", project_path)

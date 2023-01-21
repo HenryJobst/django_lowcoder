@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-01-11 23:14+0000\n"
-"PO-Revision-Date: 2023-01-10 22:18+0000\n"
+"PO-Revision-Date: 2023-01-21 11:36+0000\n"
 "Last-Translator:   <dlc_admin@jobst-berlin.de>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -99,7 +99,7 @@ msgstr "Start"
 
 #: project/forms/forms_project.py:178
 msgid "Summary"
-msgstr ""
+msgstr "Zusammenfassung"
 
 #: project/forms/forms_project.py:201
 msgid "Project settings"
@@ -115,20 +115,20 @@ msgid "Main Table"
 msgstr "Haupttabelle"
 
 #: project/forms/forms_project.py:274
-#, fuzzy, python-format
+#, python-format
 #| msgid "Are you really shure to delete the project <b>%(name)s</b>?"
 msgid "Are you really shure to delete the table <b>%(name)s</b>?)"
-msgstr "Sind Sie sicher, das Sie das Projekt <b>%(name)s</b> löschen wollen?"
+msgstr "Sind Sie sicher, das Sie die Tabelle <b>%(name)s</b> löschen wollen?"
 
 #: project/forms/forms_project.py:309
 msgid "Column"
 msgstr "Spalte"
 
 #: project/forms/forms_project.py:402
-#, fuzzy, python-format
+#, python-format
 #| msgid "Are you really shure to delete the project <b>%(name)s</b>?"
 msgid "Are you really shure to delete the column <b>%(name)s</b>?"
-msgstr "Sind Sie sicher, das Sie das Projekt <b>%(name)s</b> löschen wollen?"
+msgstr "Sind Sie sicher, das Sie die Spalte <b>%(name)s</b> löschen wollen?"
 
 #: project/forms/forms_project.py:420
 msgid "File"
@@ -139,10 +139,10 @@ msgid "Select a file for import."
 msgstr "Wählen Sie eine Datei für den Import"
 
 #: project/forms/forms_project.py:462
-#, fuzzy, python-format
+#, python-format
 #| msgid "Are you really shure to delete the project <b>%(name)s</b>?"
 msgid "Are you really shure to delete the file <b>%(name)s</b>?"
-msgstr "Sind Sie sicher, das Sie das Projekt <b>%(name)s</b> löschen wollen?"
+msgstr "Sind Sie sicher, das Sie die Datei <b>%(name)s</b> löschen wollen?"
 
 #: project/forms/forms_project.py:534
 msgid "Import Settings"
@@ -269,15 +269,15 @@ msgstr "Pfad"
 
 #: project/models.py:129
 msgid "Java JPA Entities"
-msgstr ""
+msgstr "Java JPA Entitäten"
 
 #: project/models.py:133
 msgid "Python Django Models"
-msgstr ""
+msgstr "Python Django Modelle"
 
 #: project/models.py:137
 msgid "model exporter type"
-msgstr ""
+msgstr "Datenmodel-Export-Typ"
 
 #: project/models.py:147
 #, python-format
@@ -371,7 +371,8 @@ msgstr "Demo-Benutzer Passwort"
 
 #: project/models.py:289
 msgid "Set no password to disable creation of a demo user!"
-msgstr "Kein Passwort setzen um die Erzeugung eines Benutzers zu deaktivieren!"
+msgstr ""
+"Kein Passwort setzen um die Erzeugung eines Benutzers zu deaktivieren!"
 
 #: project/models.py:293
 msgid "docker root"
@@ -440,11 +441,11 @@ msgstr "Spalte"
 
 #: project/models.py:481
 msgid "None"
-msgstr ""
+msgstr "Nichts"
 
 #: project/models.py:608
 msgid "(Unknown)"
-msgstr ""
+msgstr "(Unbekannt)"
 
 #: project/models.py:633
 msgid "transformation column"
@@ -532,39 +533,41 @@ msgid ""
 "Invalid mapping for Code Template: %(ct)s, Parameter: %(param_name)s Value: "
 "%(param_value)s"
 msgstr ""
-"Ungültiges Mapping im Code-Template: %(ct)s, Parameter: %(param_name)s Wert: "
-"%(param_value)s"
+"Ungültiges Mapping im Code-Template: %(ct)s, Parameter: %(param_name)s Wert:"
+" %(param_value)s"
 
 #: project/services/code_template_mapper.py:109
 #, python-format
 msgid ""
-"No mapping found for Code Template: %(ct)s, Parameter: %(param_name)s Value: "
-"%(param_value)s"
+"No mapping found for Code Template: %(ct)s, Parameter: %(param_name)s Value:"
+" %(param_value)s"
 msgstr ""
 "Kein passendes Mapping zum Parameterwert gefunden im Code-Template: %(ct)s, "
 "Parameter: %(param_name)s Wert: %(param_value)s"
 
 #: project/services/edit_project.py:39
 msgid ""
-"No ModelExpander class for the given programming language available! Contact "
-"support for further help."
+"No ModelExpander class for the given programming language available! Contact"
+" support for further help."
 msgstr ""
+"Es ist für das ausgewählte Code-Template noch kein passender Datenmodel-"
+"Export verfügbar. Bitte wenden Sie sich an den Support."
 
 #: project/services/import_file.py:30
 msgid "Error"
 msgstr "Fehler"
 
 #: project/services/importer.py:183
-#, fuzzy, python-format
+#, python-format
 #| msgid "Column: %(name)s"
 msgid "Column %(name)s was created."
-msgstr "Spalte: %(name)s"
+msgstr "Spalte %(name)s wurde erzeugt."
 
 #: project/services/importer.py:187
-#, fuzzy, python-format
+#, python-format
 #| msgid "Column: %(name)s"
 msgid "Column %(name)s was updated."
-msgstr "Spalte: %(name)s"
+msgstr "Spalte %(name)s wurde aktualisiert."
 
 #: project/templates/403.html:5
 msgid "Access forbidden (Error: 403)"
@@ -911,21 +914,8 @@ msgstr "Django-LowCoder - Registrieren"
 
 #: project/views/views_project.py:358
 msgid "Invalid navigation"
-msgstr ""
+msgstr "Ungültige Navigation"
 
 #: project/views/views_project.py:361
 msgid "Invalid session"
-msgstr ""
-
-#, python-format
-#~ msgid "Table: %(name)s"
-#~ msgstr "Tabelle: %(name)s"
-
-#, python-format
-#~ msgid ""
-#~ "\n"
-#~ "  Description: %(object.description)s\n"
-#~ "  "
-#~ msgstr ""
-#~ "\n"
-#~ "Beschreibung: %(object.description)s"
+msgstr "Ungültige Sitzung"
