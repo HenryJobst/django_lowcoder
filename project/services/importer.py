@@ -1,3 +1,4 @@
+import datetime
 from pathlib import Path
 from typing import Sequence, Callable, Any, Optional, List, Tuple, Dict, Final
 
@@ -5,7 +6,6 @@ import pandas as pd
 from django.contrib import messages
 from django.http import HttpRequest
 from django.template.defaultfilters import slugify
-from django.utils.translation import gettext_lazy as _
 from pandas import ExcelFile, DataFrame
 
 from project.models import (
@@ -84,10 +84,21 @@ class SheetReaderParams(dict):
 
 def fixture(model_name: str, df: DataFrame):
     df_as_dict = df.to_dict(orient="records")
+    patched_df = []
     for record in df_as_dict:
-        for key, value in record.items():
-            if str(value).lower() == "nan":
-                record[key] = None
+        patched_dict = {}
+        for k, v in record.items():
+            patched_val = v
+            if str(v).lower() == "nan":
+                patched_val = None
+            else:
+                # convert date, time and datetime to string,
+                # otherwise it is not serializable
+                if isinstance(v, datetime.datetime):
+                    patched_val = v.isoformat()
+
+            patched_dict[k] = patched_val
+        patched_df.append(patched_dict)
 
     return [
         {
@@ -97,7 +108,7 @@ def fixture(model_name: str, df: DataFrame):
                 k: None if str(v).lower() == "nan" else v for k, v in fields.items()
             },
         }
-        for i, fields in enumerate(df_as_dict, start=1)
+        for i, fields in enumerate(patched_df, start=1)
     ]
 
 
@@ -147,7 +158,9 @@ def create_models(
 
         content = fixture(sheet, df)
         th, created = TransformationHeadline.objects.get_or_create(
-            transformation_sheet=ts, row_index=header_offset + skiprows, content=content
+            transformation_sheet=ts,
+            row_index=header_offset + skiprows,
+            defaults={"content": content},
         )
 
         # Model.objects.filter(transformation_mapping=tm, index=index).delete()
@@ -173,7 +186,7 @@ def create_models(
             tc, created = TransformationColumn.objects.get_or_create(
                 transformation_headline=th,
                 column_index=col_index,
-                name=import_field.field_name,
+                defaults={"name": import_field.field_name},
             )
 
             defaults = {
@@ -194,7 +207,7 @@ def create_models(
                 }
             )
 
-            field, created = Field.objects.update_or_create(
+            Field.objects.update_or_create(
                 model=model,
                 index=col_index + 1,
                 defaults=defaults,

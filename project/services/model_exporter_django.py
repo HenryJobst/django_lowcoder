@@ -7,7 +7,7 @@ from black import Mode, TargetVersion, format_file_in_place, WriteBack
 from django.db.models import QuerySet
 from django.utils.text import slugify
 
-from project.models import Model, Field
+from project.models import Model, Field, Project, ProjectSettings
 from project.services.cookiecutter_template_expander import CookieCutterTemplateExpander
 from project.services.deploytype import Deploytype
 from project.services.model_exporter import ModelExporter
@@ -206,6 +206,60 @@ def format_file(file: Path) -> None:
     )
 
 
+def reverse_dict_value(value, choices):
+    for k, v in choices.items():
+        if v == value:
+            return k
+    return None
+
+
+def reverse_fk_value(value, fk):
+    return fk.get_object(value)
+
+
+def init_postgres_docker(project: Project, **kwargs) -> str:
+    indent = ""
+    if "indent_level" in kwargs:
+        indent = " " * 4 * int(kwargs["indent_level"])
+
+    db_container_name = to_varname(project.name) + "-postgres"
+    output = (
+        f"{indent}if [ ! \"$(docker ps -a -q -f name='{db_container_name}')\" ]; then\n"
+    )
+    output += f"{indent}    if [ \"$(docker ps -aq -f status=exited -f name='{db_container_name}')\" ]; then\n"
+    output += f"{indent}        docker rm {db_container_name}\n"
+    output += f"{indent}    fi\n"
+    output += (
+        f"{indent}    docker run --name {db_container_name} -p 5432:5432 -e POSTGRES_USER=postgres -e "
+        f"POSTGRES_PASSWORD=postgres -e POSTGRES_DB={db_container_name} -d"
+        f" postgres\n"
+    )
+    output += f"{indent}sleep 5\n"
+    output += f"{indent}fi\n"
+    output += f"{indent}export DATABASE_URL='postgres://postgres:postgres@127.0.0.1:5432/{db_container_name}'\n"
+    return output
+
+
+def init_sqlitedb(project: Project, **kwargs) -> str:
+    indent = ""
+    if "indent_level" in kwargs:
+        indent = " " * 4 * int(kwargs["indent_level"])
+    output = f"{indent}export DATABASE_URL='sqlite:///{to_varname(project.name)}-db.sqlite3'\n"
+    return output
+
+
+def init_database_url(project: Project) -> str:
+    output = (
+        f"if curl -s --unix-socket /var/run/docker.sock http/_ping 2>&1 >/dev/null\n"
+    )
+    output += f"then\n"
+    output += init_postgres_docker(project, indent_level=1)
+    output += "else\n"
+    output += init_sqlitedb(project, indent_level=1)
+    output += "fi\n\n"
+    return output
+
+
 class ModelExporterDjango(ModelExporter):
     def __init__(self, cte: CookieCutterTemplateExpander):
         super().__init__(cte)
@@ -266,15 +320,6 @@ class ModelExporterDjango(ModelExporter):
         models_py.write_text(output)
         return models_py
 
-    def reverse_dict_value(self, value, choices):
-        for k, v in choices.items():
-            if v == value:
-                return k
-        return None
-
-    def reverse_fk_value(self, value, fk):
-        return fk.get_object(value)
-
     def reorder_data(self, model: Model, data):
         reordered_data = []
         for row in data:
@@ -290,16 +335,14 @@ class ModelExporterDjango(ModelExporter):
                             continue
                         original_value = v.get(field.transformation_column.name, None)
                         if field.choices:
-                            reverse_dict_value = self.reverse_dict_value(
+                            rev_dict_value = reverse_dict_value(
                                 original_value, field.choices
                             )
                             if field.datatype == Field.Datatype.INTEGER_FIELD.value:
-                                reverse_dict_value = int(reverse_dict_value)
-                            patched_value[to_varname(field.name)] = reverse_dict_value
+                                rev_dict_value = int(rev_dict_value)
+                            patched_value[to_varname(field.name)] = rev_dict_value
                         elif field.foreign_key_entity:
-                            patched_value[
-                                to_varname(field.name)
-                            ] = self.reverse_fk_value(
+                            patched_value[to_varname(field.name)] = reverse_fk_value(
                                 original_value, field.foreign_key_entity
                             )
                         else:
@@ -324,9 +367,9 @@ class ModelExporterDjango(ModelExporter):
             data = model.transformation_headline.content
             data = self.reorder_data(model, data)
             if data:
-                initial_data.append(data)
+                initial_data.extend(data)
 
-        initial_data_json.write_text(json.dumps(data))
+        initial_data_json.write_text(json.dumps(initial_data))
 
     def create_admin_py(self, app_dir) -> Path:
 
@@ -380,25 +423,49 @@ class ModelExporterDjango(ModelExporter):
         ...
 
     def create_start_local(self):
+        project: Project = self.cookieCutterTemplateExpander.project
+        prj_settings: ProjectSettings = project.projectsettings
         if self.cookieCutterTemplateExpander.post_dict["deploy_type"] == str(
             Deploytype.DOCKER.value
         ):
             start_local_sh = self.project_dir.joinpath("start_local.sh")
-            output = f"#!/bin/sh\n\n"
+            output = f"#!/bin/bash\n\n"
             output += f"{self.preamble}\n"
             output += f"docker-compose -f local.yml build\n"
             output += f"docker-compose -f local.yml up -d\n"
             start_local_sh.write_text(output)
             start_local_sh.chmod(0o774)
+        elif self.cookieCutterTemplateExpander.post_dict["deploy_type"] == str(
+            Deploytype.LOCAL.value
+        ):
+            start_local_sh = self.project_dir.joinpath("start_local.sh")
+            output = f"#!/bin/bash\n\n"
+            output += f"{self.preamble}\n"
+            output += f"python3.11 -m venv venv\n"
+            output += f"source venv/bin/activate\n"
+            output += f"pip3.11 install --upgrade pip\n"
+            output += f"pip3.11 install -r requirements/local.txt\n"
+            output += init_database_url(project)
+            output += f"export DJANGO_SETTINGS_MODULE=config.settings.local\n"
+            output += f"python3.11 manage.py makemigrations\n"
+            output += f"python3.11 manage.py migrate\n"
+            output += (
+                f"export DJANGO_SUPERUSER_PASSWORD={prj_settings.admin_password}\n"
+            )
 
-        """
-        # add sqlite database entry to settings file, delete migration file with sequence
-        python3.11 -m venv venv
-        source venv/bin/activate
-        pip3.11 install -r requirements/local.txt
-        # pip3.11 install --upgrade pip
-        python3.11 manage.py makemigrations --settings config.settings.local
-        python3.11 manage.py migrate --settings config.settings.local
-        python3.11 manage.py createsuperuser --settings config.settings.local
-        python3.11 manage.py runserver --settings config.settings.local
-        """
+            email = (
+                f"--email {prj_settings.admin_email}"
+                if prj_settings.admin_email
+                else "--email xxx@xxx.org"
+            )
+            output += (
+                f"python3.11 manage.py createsuperuser --username {prj_settings.admin_name} "
+                f"{email} "
+                f"--skip-checks "
+                f"--no-input\n"
+            )
+            output += f"python3.11 manage.py loaddata --app core initial_data\n"
+            output += f"python3.11 manage.py runserver 127.0.0.1:8080"
+
+            start_local_sh.write_text(output)
+            start_local_sh.chmod(0o774)

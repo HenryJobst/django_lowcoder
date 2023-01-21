@@ -271,11 +271,14 @@ class ProjectSettings(models.Model):
         validators=[MinLengthValidator(MIN_USER_NAME_LENGTH)],
     )
     admin_password = models.CharField(  # type: ignore
-        _("admin password"),
+        _("admin user password"),
         max_length=100,
         default=settings.DEFAULT_ADMIN_PASSWORD,
         validators=[MinLengthValidator(MIN_PASSWORD_LENGTH)],
     )
+
+    admin_email = models.EmailField(_("admin user email"), null=True, blank=True)
+
     demo_user_name = models.CharField(  # type: ignore
         _("demo user name"),
         max_length=60,

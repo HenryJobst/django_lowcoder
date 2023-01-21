@@ -1,4 +1,5 @@
 # Code is based on Field class of 'https://github.com/johncmacy/django-from-excel'
+import sys
 from typing import Final
 
 from pandas import Series
@@ -102,8 +103,10 @@ class ImportField:
             kwargs[self.MAX_DIGITS] = max_digits
             kwargs[self.DECIMAL_PLACES] = decimal_places
 
-        elif self.dtype == "datetime64[ns]":
+        elif self.dtype == "datetime64[ns]" or self.dtype == "datetime64[ns, tz]":
             field_type = Field.Datatype.DATE_TIME_FIELD
+        else:
+            sys.stdout.write(f"unhandled dtype")
 
         if self.is_nullable:
             kwargs[self.NULL] = True

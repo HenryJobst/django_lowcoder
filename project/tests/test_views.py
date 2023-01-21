@@ -100,11 +100,11 @@ class TestProjectViews(TestCase):
         # noinspection PyUnresolvedReferences
         assert response.url == f"/project/{self.a_project.pk}"
 
-    @skipIf(True, "Translation not available yet.")
     def test_get_delete_project(self):
         response = self.client.get(f"/project/{self.a_project.pk}/delete")
 
-        self.assertContains(response, "sicher", html=True)
+        assert response.status_code == 200
+        # self.assertContains(response, "sicher", html=True)
 
     def test_post_delete_project(self):
         response = self.client.post(f"/project/{self.a_project.pk}/delete")
@@ -141,4 +141,11 @@ class TestProjectViews(TestCase):
         field = FieldFactory()
         self.client.force_login(field.model.transformation_mapping.project.user)
         response = self.client.get(f"/project/field/{field.pk}/edit")
+        assert response.status_code == 200
+
+    def test_get_delete_field(self):
+        field = FieldFactory()
+        self.client.force_login(field.model.transformation_mapping.project.user)
+        response = self.client.get(f"/field/{field.pk}/delete")
+
         assert response.status_code == 200

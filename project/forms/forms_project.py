@@ -159,6 +159,7 @@ class ProjectEditSettingsForm(ModelForm):
             Fieldset(
                 _("Project settings"),
                 FloatingField("admin_name"),
+                FloatingField("admin_email"),
                 FloatingField("admin_password"),
                 FloatingField("demo_user_name"),
                 FloatingField("demo_user_password"),
@@ -177,6 +178,7 @@ class ProjectEditSettingsForm(ModelForm):
         model = ProjectSettings
         fields = [
             "admin_name",
+            "admin_email",
             "admin_password",
             "demo_user_name",
             "demo_user_password",
