@@ -3,11 +3,18 @@ from shutil import make_archive
 from typing import Any
 
 from django.contrib import messages
+from django.conf import settings
 from django.http import QueryDict, HttpRequest
+from django.db import models
 from django.utils.translation import gettext_lazy as _
 from slugify import slugify
 
-from project.models import Project, CodeTemplate
+from project.models import (
+    Project,
+    CodeTemplate,
+    TransformationMapping,
+    deployed_archive_user_directory_path,
+)
 from project.services.cookiecutter_template_expander import CookieCutterTemplateExpander
 from project.services.model_exporter import ModelExporter
 from project.services.model_exporter_django import ModelExporterDjango
@@ -48,11 +55,12 @@ def deploy_project(
 
     if model_exporter:
         project_path = model_exporter.export()
-        project_zip_file = Path(
-            cookiecutter_template_expander.expand_parameter.output_dir
-        ).joinpath(
-            str(slugify(str(cookiecutter_template_expander.user.username)))
-            + "_"
-            + cookiecutter_template_expander.config.project.slug()
+        project: Project = cookiecutter_template_expander.config.project
+        tm: TransformationMapping = project.transformationmapping
+        project_zip_file = Path(settings.MEDIA_ROOT).joinpath(
+            deployed_archive_user_directory_path(tm, project.slug())
         )
-        return make_archive(str(project_zip_file), "zip", project_path)
+        archive = make_archive(str(project_zip_file), "zip", project_path)
+        tm.deployed_archive.name = str(project_zip_file) + ".zip"
+        tm.save()
+        return archive

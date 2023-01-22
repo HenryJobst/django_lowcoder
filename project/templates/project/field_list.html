@@ -21,6 +21,8 @@
     <tr>
       <th scope="col">{% translate 'Name' %}</th>
       <th scope="col">{% translate 'Index' %}</th>
+      <th scope="col">{% translate 'Unique' %}</th>
+      <th scope="col">{% translate 'Indexed' %}</th>
       <th scope="col">{% translate 'Data Type' %}</th>
       <th scope="col">{% translate 'Field Length' %}</th>
       <th scope="col">{% translate 'Default Value' %}</th>
@@ -36,6 +38,12 @@
       </td>
       <td {% if field.exclude %} class="text-decoration-line-through" {% endif %}>
         {{ field.index }}
+      </td>
+      <td {% if field.exclude %} class="text-decoration-line-through" {% endif %}>
+        {{ field.is_unique|iconbool }}
+      </td>
+      <td {% if field.exclude %} class="text-decoration-line-through" {% endif %}>
+        {{ field.use_index|iconbool }}
       </td>
       <td {% if field.exclude %} class="text-decoration-line-through" {% endif %}>
         {{ field.datatype|datatype_as_str }}

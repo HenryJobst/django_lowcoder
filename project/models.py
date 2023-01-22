@@ -29,6 +29,7 @@ MIN_FIELD_NAME_LENGTH = 2
 MIN_NAME_COMMON_LENGTH = 4
 
 VALID_SUFFIXES = ["csv", "odf", "xls", "xlsx"]
+VALID_ARCHIVES_SUFFIXES = ["zip"]
 VALID_MIMETYPES = [
     "text/csv",
     "application/vnd.oasis.opendocument.spreadsheet",
@@ -320,16 +321,57 @@ class ProjectSettings(models.Model):
         verbose_name_plural = _("project settings")
 
 
+def deployed_archive_user_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/deployed_archives/user_<id>/<filename>
+    return "deployed_archives/user_{0}/project_{1}/{2}".format(
+        instance.project.user.id, instance.project.id, filename
+    )
+
+
 class TransformationMapping(models.Model):
     project = models.OneToOneField(  # type: ignore
         Project, on_delete=models.CASCADE, primary_key=True, verbose_name=_("project")
     )
+    deployed_archive = models.FileField(
+        _("deployed archive"),
+        upload_to=deployed_archive_user_directory_path,
+        null=True,
+        blank=True,
+        max_length=200,
+        validators=[FileExtensionValidator(allowed_extensions=VALID_ARCHIVES_SUFFIXES)],
+    )
+
+    def archive_name(self):
+        path = Path(self.deployed_archive.name)
+        return f"{path.stem}{path.suffix}"
 
     files: models.QuerySet["TransformationFile"]  # forward decl for mypy
     models: models.QuerySet["Model"]  # forward decl for mypy
 
 
+post_delete.connect(
+    file_cleanup,
+    sender=TransformationMapping,
+    dispatch_uid="transformation_mapping.file_cleanup",
+)
+
+
+def transformation_files_user_directory_path(instance, filename):
+    # file will be uploaded to MEDIA_ROOT/transformation_files/user_<id>/<filename>
+    return "transformation_files/user_{0}/project_{1}/{2}".format(
+        instance.transformation_mapping.project.user.id,
+        instance.transformation_mapping.project.id,
+        filename,
+    )
+
+
 class TransformationFile(models.Model):
+    class Meta:
+        ordering = ["transformation_mapping", "file"]
+        unique_together = ["transformation_mapping", "file"]
+        verbose_name = _("file")
+        verbose_name_plural = _("files")
+
     transformation_mapping = models.ForeignKey(  # type: ignore
         TransformationMapping,
         on_delete=models.CASCADE,
@@ -342,15 +384,14 @@ class TransformationFile(models.Model):
 
     file = models.FileField(
         _("file"),
+        upload_to=transformation_files_user_directory_path,
         max_length=200,
         validators=[FileExtensionValidator(allowed_extensions=VALID_SUFFIXES)],
     )
 
-    class Meta:
-        ordering = ["transformation_mapping", "file"]
-        unique_together = ["transformation_mapping", "file"]
-        verbose_name = _("file")
-        verbose_name_plural = _("files")
+    def filename(self):
+        path = Path(self.file.name)
+        return f"{path.stem}{path.suffix}"
 
 
 post_delete.connect(

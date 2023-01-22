@@ -29,8 +29,6 @@ from project.services.importer import *
 from project.services.session import *
 from project.views.mixins import ModelUserFieldPermissionMixin
 
-DOWNLOAD = "download"
-
 SHEET_PARAMS = "sheet_params"
 NEXT_URL_PARAM = "next"
 
@@ -272,12 +270,12 @@ class ProjectDeployView(
 
     def form_valid(self, form):
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore
+        tm: TransformationMapping = project.transformationmapping
         cte: CookieCutterTemplateExpander = prepare_deploy_project(
             self.request, self.request.user, project, self.request.POST
         )
         result: str = deploy_project(cte)
-        if result and Path(result).exists():
-            self.request.session[DOWNLOAD] = result
+        if result and Path(tm.deployed_archive.name).exists():
             url = reverse_lazy(
                 "project_deploy_result",
                 kwargs={"pk": project.pk},
@@ -285,7 +283,7 @@ class ProjectDeployView(
             messages.success(
                 self.request,
                 _("Your generated project is here: %(link)s")
-                % {"link": f"<a href='{url}'>{project.deploy_filename()}</a>"},
+                % {"link": f"<a href='{url}'>{tm.archive_name()}</a>"},
             )
         return super().form_valid(form)
 
@@ -306,14 +304,14 @@ class ProjectDeployResultView(
     # noinspection PyUnusedLocal
     def get(self, request, *args, **kwargs):
         project: Project = get_object_or_404(Project, *self.args, **self.kwargs)  # type: ignore
-        if DOWNLOAD in self.request.session:
-            file = self.request.session[DOWNLOAD]
-            return FileResponse(
-                Path(file).open(mode="rb"),
-                as_attachment=True,
-                filename=project.deploy_filename(),
-                content_type="application/zip",
-            )
+        tm: TransformationMapping = project.transformationmapping
+        file = tm.deployed_archive.name
+        return FileResponse(
+            Path(file).open(mode="rb"),
+            as_attachment=True,
+            filename=tm.archive_name(),
+            content_type="application/zip",
+        )
 
 
 class ProjectSelectView(

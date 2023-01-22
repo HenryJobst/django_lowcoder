@@ -83,7 +83,7 @@ class ProjectDeleteForm(ModelForm):
                 "{% load i18n %}"
                 + "<p>"
                 + _("Are you really shure to delete the project <b>%(name)s</b>?")
-                % {"name": self.instance.name}
+                % {"name": "{{ object.name }}"}
                 + "</p>"
             ),
             Submit("submit", _("Confirm")),
@@ -233,7 +233,7 @@ class ProjectDeleteModelForm(ModelForm):
             HTML(
                 "<p>"
                 + _("Are you really shure to delete the table <b>%(name)s</b>?")
-                % {"name": self.instance.name}
+                % {"name": "{{ object.name }}"}
                 + "</p>"
             ),
             Submit("submit", _("Confirm")),
@@ -357,17 +357,21 @@ class ProjectDeleteFieldForm(ModelForm):
         self.helper = FormHelper(self)
         self.helper.form_method = "post"
         self.helper.form_class = "w-100 m-auto text-center"
-        self.helper.layouet = Layout(
+        self.helper.layout = Layout(
             HTML(
+                "{% load i18n %}"
                 "<p>"
                 + _("Are you really shure to delete the column <b>%(name)s</b>?")
-                % {"name": self.instance.name}
+                % {"name": "{{ object.name }}"}
                 + "</p>"
             ),
             Submit("submit", _("Confirm")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'project_list_models\' '
-                'model.transformation_mapping.project.id %}">' + _("Cancel") + "</a>"
+                "{% if model %}"
+                + '<a class="btn btn-secondary" href="{% url \'project_list_fields\' model.id %}">'
+                + _("Cancel")
+                + "</a>"
+                + "{% endif %}"
             ),
         )
 
@@ -421,7 +425,7 @@ class ProjectDeleteFileForm(ModelForm):
             HTML(
                 "<p>"
                 + _("Are you really shure to delete the file <b>%(name)s</b>?")
-                % {"name": self.instance.file.name}
+                % {"name": "{{ object.filename }}"}
                 + "</p>"
             ),
             Submit("submit", _("Confirm")),
@@ -490,7 +494,7 @@ class ProjectImportFileForm(Form):
             self.register_fields(sheet, settings)
             tab_holder.fields.append(
                 Tab(
-                    f"{_('Table:')} {sheet}",
+                    f'{ _("Table:") } {sheet}',
                     Div(
                         HTML("<h5>" + _("Import Settings") + "</h5>"),
                         css_class="mt-2",

@@ -327,7 +327,7 @@ class ModelExporterDjango(ModelExporter):
             for k, v in row.items():
                 patched_value = v
                 if k == "model":
-                    patched_value = f"{self.app_dir}.{v}"
+                    patched_value = f"{self.app_dir}.{to_classname(model.name)}"
                 elif k == "fields":
                     patched_value = {}
                     for field in model.fields.all():
