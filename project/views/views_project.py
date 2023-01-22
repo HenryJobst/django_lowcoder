@@ -658,7 +658,7 @@ class ProjectListFilesView(LoginRequiredMixin, ListView):
             if not user.is_superuser and project.user != user:
                 return super().handle_no_permission()
 
-            tm: TransformationMapping = project.transformationmapping
+            tm, created = TransformationMapping.objects.get_or_create(project=project)
             if tm:
                 return tm.files.all()
             else:
