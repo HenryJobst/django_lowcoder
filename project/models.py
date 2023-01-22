@@ -762,6 +762,26 @@ class Field(TimeStampMixin, models.Model):
             "column": self.name,
         }
 
+    def next_field(self):
+        model: Model = self.model
+        next_field = model.fields.filter(index__gt=self.index).order_by("index").first()
+        if next_field:
+            return next_field.pk
+        next_field = model.fields.filter(index__lt=self.index).order_by("index").first()
+        if next_field:
+            return next_field.pk
+        return self.pk
+
+    def prev_field(self):
+        model: Model = self.model
+        prev_field = model.fields.filter(index__lt=self.index).order_by("index").last()
+        if prev_field:
+            return prev_field.pk
+        prev_field = model.fields.filter(index__gt=self.index).order_by("index").last()
+        if prev_field:
+            return prev_field.pk
+        return self.pk
+
 
 def validate_file_type(file: TransformationFile) -> None:
     path = Path(file.file.name)

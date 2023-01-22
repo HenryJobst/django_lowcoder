@@ -6,7 +6,7 @@ import pandas as pd
 from django.contrib import messages
 from django.http import HttpRequest
 from django.template.defaultfilters import slugify
-from pandas import ExcelFile, DataFrame
+from pandas import ExcelFile, DataFrame, Timestamp
 
 from project.models import (
     TransformationFile,
@@ -18,6 +18,7 @@ from project.models import (
     Field,
 )
 from project.services.import_field import ImportField
+import pytz
 
 DEFAULT_SHEET_NAME_FOR_CSV_FILE = "sheet0"
 
@@ -27,10 +28,12 @@ READ_PARAM_NROWS = "nrows"
 READ_PARAM_SKIPFOOTER = "skipfooter"
 READ_PARAM_SKIPROWS = "skiprows"
 READ_PARAM_USECOLS = "usecols"
+TIMEZONE_PARAM = "timezone"
 
 TABLE_PARAM_HEAD_ROWS = "head_rows"
 TABLE_PARAM_TAIL_ROWS = "tail_rows"
 DEFAULT_HEAD_TAIL_ROWS = 5
+DEFAULT_TIMEZONE = "Europe/Berlin"
 
 
 def convert_param(param: str, value: Optional[Any]) -> int | str | None:
@@ -68,6 +71,7 @@ class SheetReaderParams(dict):
         skipfooter: int = 0,
         head_rows: int = DEFAULT_HEAD_TAIL_ROWS,
         tail_rows: int = DEFAULT_HEAD_TAIL_ROWS,
+        timezone: str = DEFAULT_TIMEZONE,
     ):
         dict.__init__(
             self,
@@ -79,25 +83,23 @@ class SheetReaderParams(dict):
             skipfooter=skipfooter,
             head_rows=head_rows,
             tail_rows=tail_rows,
+            timezone=timezone,
         )
 
 
-def fixture(model_name: str, df: DataFrame):
+def fixture(model_name: str, df: DataFrame, timezone: str):
     df_as_dict = df.to_dict(orient="records")
+    local_tz = pytz.timezone(timezone)
+    target_tz = pytz.timezone("UTC")
     patched_df = []
     for record in df_as_dict:
         patched_dict = {}
         for k, v in record.items():
-            patched_val = v
             if str(v).lower() == "nan":
-                patched_val = None
+                patched_dict[k] = None
             else:
-                # convert date, time and datetime to string,
-                # otherwise it is not serializable
-                if isinstance(v, datetime.datetime):
-                    patched_val = v.isoformat()
+                patched_dict[k] = convert_to_utc_str(v, local_tz, target_tz)
 
-            patched_dict[k] = patched_val
         patched_df.append(patched_dict)
 
     return [
@@ -110,6 +112,16 @@ def fixture(model_name: str, df: DataFrame):
         }
         for i, fields in enumerate(patched_df, start=1)
     ]
+
+
+def convert_to_utc_str(value, local_tz, target_tz) -> str:
+    # convert date, time and datetime to string,
+    # otherwise it is not serializable
+    if isinstance(value, Timestamp):
+        local_dt = local_tz.localize(value)
+        utc_dt = target_tz.normalize(local_dt)
+        return utc_dt.isoformat()
+    return value
 
 
 def create_models(
@@ -156,7 +168,7 @@ def create_models(
         skiprows: int = settings.get(READ_PARAM_SKIPROWS, 0)
         skiprows = skiprows if skiprows else 0
 
-        content = fixture(sheet, df)
+        content = fixture(sheet, df, settings.get(TIMEZONE_PARAM))
         th, created = TransformationHeadline.objects.get_or_create(
             transformation_sheet=ts,
             row_index=header_offset + skiprows,

@@ -260,6 +260,16 @@ def init_database_url(project: Project) -> str:
     return output
 
 
+def transform_value_for_datatype(field: Field, original_value):
+    if field.datatype == Field.Datatype.DATE_FIELD.value:
+        original_value = datetime.fromisoformat(original_value).date().isoformat()
+    elif field.datatype == Field.Datatype.TIME_FIELD.value:
+        original_value = datetime.fromisoformat(original_value).time().isoformat()
+    elif field.datatype == Field.Datatype.DATE_TIME_FIELD.value:
+        original_value = datetime.fromisoformat(original_value).isoformat()
+    return original_value
+
+
 class ModelExporterDjango(ModelExporter):
     def __init__(self, cte: CookieCutterTemplateExpander):
         super().__init__(cte)
@@ -334,6 +344,9 @@ class ModelExporterDjango(ModelExporter):
                         if field.exclude:
                             continue
                         original_value = v.get(field.transformation_column.name, None)
+                        original_value = transform_value_for_datatype(
+                            field, original_value
+                        )
                         if field.choices:
                             rev_dict_value = reverse_dict_value(
                                 original_value, field.choices

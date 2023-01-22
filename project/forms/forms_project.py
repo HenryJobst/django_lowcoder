@@ -1,7 +1,17 @@
 from crispy_bootstrap5.bootstrap5 import FloatingField  # type: ignore
-from crispy_forms.bootstrap import TabHolder, Tab  # type: ignore
+from crispy_forms.bootstrap import TabHolder, Tab, FormActions  # type: ignore
 from crispy_forms.helper import FormHelper  # type: ignore
-from crispy_forms.layout import Submit, Layout, Fieldset, HTML, Field as LayoutField, Row, Column, Div  # type: ignore
+from crispy_forms.layout import (
+    Submit,
+    Layout,
+    Fieldset,
+    HTML,
+    Field as LayoutField,
+    Row,
+    Column,
+    Div,
+    Button,
+)  # type: ignore
 from django.forms import (
     ModelForm,
     TypedChoiceField,
@@ -57,7 +67,7 @@ class ProjectEditForm(ModelForm):
                 "",
                 Submit("submit", _("Save")),
                 HTML(
-                    '<a class="btn btn-secondary ms-1" href="{% url \'index\' %}">'
+                    '<a class="btn btn-secondary ms-2" href="{% url \'index\' %}">'
                     + _("Cancel")
                     + "</a>"
                 ),
@@ -88,7 +98,7 @@ class ProjectDeleteForm(ModelForm):
             ),
             Submit("submit", _("Confirm")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
+                '<a class="btn btn-secondary ms-2" href="{% url \'index\' %}">'
                 + _("Cancel")
                 + "</a>"
             ),
@@ -139,7 +149,7 @@ class ProjectDeployForm(Form):
                 css_class="spinner-btn",
             ),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'index\' %}">'
+                '<a class="btn btn-secondary ms-2" href="{% url \'index\' %}">'
                 + _("Cancel")
                 + "</a>"
             ),
@@ -168,7 +178,7 @@ class ProjectEditSettingsForm(ModelForm):
             ),
             Submit("submit", _("Save")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'project_detail\' object.project.id %}">'
+                '<a class="btn btn-secondary ms-2" href="{% url \'project_detail\' object.project.id %}">'
                 + _("Cancel")
                 + "</a>"
             ),
@@ -204,11 +214,11 @@ class ProjectEditModelForm(ModelForm):
             Submit("submit", _("Save")),
             HTML(
                 "{% if object.id %}"
-                + '<a class="btn btn-secondary" href="{% url \'project_detail_model\' object.id %}">'
+                + '<a class="btn btn-secondary ms-2" href="{% url \'project_detail_model\' object.id %}">'
                 + _("Cancel")
                 + "</a>"
                 + "{% elif project %}"
-                + '<a class="btn btn-secondary" href="{% url \'project_list_models\' project.id %}">'
+                + '<a class="btn btn-secondary ms-2" href="{% url \'project_list_models\' project.id %}">'
                 + _("Cancel")
                 + "</a>"
                 + "{% endif %}"
@@ -238,7 +248,7 @@ class ProjectDeleteModelForm(ModelForm):
             ),
             Submit("submit", _("Confirm")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'project_list_models\' '
+                '<a class="btn btn-secondary ms-2" href="{% url \'project_list_models\' '
                 "object.transformation_mapping.project.id "
                 '%}">' + _("Cancel") + "</a>"
             ),
@@ -251,6 +261,17 @@ class ProjectDeleteModelForm(ModelForm):
 
 class ProjectEditFieldForm(ModelForm):
     def __init__(self, *args, **kwargs):
+        """
+        The __init__ function is called when the class is instantiated. It creates a form with all of the fields
+        that are defined in this class. The form will be rendered using crispy-forms and it will have some basic
+        validation built into it.
+
+        :param self: Reference the current instance of the class inside a method
+        :param *args: Send a non-keyworded variable length argument list to the function
+        :param **kwargs: Pass in the instance of the model being edited
+        :return: :
+        :doc-author: Trelent
+        """
         super().__init__(*args, **kwargs)
 
         if self.instance:
@@ -315,13 +336,20 @@ class ProjectEditFieldForm(ModelForm):
                     ),
                 ),
             ),
-            Submit("submit", _("Save")),
-            HTML(
-                "{% if model %}"
-                + '<a class="btn btn-secondary" href="{% url \'project_list_fields\' model.id %}">'
-                + _("Cancel")
-                + "</a>"
-                + "{% endif %}"
+            FormActions(
+                Submit("submit", _("Save")),
+                HTML(
+                    '<input type="submit" class="btn btn-primary" formmethod="post" formaction="{% url '
+                    "'project_update_field' object.id "
+                    "%}?next={% url 'project_update_field' object.next_field %}\" value='"
+                    + _("Save & Edit Next")
+                    + "'>"
+                ),
+                HTML(
+                    '<a class="btn btn-secondary ms-2" href="{% url \'project_list_fields\' object.model.id %}">'
+                    + _("Cancel")
+                    + "</a>"
+                ),
             ),
         )
 
@@ -368,7 +396,7 @@ class ProjectDeleteFieldForm(ModelForm):
             Submit("submit", _("Confirm")),
             HTML(
                 "{% if model %}"
-                + '<a class="btn btn-secondary" href="{% url \'project_list_fields\' model.id %}">'
+                + '<a class="btn btn-secondary ms-2" href="{% url \'project_list_fields\' model.id %}">'
                 + _("Cancel")
                 + "</a>"
                 + "{% endif %}"
@@ -398,12 +426,12 @@ class ProjectEditFileForm(ModelForm):
             Submit("submit", _("Save")),
             HTML(
                 "{% if object.id %}"
-                + '<a class="btn btn-secondary" href="{% url \'project_list_files\' '
+                + '<a class="btn btn-secondary ms-2" href="{% url \'project_list_files\' '
                 'object.transformation_mapping.project.id %}">'
                 + _("Cancel")
                 + "</a>"
                 + "{% elif project %}"
-                + '<a class="btn btn-secondary" href="{% url \'project_list_files\' project.id %}">'
+                + '<a class="btn btn-secondary ms-2" href="{% url \'project_list_files\' project.id %}">'
                 + _("Cancel")
                 + "</a>"
                 + "{% endif %}"
@@ -430,7 +458,7 @@ class ProjectDeleteFileForm(ModelForm):
             ),
             Submit("submit", _("Confirm")),
             HTML(
-                '<a class="btn btn-secondary" href="{% url \'project_list_files\' '
+                '<a class="btn btn-secondary ms-2" href="{% url \'project_list_files\' '
                 "object.transformation_mapping.project.id "
                 '%}">' + _("Cancel") + "</a>"
             ),

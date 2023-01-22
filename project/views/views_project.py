@@ -501,6 +501,7 @@ class ProjectDeleteModelView(  # type: ignore
 
     def form_valid(self, form: ProjectDeleteModelForm) -> HttpResponse:
         set_new_main_entity(self.object)
+        reset_model_selection(self.request, self.object.pk)
         return super().form_valid(form)
 
 
@@ -657,9 +658,9 @@ class ProjectListFilesView(LoginRequiredMixin, ListView):
             if not user.is_superuser and project.user != user:
                 return super().handle_no_permission()
 
-            tm = TransformationMapping.objects.filter(project=project).first()
+            tm: TransformationMapping = project.transformationmapping
             if tm:
-                return TransformationFile.objects.filter(transformation_mapping=tm)
+                return tm.files.all()
             else:
                 return QuerySet(TransformationFile).none()
         else:
