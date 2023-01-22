@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import json
 import os
+import sys
 from pathlib import Path
 
 # noinspection PyPackageRequirements
@@ -36,13 +38,31 @@ SECRET_KEY = os.getenv("SECRET_KEY", os.urandom(32))
 DEFAULT_ADMIN_PASSWORD = os.getenv("DEFAULT_ADMIN_PASSWORD", "")
 
 DEBUG = os.getenv("DEBUG", False) == "True"
+sys.stdout.write(f"DEBUG: {DEBUG}\r")
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
+sys.stdout.write(f"DATABASE_URL from environment: {DATABASE_URL}\r")
 
-if DATABASE_URL:
+VCAP_SERVICES = os.getenv("VCAP_SERVICES", "")
+# sys.stdout.write(f"VCAP_SERVICES from environment: {VCAP_SERVICES}\r")
+
+if VCAP_SERVICES:
+    sys.stdout.write("VCAP_SERVICES available\r")
+    vcap_services_data = json.loads(VCAP_SERVICES)
+    credentials = vcap_services_data["osb-postgres"][0]["credentials"]
+    uri = vcap_services_data["osb-postgres"][0]["credentials"]["uri"]
+    db_url = uri.replace(
+        f"targetServerType={credentials['targetServerType']}\u0026\u0026", ""
+    )
+    db_url = db_url.replace(f"sslfactory={credentials['sslfactory']}", "")
+    db_url = db_url.replace(f"sslmode={credentials['sslmode']}", f"sslmode=disable")
+    DATABASE_URL = db_url
+    sys.stdout.write(f"DATABASE_URL from VCAP_SERVICES: {DATABASE_URL}\r")
+
+if VCAP_SERVICES:
     ALLOWED_HOSTS = ["*"]
 else:
-    ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost," "127.0.0.1").split(",")
+    ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 # Application definition
 
@@ -106,8 +126,6 @@ WSGI_APPLICATION = "django_lowcoder.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -115,17 +133,23 @@ DATABASES = {
     }
 }
 
-
 if DATABASE_URL:
-    DATABASES = {"default": env.db("DATABASE_URL")}
-    # DATABASES["default"] = dj_database_url.config(
-    #     conn_max_age=600,
-    #     conn_health_checks=True,
-    # )
+    DATABASES = {"default": env.db_url_config(DATABASE_URL)}
+
+
+# PASSWORDS
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#password-hashers
+PASSWORD_HASHERS = [
+    # https://docs.djangoproject.com/en/dev/topics/auth/passwords/#using-argon2-with-django
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
