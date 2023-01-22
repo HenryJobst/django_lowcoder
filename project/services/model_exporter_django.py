@@ -264,7 +264,7 @@ def transform_value_for_datatype(field: Field, original_value):
     if field.datatype == Field.Datatype.DATE_FIELD.value:
         original_value = datetime.fromisoformat(original_value).date().isoformat()
     elif field.datatype == Field.Datatype.TIME_FIELD.value:
-        original_value = datetime.fromisoformat(original_value).time().isoformat()
+        original_value = datetime.fromisoformat(original_value).timetz().isoformat()
     elif field.datatype == Field.Datatype.DATE_TIME_FIELD.value:
         original_value = datetime.fromisoformat(original_value).isoformat()
     return original_value
