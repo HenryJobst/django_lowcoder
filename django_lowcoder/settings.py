@@ -277,10 +277,10 @@ if vcap_services_data:
         redis_user = redis_credentials["user"]
         redis_password = redis_credentials["password"]
         CACHES = {
-            'default': {
-                'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-                'LOCATION': [
-                    f'redis://{redis_user}:{redis_password}@{redis_host}:{redis_port}',
-                    ],
-                }
+            "default": {
+                "BACKEND": "django.core.cache.backends.redis.RedisCache",
+                "LOCATION": [
+                    f"redis://{redis_user}:{redis_password}@{redis_host}:{redis_port}",
+                ],
             }
+        }
