@@ -659,7 +659,7 @@ class ProjectImportFileForm(Form):
             IntegerField(
                 label=_("Table Head"),
                 help_text=_("Row for the table header (0-based)"),
-                required=True,
+                required=False,
                 initial=settings.get(READ_PARAM_HEADER, 0),
                 min_value=0,
             ),
@@ -704,7 +704,7 @@ class ProjectImportFileForm(Form):
                 help_text=_(
                     "Number of skipped rows an the end of the table (0: skip no rows)"
                 ),
-                required=True,
+                required=False,
                 initial=settings.get(READ_PARAM_SKIPFOOTER, 0),
                 min_value=0,
             ),
@@ -716,7 +716,7 @@ class ProjectImportFileForm(Form):
                 initial=settings.get(TABLE_PARAM_HEAD_ROWS, DEFAULT_HEAD_TAIL_ROWS),
                 min_value=3,
                 max_value=100,
-                required=True,
+                required=False,
             ),
         )
         self.register_field(
@@ -726,6 +726,6 @@ class ProjectImportFileForm(Form):
                 initial=settings.get(TABLE_PARAM_TAIL_ROWS, DEFAULT_HEAD_TAIL_ROWS),
                 min_value=3,
                 max_value=100,
-                required=True,
+                required=False,
             ),
         )
