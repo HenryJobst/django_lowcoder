@@ -10,7 +10,6 @@ from crispy_forms.layout import (
     Row,
     Column,
     Div,
-    Button,
 )  # type: ignore
 from django.forms import (
     ModelForm,
@@ -423,7 +422,7 @@ class ProjectEditFileForm(ModelForm):
         self.helper.form_class = "m-auto"
         self.helper.layout = Layout(
             LayoutField("file"),
-            Submit("submit", _("Save")),
+            Submit("submit", _("Save"), css_class="spinner-btn"),
             HTML(
                 "{% if object.id %}"
                 + '<a class="btn btn-secondary ms-2" href="{% url \'project_list_files\' '
@@ -522,7 +521,7 @@ class ProjectImportFileForm(Form):
             self.register_fields(sheet, settings)
             tab_holder.fields.append(
                 Tab(
-                    f'{ _("Table:") } {sheet}',
+                    f'{_("Table:")} {sheet}',
                     Div(
                         HTML("<h5>" + _("Import Settings") + "</h5>"),
                         css_class="mt-2",
@@ -651,7 +650,9 @@ class ProjectImportFileForm(Form):
             )
 
         self.helper.layout.fields.append(tab_holder)
-        self.helper.layout.fields.append(Submit("submit", _("Import")))
+        self.helper.layout.fields.append(
+            Submit("submit", _("Import"), css_class="spinner-btn")
+        )
 
     def register_fields(self, sheet: str, settings: SheetReaderParams):
         self.register_field(
