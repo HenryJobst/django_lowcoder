@@ -1,8 +1,8 @@
-import datetime
 from pathlib import Path
 from typing import Sequence, Callable, Any, Optional, List, Tuple, Dict, Final
 
 import pandas as pd
+import pytz
 from django.contrib import messages
 from django.http import HttpRequest
 from django.template.defaultfilters import slugify
@@ -18,7 +18,6 @@ from project.models import (
     Field,
 )
 from project.services.import_field import ImportField
-import pytz
 
 DEFAULT_SHEET_NAME_FOR_CSV_FILE = "sheet0"
 
@@ -95,7 +94,7 @@ def fixture(model_name: str, df: DataFrame, timezone: str):
     for record in df_as_dict:
         patched_dict = {}
         for k, v in record.items():
-            if str(v).lower() == "nan":
+            if str(v).lower() == "nan" or str(v).lower() == "nat":
                 patched_dict[k] = None
             else:
                 patched_dict[k] = convert_to_utc_str(v, local_tz, target_tz)
@@ -107,7 +106,8 @@ def fixture(model_name: str, df: DataFrame, timezone: str):
             "model": f"{model_name}",
             "pk": i,
             "fields": {
-                k: None if str(v).lower() == "nan" else v for k, v in fields.items()
+                k: None if str(v).lower() == "nan" or str(v).lower() == "nat" else v
+                for k, v in fields.items()
             },
         }
         for i, fields in enumerate(patched_df, start=1)
