@@ -5,6 +5,7 @@ from project.services.importer import (
     SheetReaderParams,
     DEFAULT_SHEET_NAME_FOR_CSV_FILE,
 )
+from project.tests.test_import_field import df_of_file
 
 
 class TestImport:
@@ -23,16 +24,19 @@ class TestImport:
         path = pytestconfig.rootpath.joinpath(
             Path("project/tests/sample_files/Employee-Sample-Data.xlsx")
         )
-        importer = Importer(path)
-        sheet0 = importer.sheets()[0]
-        df = importer.run(sheet0, SheetReaderParams())
+        df = df_of_file(path)
+        assert not df.empty
+
+    def test_financials_sample_xlsx(self, pytestconfig):
+        path = pytestconfig.rootpath.joinpath(
+            Path("project/tests/sample_files/Financials-Sample-Data.xlsx")
+        )
+        df = df_of_file(path)
         assert not df.empty
 
     def test_sample_multisheet_xlsx(self, pytestconfig):
         path = pytestconfig.rootpath.joinpath(
             Path("project/tests/sample_files/Testtabelle.xlsx")
         )
-        importer = Importer(path)
-        sheet0 = importer.sheets()[0]
-        df = importer.run(sheet0, SheetReaderParams())
+        df = df_of_file(path)
         assert not df.empty

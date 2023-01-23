@@ -3,9 +3,11 @@ import sys
 from typing import Final
 
 from pandas import Series
+
 from project.models import Field
 
-DUPLICATES_AS_ENTITY_MIN_RATIO: Final[int] = 25
+DUPLICATES_AS_CHOICE_MIN_RATIO: Final[int] = 50
+AS_CHOICE_MAX_COUNT: Final[int] = 50
 
 
 class ImportField:
@@ -18,11 +20,11 @@ class ImportField:
     DEFAULT_VALUE: Final[str] = "default_value"
 
     def __init__(self, series: Series):
-        self.field_name = series.name
         self.series = series
+        self.field_name = series.name
         self.is_nullable = self.series.hasnans
         self.series_without_nulls = Series([v for v in series.dropna()])
-        self.dtype = str(self.series_without_nulls.dtype)
+        self.dtype = str(self.series_without_nulls.infer_objects().dtype)
         self.duplicated = self.series_without_nulls.duplicated()
         self.has_duplicate_values = any(self.duplicated)
         self.duplicates = self.series_without_nulls.drop_duplicates()
@@ -37,6 +39,15 @@ class ImportField:
     def get_duplicate_compress_ratio(self):
         return (len(self.duplicates) * 100) / len(self.series_without_nulls)
 
+    def need_choice(self):
+        return (
+            self.has_duplicate_values
+            # prevent choices with no real compression
+            and self.get_duplicate_compress_ratio() <= DUPLICATES_AS_CHOICE_MIN_RATIO
+            # prevent overfilled combo boxes
+            and len(self.duplicates) <= AS_CHOICE_MAX_COUNT
+        )
+
     def get_field_type_and_kwargs(self):
         field_type: Field.Datatype = Field.Datatype.NONE
         kwargs = {
@@ -49,32 +60,13 @@ class ImportField:
             self.DEFAULT_VALUE: None,
         }
 
-        if self.dtype == "object":
-            ratio = self.get_duplicate_compress_ratio()
-            if self.has_duplicate_values and ratio < DUPLICATES_AS_ENTITY_MIN_RATIO:
-                field_type = Field.Datatype.INTEGER_FIELD
-                self.choices = {
-                    i: value
-                    for (i, value) in enumerate(self.duplicates.values, start=1)
-                }
-                self.choices_reverse = {v: k for k, v in self.choices.items()}
-                kwargs[self.CHOICES] = {k: v for k, v in self.choices.items()}
-
-                self.series = Series(
-                    [self.choices_reverse.get(value) for value in self.series]
-                )
-
+        if self.dtype == "object" or self.dtype == "string":
+            if self.need_choice():
+                field_type, choices_dict = self.transform_to_choices()
+                kwargs[self.CHOICES] = choices_dict
             else:
-                field_type = Field.Datatype.CHAR_FIELD
-                kwargs[self.MAX_LENGTH] = Field.find_next_step(
-                    max(
-                        [
-                            len(str(cell_value))
-                            for cell_value in self.series_without_nulls
-                        ]
-                        or [1]
-                    )
-                )
+                field_type, max_length = self.transform_to_chars()
+                kwargs[self.MAX_LENGTH] = max_length
 
         elif self.dtype == "bool":
             field_type = Field.Datatype.BOOLEAN_FIELD
@@ -103,10 +95,10 @@ class ImportField:
             kwargs[self.MAX_DIGITS] = max_digits
             kwargs[self.DECIMAL_PLACES] = decimal_places
 
-        elif self.dtype == "datetime64[ns]" or self.dtype == "datetime64[ns, tz]":
+        elif self.dtype == "datetime64[ns]" or self.dtype == "datetime64[ns, <tz>]":
             field_type = Field.Datatype.DATE_TIME_FIELD
         else:
-            sys.stdout.write(f"unhandled dtype")
+            self.handle_unknown_type()
 
         if self.is_nullable:
             kwargs[self.NULL] = True
@@ -118,6 +110,29 @@ class ImportField:
             kwargs,
             field_type_ext.format(", ".join(f"{k}={v}" for k, v in kwargs.items())),
         )
+
+    def handle_unknown_type(self):
+        sys.stdout.write(f"unhandled dtype\n")
+
+    def transform_to_chars(self):
+        field_type = Field.Datatype.CHAR_FIELD
+        max_length = Field.find_next_step(
+            max(
+                [len(str(cell_value)) for cell_value in self.series_without_nulls]
+                or [1]
+            )
+        )
+        return field_type, max_length
+
+    def transform_to_choices(self):
+        field_type = Field.Datatype.INTEGER_FIELD
+        self.choices = {
+            i: value for (i, value) in enumerate(self.duplicates.values, start=1)
+        }
+        self.choices_reverse = {v: k for k, v in self.choices.items()}
+        choices_dict = {k: v for k, v in self.choices.items()}
+        self.series = Series([self.choices_reverse.get(value) for value in self.series])
+        return field_type, choices_dict
 
     def __str__(self):
         return f"{self.field_name} = {self.field_type_and_kwargs}"

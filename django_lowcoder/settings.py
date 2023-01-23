@@ -46,6 +46,8 @@ sys.stdout.write(f"DATABASE_URL from environment: {DATABASE_URL}\r")
 VCAP_SERVICES = os.getenv("VCAP_SERVICES", "")
 # sys.stdout.write(f"VCAP_SERVICES from environment: {VCAP_SERVICES}\r")
 
+vcap_services_data = None
+
 if VCAP_SERVICES:
     sys.stdout.write("VCAP_SERVICES available\r")
     vcap_services_data = json.loads(VCAP_SERVICES)
