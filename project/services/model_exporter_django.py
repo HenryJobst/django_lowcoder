@@ -352,7 +352,9 @@ class ModelExporterDjango(ModelExporter):
                                 original_value, field.choices
                             )
                             if field.datatype == Field.Datatype.INTEGER_FIELD.value:
-                                rev_dict_value = int(rev_dict_value)
+                                rev_dict_value = (
+                                    int(rev_dict_value) if rev_dict_value else None
+                                )
                             patched_value[to_varname(field.name)] = rev_dict_value
                         elif field.foreign_key_entity:
                             patched_value[to_varname(field.name)] = reverse_fk_value(
