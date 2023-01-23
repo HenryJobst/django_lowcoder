@@ -252,3 +252,35 @@ MESSAGE_TAGS = {
     message_constants.WARNING: "warning",
     message_constants.ERROR: "danger",
 }
+
+if vcap_services_data:
+    if "mail-service" in vcap_services_data:
+        mail_credentials = vcap_services_data["mail-service"][0]["credentials"]
+        smtp_server = mail_credentials["host"]
+        smtp_port = mail_credentials["port"]
+        smtp_user = mail_credentials["user"]
+        smtp_password = mail_credentials["password"]
+        EMAIL_HOST = smtp_server
+        EMAIL_PORT = smtp_port
+        EMAIL_USER = smtp_user
+        EMAIL_HOST_PASSWORD = smtp_password
+        EMAIL_USE_LOCALTIME = True
+
+    if "p.redis" in vcap_services_data:
+        redis_credentials = vcap_services_data["p.redis"][0]["credentials"]
+        redis_host = redis_credentials["host"]
+        redis_port = redis_credentials["port"]
+        if "user" in redis_credentials:
+            redis_user = redis_credentials["user"]
+        else:
+            redis_user = ""
+        redis_user = redis_credentials["user"]
+        redis_password = redis_credentials["password"]
+        CACHES = {
+            'default': {
+                'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+                'LOCATION': [
+                    f'redis://{redis_user}:{redis_password}@{redis_host}:{redis_port}',
+                    ],
+                }
+            }
