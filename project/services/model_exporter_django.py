@@ -15,12 +15,27 @@ from project.services.model_exporter import ModelExporter
 MAX_DROPDOWN_SIZE = 20
 
 
+def create_valid_identifier(name: str, for_class: bool) -> str:
+    if not name.isidentifier():
+        prefix = "Table" if for_class else "column"
+        final_name = prefix + name
+        if not final_name.isidentifier():
+            raise ValueError(f"Invalid Identifier: {name}/{final_name}!")
+        return final_name
+
+    return name
+
+
 def to_classname(name):
-    return string.capwords(slugify(name).replace("-", " ")).replace(" ", "")
+    final_name = string.capwords(slugify(name).replace("-", " ")).replace(" ", "")
+    final_name = create_valid_identifier(final_name, for_class=True)
+    return final_name
 
 
 def to_varname(name):
-    return slugify(name).replace("-", "_")
+    final_name = slugify(name).replace("-", "_")
+    final_name = create_valid_identifier(final_name, for_class=False)
+    return final_name
 
 
 def text_to_default(datatype: int, default_value: str):
