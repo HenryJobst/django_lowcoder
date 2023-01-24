@@ -1,5 +1,6 @@
 from django import template
 from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
 
 from project.models import (
     TransformationFile,
@@ -83,5 +84,9 @@ def fields_count(project: Project) -> int:
 
 
 @register.filter("datatype_as_str", is_safe=True)
-def datatype_as_str(datatype) -> str:
-    return Field.DATATYPE_LABEL_BY_VALUE[datatype]
+def datatype_as_str(field: Field) -> str:
+    if field.choices:
+        return _("ChoiceField")
+    elif field.foreign_key_entity:
+        return _("FK->%(name)s") % {"name": field.foreign_key_entity.name}
+    return Field.DATATYPE_LABEL_BY_VALUE[field.datatype]

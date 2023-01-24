@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-22 21:03+0000\n"
+"POT-Creation-Date: 2023-01-24 06:49+0000\n"
 "PO-Revision-Date: 2023-01-07 20:02+0000\n"
 "Last-Translator:   <dlc_admin@jobst-berlin.de>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,10 +23,10 @@ msgstr ""
 msgid "Django LowCoder - Administration"
 msgstr "Django LowCoder - Administration"
 
-#: django_lowcoder/settings.py:220
+#: django_lowcoder/settings.py:246
 msgid "German"
 msgstr "Deutsch"
 
-#: django_lowcoder/settings.py:221
+#: django_lowcoder/settings.py:247
 msgid "English"
 msgstr "Englisch"

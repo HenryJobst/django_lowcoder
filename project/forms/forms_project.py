@@ -521,7 +521,7 @@ class ProjectImportFileForm(Form):
             self.register_fields(sheet, settings)
             tab_holder.fields.append(
                 Tab(
-                    f'{_("Table:")} {sheet}',
+                    _("Table: %(name)s") % {"name": sheet},
                     Div(
                         HTML("<h5>" + _("Import Settings") + "</h5>"),
                         css_class="mt-2",

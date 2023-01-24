@@ -46,7 +46,7 @@
         {{ field.use_index|iconbool }}
       </td>
       <td {% if field.exclude %} class="text-decoration-line-through" {% endif %}>
-        {{ field.datatype|datatype_as_str }}
+        {{ field|datatype_as_str }}
       </td>
       <td {% if field.exclude %} class="text-decoration-line-through" {% endif %}>
         {{ field.max_length|default_if_none:'' }}
