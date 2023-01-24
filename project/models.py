@@ -262,7 +262,11 @@ class ProjectSettings(models.Model):
         verbose_name=_("project settings"),
     )
     domain_name = models.CharField(  # type: ignore
-        _("domain"), max_length=100, null=True, validators=[MinLengthValidator(4)]
+        _("domain"),
+        max_length=100,
+        null=True,
+        blank=True,
+        validators=[MinLengthValidator(4)],
     )
     admin_name = models.CharField(  # type: ignore
         _("admin user name"),
