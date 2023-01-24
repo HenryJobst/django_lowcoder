@@ -58,9 +58,15 @@ class CookiecutterConfig:
 
     def init_cookiecutter_template_config(self):
 
-        if self.code_template.model_exporter == CodeTemplate.ModelExporterClass.JPA.value:  # Java-Template
+        if (
+            self.code_template.model_exporter
+            == CodeTemplate.ModelExporterClass.JPA.value
+        ):  # Java-Template
             self.init_cookiecutter_java_config()
-        elif self.code_template.model_exporter == CodeTemplate.ModelExporterClass.DJANGO.value:  # Django-Template
+        elif (
+            self.code_template.model_exporter
+            == CodeTemplate.ModelExporterClass.DJANGO.value
+        ):  # Django-Template
             self.init_cookiecutter_django_config()
         else:  # Unknown template
             self.init_cookiecutter_config()
