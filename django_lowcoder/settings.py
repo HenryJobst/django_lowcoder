@@ -276,7 +276,6 @@ if vcap_services_data:
             redis_user = redis_credentials["user"]
         else:
             redis_user = ""
-        redis_user = redis_credentials["user"]
         redis_password = redis_credentials["password"]
         CACHES = {
             "default": {
