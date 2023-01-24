@@ -85,7 +85,8 @@ class CookiecutterConfig:
             "description": project.description,
             "author_name": self.user.first_name + " " + self.user.last_name,
             "domain_name": project.project_settings.domain_name
-            if hasattr(project, "project_settings") and project.project_settings.domain_name
+            if hasattr(project, "project_settings")
+            and project.project_settings.domain_name
             else "domain.de",
             "email": self.user.email,
             "version": "0.0.1",
@@ -121,7 +122,8 @@ class CookiecutterConfig:
             "description": project.description,
             "author_name": self.user.first_name + " " + self.user.last_name,
             "domain_name": project.project_settings.domain_name
-            if hasattr(project, "project_settings") and project.project_settings.domain_name
+            if hasattr(project, "project_settings")
+            and project.project_settings.domain_name
             else "domain.de",
             "email": self.user.email,
             "version": "0.0.1",
