@@ -276,6 +276,8 @@ def init_database_url(project: Project) -> str:
 
 
 def transform_value_for_datatype(field: Field, original_value):
+    if not original_value:
+        return original_value
     if field.datatype == Field.Datatype.DATE_FIELD.value:
         original_value = datetime.fromisoformat(original_value).date().isoformat()
     elif field.datatype == Field.Datatype.TIME_FIELD.value:
