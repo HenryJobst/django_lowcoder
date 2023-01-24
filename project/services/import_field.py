@@ -8,6 +8,7 @@ from project.models import Field
 
 DUPLICATES_AS_CHOICE_MIN_RATIO: Final[int] = 50
 AS_CHOICE_MAX_COUNT: Final[int] = 50
+AS_UNIQUE_MIN_COUNT: Final[int] = 50
 
 
 class ImportField:
@@ -46,6 +47,12 @@ class ImportField:
             and self.get_duplicate_compress_ratio() <= DUPLICATES_AS_CHOICE_MIN_RATIO
             # prevent overfilled combo boxes
             and len(self.duplicates) <= AS_CHOICE_MAX_COUNT
+        )
+
+    def propose_unique(self):
+        return (
+            not self.has_duplicate_values
+            and len(self.series_without_nulls) >= AS_UNIQUE_MIN_COUNT
         )
 
     def get_field_type_and_kwargs(self):

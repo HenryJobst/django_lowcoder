@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from pandas import Series, DataFrame
 
 from project.models import Field
@@ -22,13 +23,23 @@ class TestImportField:
         assert import_field.field_type == Field.Datatype.INTEGER_FIELD
         assert len(import_field.choices) == 7
 
-    def test_string_choices(self, pytestconfig):
+    @pytest.mark.parametrize("dtype", ["object", "string"])
+    def test_string_choices(self, dtype):
+        series: Series = Series(["a", "b", "c", "a", "a", "c", "c"], dtype=dtype)
 
-        series: Series = Series(["a", "b", "c", "a", "a", "c", "c"], dtype="object")
         import_field = ImportField(series)
 
         assert import_field.field_type == Field.Datatype.INTEGER_FIELD
         assert len(import_field.choices) == 3
+
+    @pytest.mark.parametrize("dtype", ["object", "string"])
+    def test_unique_from_min_data_size(self, dtype):
+        series: Series = Series(["a", "b", "c"], dtype=dtype)
+
+        import_field = ImportField(series)
+
+        assert import_field.field_type == Field.Datatype.CHAR_FIELD
+        assert not import_field.propose_unique()
 
 
 def df_of_file(path) -> DataFrame:

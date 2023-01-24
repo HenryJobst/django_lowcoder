@@ -207,7 +207,7 @@ def create_models(
                 "datatype": import_field.field_type
                 if import_field.field_type
                 else None,
-                "is_unique": not import_field.has_duplicate_values,
+                "is_unique": import_field.propose_unique(),
                 "default_value": None,
             }
 
