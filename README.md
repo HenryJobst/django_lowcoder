@@ -1,6 +1,6 @@
 <h1 align="center">
   <a href="https://github.com/HenryJobst/django_lowcoder/issues">
-    <img src="https://github.com/HenryJobst/django_lowcoder/docs/images/logo.svg" alt="Logo" width="125" height="125">
+    <img src="https://raw.githubusercontent.com/HenryJobst/django_lowcoder/425e69ff04bb0d45d0529835c97110dfb09d016d/docs/images/logo.svg" alt="Logo" width="125" height="125">
   </a>
 </h1>
 
