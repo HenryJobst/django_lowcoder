@@ -9,7 +9,7 @@ keywords = ['excel', 'convert', 'spreadsheet', 'django', 'model']
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
-Django = "^4.1.4"
+Django = "^4.1.7"
 django-crispy-forms = "^1.14.0"
 crispy-bootstrap5 = "^0.7"
 cookiecutter = "^2.1.1"
@@ -28,7 +28,7 @@ pandas = "^1.5.2"
 openpyxl = "^3.0.10"
 xlrd = "^2.0.1"
 pandas-stubs = "^1.5.2"
-Werkzeug = "^2.2.2"
+Werkzeug = "^2.2.3"
 django-rosetta = "^0.9.8"
 dj-database-url = "^1.2.0"
 whitenoise = "^6.3.0"
